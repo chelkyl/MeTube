@@ -15,18 +15,21 @@ def configure_app(is_flask=False):
 	app.config.from_object(configs[cfg_name])
 
 	db.init_app(app)
-
-if __name__ == "__main__":
-	cli.load_dotenv()
-	from db import db, User, File, Playlist
-	configure_app(is_flask=False)
-else:
-	from server.db import db, User, File, Playlist
-	configure_app(is_flask=True)
+	# recreate_db()
 
 def recreate_db():
 	db.drop_all(app=app)
 	db.create_all(app=app)
+
+if __name__ == "__main__":
+	cli.load_dotenv()
+	from db import *
+	configure_app(is_flask=False)
+	recreate_db()
+else:
+	from server.db import *
+	configure_app(is_flask=True)
+	recreate_db()
 
 @app.route('/')
 def index():
