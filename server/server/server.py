@@ -1,5 +1,8 @@
 import os
-from flask import Flask, url_for, escape, request, session, redirect, cli, jsonify
+from flask import Flask, request, cli, jsonify
+from passlib.hash import hex_sha256
+
+ALLOWED_FILE_EXT = set(['png','jpg','jpeg','gif','txt'])
 
 app = Flask(__name__)
 
@@ -14,83 +17,115 @@ def configure_app(is_flask=False):
 	cfg_name = os.getenv('SERVER_CFG') or 'default'
 	app.config.from_object(configs[cfg_name])
 
+	if not os.path.exists(app.config['UPLOAD_DIR']):
+		os.mkdir(app.config['UPLOAD_DIR'])
+
 	db.init_app(app)
 	# recreate_db()
 
+def create_db():
+	db.create_all(app=app)
+
 def recreate_db():
 	db.drop_all(app=app)
-	db.create_all(app=app)
+	create_db()
 
 if __name__ == "__main__":
 	cli.load_dotenv()
 	from db import *
 	configure_app(is_flask=False)
-	recreate_db()
+	create_db()
 else:
 	from server.db import *
 	configure_app(is_flask=True)
-	recreate_db()
+	create_db()
 
 @app.route('/')
 def index():
-	# if 'username' in session:
-	# 	return 'Hello %s' % escape(session['username'])
+	return "OK"
+
+@app.route('/db',methods=['DELETE'])
+def delete_db():
+	recreate_db()
+	return "OK"
+
+def is_valid_username(name):
+	return name and \
+	   name != '' and \
+		 len(User.query.filter_by(username=name).all()) == 0
+
+@app.route('/users',methods=['POST'])
+def add_user():
+	reqData = request.get_json()
+	username = reqData['username']
+	if is_valid_username(username):
+		newUser = User(username)
+		db.session.add(newUser)
+		db.session.commit()
+		return jsonify(newUser.to_json())
+	else:
+		return "username not unique", 400
+
+@app.route('/users/<user_id>',methods=['DELETE'])
+def remove_user(user_id):
+	user = User.query.get(user_id)
+	if user:
+		db.session.delete(user)
+		db.session.commit()
+		return user.to_json()
+	return "user_id not found", 404
+
+# TODO: filter, sort, paginate
+@app.route('/users',methods=['GET'])
+def get_users():
 	users = User.query
-	if users:
-		return jsonify([user.to_json() for user in users.all()])
-		# return jsonify([{'user_id':user.user_id,'username':user.username} for user in users.all()])
-	return 'The index page'
+	return jsonify([user.to_json() for user in users.all()])
 
-# def valid_login(uname, pword):
-# 	if uname and pword:
-# 		return True
-# 	return False
-# 	# if(user_exists(uname)):
-# 	#  if(auth_user(uname, pword)):
-# 	#    return true
+# TODO:
+# {
+#		"errors": [
+#      {"code":40,"message":"user_id not found"}
+#   ]
+# }
+@app.route('/users/<user_id>',methods=['GET'])
+def get_user(user_id):
+	user = User.query.get(user_id)
+	if user:
+		return jsonify(user.to_json())
+	else:
+		return "user_id not found", 404
 
-# def log_in_user(uname, pword):
-# 	session['username'] = uname
-# 	return redirect(url_for('index'))
+def is_allowed_file(fname):
+	return '.' in fname and fname.rsplit('.',1)[1].lower() in ALLOWED_FILE_EXT
 
-# @app.route('/logout')
-# def log_out():
-# 	session.pop('username',None)
-# 	return redirect(url_for('index'))
+@app.route('/files/upload',methods=['POST'])
+def upload_file():
+	if 'file' not in request.files:
+		return "file not given", 400
+	file = request.files['file']
+	filename = file.filename
+	if filename == '':
+		return "file is blank", 400
+	if not is_allowed_file(filename):
+		return "file not allowed", 400
+	
+	userid = request.form['user_id']
+	if userid == None:
+		return "user_id not given", 400
 
-
-# @app.route('/login',methods=['POST'])
-# def login():
-# 	error = None
-# 	username, password = request.form
-# 	if valid_login(username, password):
-# 		return log_in_user(username, password)
-# 	else:
-# 		error = 'Invalid username or password'
-# 	return error
-
-# @app.route('/users')
-# def get_users():
-# 	#sortKey = request.args.get('sortby','')
-# 	return
-
-# @app.route('/usersNum')
-# def num_users():
-# 	return 5
-
-@app.route('/users/<username>')
-def get_user(username):
-	newUser = User(username)
-	db.session.add(newUser)
+	realname = hex_sha256.hash(filename)
+	fileEntry = File(userid, realname, app.config['UPLOAD_DIR'], filename)
+	db.session.add(fileEntry)
 	db.session.commit()
-	return 'User %s' % username
-
-@app.route('/files/<userid>')
-def get_file(userid):
-	newFile = File(userid)
-	db.session.add(newFile)
-	db.session.commit()
-	return 'File owner %s' % userid
+	if fileEntry.file_id:
+		try:
+			file.save(fileEntry.path)
+			return jsonify(fileEntry.to_json())
+		except FileNotFoundError:
+			db.session.delete(fileEntry)
+			db.session.commit()
+			return 'Could not save file', 500
+	return 'Could not add file to database', 500
 
 
 

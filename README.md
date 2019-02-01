@@ -6,6 +6,7 @@ Confirmed packages and versions:
 - Flask 1.0.2
   - Flask-sqlalchemy 2.3.2
   - PyMySQL 0.9.3
+  - passlib 1.7.1
 
 ## Setup
 0. Create a database in Buffet
@@ -40,6 +41,9 @@ Confirmed packages and versions:
     ```
 5. Open the browser to the link on the line 'Running on ...'
    - e.g. 127.0.0.1:5000
+
+## Testing
+Tests on the server are run using a Postman collection in the tests folder.
 
 ## Notes
 The server currently recreates the database from scratch every time.

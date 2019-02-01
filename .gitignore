@@ -1,3 +1,5 @@
+# created directories
+file_store
 
 # private
 .env

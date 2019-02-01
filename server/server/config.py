@@ -3,6 +3,8 @@ import os
 class Config(object):
   DEBUG = False
   TESTING = False
+  UPLOAD_DIR = os.getenv('UPLOAD_DIR') or None
+  assert (UPLOAD_DIR != None), 'Missing UPLOAD_DIR env var, check your .flaskenv file'
   DIALECT  = os.getenv('DB_DIALECT') or None
   USERNAME = os.getenv('DB_USER') or None
   PASSWORD = os.getenv('DB_PASS') or None
