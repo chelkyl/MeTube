@@ -7,6 +7,8 @@ Confirmed packages and versions:
   - Flask-sqlalchemy 2.3.2
   - PyMySQL 0.9.3
   - passlib 1.7.1
+  - python-dotenv 0.10.1
+Installation can be done with `pip install Flask passlib PyMySql Flask-sqlalchemy --user`
 
 ## Setup
 0. Create a database in Buffet
@@ -30,7 +32,7 @@ Confirmed packages and versions:
     DB_DIALECT=mysql
     ```
    - Your current directory should now have a `.env` and `.flaskenv` in it
-4. WARNING: this step may not be safe, see Notes section below
+4. 
    - Run the server using:
     ```
     python server.py
@@ -46,11 +48,4 @@ Confirmed packages and versions:
 Tests on the server are run using a Postman collection in the tests folder.
 
 ## Notes
-The server currently recreates the database from scratch every time.
 
-Supported routes:
-```
-/users/<name> - creates a new entry in table User with username of name
-/files/<user_id> - creates a new entry in table File referencing user with user_id
-/ - returns json representation of entries in table User
-```
