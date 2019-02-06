@@ -47,5 +47,8 @@ Installation can be done with `pip install Flask passlib PyMySql Flask-sqlalchem
 ## Testing
 Tests on the server are run using a Postman collection in the tests folder.
 
+## Database Schema
+metube_schema.pdf
+
 ## Notes
 
