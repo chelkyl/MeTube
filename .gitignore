@@ -1,3 +1,9 @@
+
+# client
+node_modules/
+package-lock.json
+
+# server
 # created directories
 file_store
 

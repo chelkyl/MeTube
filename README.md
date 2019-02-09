@@ -8,7 +8,8 @@ Confirmed packages and versions:
   - PyMySQL 0.9.3
   - passlib 1.7.1
   - python-dotenv 0.10.1
-Installation can be done with `pip install Flask passlib PyMySql Flask-sqlalchemy --user`
+
+Installation can be done with `pip install Flask Flask-sqlalchemy PyMySql passlib python-dotenv --user`
 
 ## Setup
 0. Create a database in Buffet
@@ -21,7 +22,7 @@ Installation can be done with `pip install Flask passlib PyMySql Flask-sqlalchem
     ```
     cd server/server
     ```
-3. Create a file named '.env' with the following and fill in the `<variables>`
+3. Create a file named '.env' with the following and fill in the `<variables>` with your buffet database info
    - the host, port, and dialect probably don't need to be changed
     ```
     DB_USER=<username>
@@ -41,11 +42,14 @@ Installation can be done with `pip install Flask passlib PyMySql Flask-sqlalchem
     ```
     flask run
     ```
-5. Open the browser to the link on the line 'Running on ...'
+5. Open your browser to the link on the line 'Running on ...'
    - e.g. 127.0.0.1:5000
 
 ## Testing
 Tests on the server are run using a Postman collection in the tests folder.
+1. Open Postman and click Import
+2. Import the Postman collection file in the tests folder.
+3. After making changes to the collection, export it and overwrite the file.
 
 ## Notes
 
