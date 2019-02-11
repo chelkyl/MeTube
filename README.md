@@ -8,8 +8,9 @@ Confirmed packages and versions:
   - PyMySQL 0.9.3
   - passlib 1.7.1
   - python-dotenv 0.10.1
+  - Flask-HTTPAuth 3.2.4
 
-Installation can be done with `pip install Flask Flask-sqlalchemy PyMySql passlib python-dotenv --user`
+Installation can be done with `pip install Flask Flask-sqlalchemy PyMySql passlib python-dotenv Flask-HTTPAuth --user`
 
 ## Setup
 0. Create a database in Buffet

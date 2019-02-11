@@ -1,35 +1,46 @@
 from os import path
 from json import JSONEncoder
 from flask_sqlalchemy import SQLAlchemy
+from passlib.hash import pbkdf2_sha256
 
 db = SQLAlchemy()
 
-# create table User (
-#   user_id int not null,
-#   username varchar(40) not null,
-#   primary key (user_id),
-#   unique key (username)
-# );
 class User(db.Model):
   __tablename__ = 'User'
 
-  def __init__(self, username=''):
+  def __init__(self, email='', username='', password='', chan_des=''):
+    self.email = email
     self.username = username
+    self.password_hash = self.hash_password(password)
+    self.channel_description = chan_des
+
   user_id = db.Column(db.Integer, primary_key=True)
+  # max email length discussion: https://7php.com/the-maximum-length-limit-of-an-email-address-is-254-not-320/
+  email = db.Column(db.String(320), nullable=False)
   username = db.Column(db.String(40), unique=True, nullable=False)
-  # # metadata
-  # files = db.relationship('File',backref='user', lazy=True)
-  # playlists = db.relationship('Playlist',backref='user', lazy=True)
+  password_hash = db.Column(db.String(128), nullable=False)
+  channel_description = db.Column(db.String(400), nullable=True)
+
+  def hash_password(self, password):
+    pw_hash = pbkdf2_sha256.hash(password)
+    return pw_hash
+
+  def verify_password(self, password):
+    return pbkdf2_sha256.verify(password, self.password_hash)
 
   def to_json(self):
     return {
       'user_id': self.user_id,
-      'username': self.username
+      'email': self.email,
+      'username': self.username,
+      'password': self.password_hash,
+      'channel_description': self.channel_description
     }
 
   def __repr__(self):
     return '<User {id} [{name}]>'.format(id=self.user_id,name=self.username)
 
+#TODO: test File upload with invalid user_id
 class File(db.Model):
   __tablename__ = 'File'
 

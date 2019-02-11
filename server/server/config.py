@@ -19,12 +19,15 @@ class Config(object):
   assert (DB_NAME != None),  'Missing DB_NAME env var, check your .env file'
   SQLALCHEMY_DATABASE_URI = '{L}+pymysql://{U}:{S}@{H}:{P}/{D}'.format(L=DIALECT,U=USERNAME,S=PASSWORD,H=HOST,P=PORT,D=DB_NAME)
   SQLALCHEMY_TRACK_MODIFICATIONS = False
+  SQLALCHEMY_POOL_TIMEOUT = 30   # 30 seconds
+  SQLALCHEMY_POOL_RECYCLE = 600  # 10 minutes
 
 class ProductionCfg(Config):
   YAY = True
 
 class DevCfg(Config):
   DEBUG = True
+  SQLALCHEMY_ECHO = True
 
 class TestCfg(Config):
   TESTING = True
