@@ -3,8 +3,8 @@ from flask import Flask, request, cli, g
 from passlib.hash import hex_sha256
 from time import time
 from flask_sqlalchemy import SQLAlchemy
-from response import ResponseObject as Response
 from flask_httpauth import HTTPBasicAuth
+# NOTE: DO NOT put custom module imports here, do a search for 'cmih' and put it there
 
 # flask g is for storing data during requests like a temp global dictionary
 
@@ -48,12 +48,15 @@ def recreate_db():
   clear_db()
   create_db()
 
+# NOTE: cmih Put custom module imports here
 if __name__ == "__main__":
   cli.load_dotenv()
   from db import *
+  from response import ResponseObject as Response
   configure_app(is_flask=False)
 else:
   from server.db import *
+  from server.response import ResponseObject as Response
   configure_app(is_flask=True)
 
 @app.route('/')
