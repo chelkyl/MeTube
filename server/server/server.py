@@ -35,7 +35,7 @@ def create_db():
     db.create_all()
     admin = User.query.filter_by(username='admin').first()
     if not admin:
-      admin = User('','admin','test')
+      admin = User('admin','email','password', 'channel_description')
       db.session.add(admin)
       db.session.commit()
 
