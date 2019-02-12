@@ -14,6 +14,7 @@ contacts = db.Table('contacts',
   db.Column('contacter_id', db.Integer, db.ForeignKey('User.user_id')),
   db.Column('contacted_id', db.Integer, db.ForeignKey('User.user_id')),
   db.Column('message_id', db.Integer, db.ForeignKey('Message.message_id'), primary_key=True),
+  db.Column('relationship', db.String(40))
 )
 
 user_favorites = db.Table('user_favorites',
@@ -94,10 +95,10 @@ class Playlist(db.Model):
     return {
       'playlist_id': self.playlist_id,
       'user_id': self.user_id,
-      'title': self.title, 
+      'title': self.title,
       'description': self.description
     }
-  
+
   def __repr__(self):
     return '<Playlist {id} [{owner}]>'.format(id=self.playlist_id,owner=self.user_id)
 
@@ -134,17 +135,17 @@ class File(db.Model):
     return {
       'file_id': self.file_id,
       'user_id': self.user_id,
-      'title': self.title, 
-      'description': self.description, 
+      'title': self.title,
+      'description': self.description,
       'permissions': self.permissions,
-      'upload_date': self.upload_date,  
-      'views': self.views, 
-      'upvotes': self.upvotes, 
-      'downvotes': self.downvotes, 
+      'upload_date': self.upload_date,
+      'views': self.views,
+      'upvotes': self.upvotes,
+      'downvotes': self.downvotes,
       'mimetype': self.mimetype,
-      'file_type': self.file_type 
+      'file_type': self.file_type
     }
-  
+
   def __repr__(self):
     return '<File {id} [{owner}]>'.format(id=self.file_id,owner=self.user_id)
 
@@ -154,14 +155,14 @@ class Category(db.Model):
   def __init__(self, category):
     self.category = category
 
-  category_id = db.Column(db.Integer, primary_key=True) 
+  category_id = db.Column(db.Integer, primary_key=True)
   category = db.Column(db.String(40), nullable=False)
   files = db.relationship('File', secondary=files_categories, lazy='dynamic', backref=db.backref('categories', lazy='dynamic'))
 
   def to_json(self):
     return {
-      'category_id': self.category_id, 
-      'category': self.category, 
+      'category_id': self.category_id,
+      'category': self.category,
     }
 
   def __repr__(self):
@@ -173,14 +174,14 @@ class Keyword(db.Model):
   def __init__(self, keyword):
     self.keyword = keyword
 
-  keyword_id = db.Column(db.Integer, primary_key=True) 
+  keyword_id = db.Column(db.Integer, primary_key=True)
   keyword = db.Column(db.String(40), nullable=False)
   files = db.relationship('File', secondary=files_keywords, lazy='dynamic', backref=db.backref('keywords', lazy='dynamic'))
 
   def to_json(self):
     return {
-      'keyword_id': self.keyword_id, 
-      'keyword': self.keyword, 
+      'keyword_id': self.keyword_id,
+      'keyword': self.keyword,
     }
 
   def __repr__(self):
@@ -194,7 +195,7 @@ class Comment(db.Model):
     self.comment = comment
     self.comment_date = comment_date
 
-  comment_id = db.Column(db.Integer, primary_key=True) 
+  comment_id = db.Column(db.Integer, primary_key=True)
   user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
   file_id = db.Column(db.Integer, db.ForeignKey('File.file_id'), nullable=False)
   comment = db.Column(db.String(40), nullable=False)
@@ -202,10 +203,10 @@ class Comment(db.Model):
 
   def to_json(self):
     return {
-      'comment_id': self.comment_id, 
+      'comment_id': self.comment_id,
       'user_id': self.user_id,
       'file_id': self.file_id,
-      'comment': self.comment, 
+      'comment': self.comment,
       'comment_date': self.comment_date
     }
 
@@ -219,14 +220,14 @@ class Message(db.Model):
     self.message = message
     self.message_date = message_date
 
-  message_id = db.Column(db.Integer, primary_key=True) 
+  message_id = db.Column(db.Integer, primary_key=True)
   message = db.Column(db.String(100), nullable=False)
   message_date = db.Column(db.Date(), nullable=False)
 
   def to_json(self):
     return {
-      'message_id': self.message_id, 
-      'message': self.message, 
+      'message_id': self.message_id,
+      'message': self.message,
       'message_date': self.message_date
     }
 
