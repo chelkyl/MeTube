@@ -5,22 +5,57 @@ from passlib.hash import pbkdf2_sha256
 
 db = SQLAlchemy()
 
+subscribers = db.Table('subscribers',
+  db.Column('subscriber_id', db.Integer, db.ForeignKey('User.user_id')),
+  db.Column('subscribed_id', db.Integer, db.ForeignKey('User.user_id'))
+)
+
+contacts = db.Table('contacts',
+  db.Column('contacter_id', db.Integer, db.ForeignKey('User.user_id')),
+  db.Column('contacted_id', db.Integer, db.ForeignKey('User.user_id')),
+  db.Column('message_id', db.Integer, db.ForeignKey('Message.message_id'), primary_key=True),
+)
+
+user_favorites = db.Table('user_favorites',
+  db.Column('file_id', db.Integer, db.ForeignKey('File.file_id'), primary_key=True),
+  db.Column('user_id', db.Integer, db.ForeignKey('User.user_id'), primary_key=True)
+)
+
+playlist_files = db.Table('playlist_files',
+  db.Column('file_id', db.Integer, db.ForeignKey('File.file_id'), primary_key=True),
+  db.Column('playlist_id', db.Integer, db.ForeignKey('Playlist.playlist_id'), primary_key=True)
+)
+
+files_categories = db.Table('files_categories',
+  db.Column('file_id', db.Integer, db.ForeignKey('File.file_id'), primary_key=True),
+  db.Column('category_id', db.Integer, db.ForeignKey('Category.category_id'), primary_key=True)
+)
+
+files_keywords = db.Table('files_keywords',
+  db.Column('file_id', db.Integer, db.ForeignKey('File.file_id'), primary_key=True),
+  db.Column('keyword_id', db.Integer, db.ForeignKey('Keyword.keyword_id'), primary_key=True)
+)
+
 class User(db.Model):
   __tablename__ = 'User'
 
-  def __init__(self, email, username, password, channel_description=''):
-    self.email = email
+  def __init__(self, username, email, password, channel_description):
     self.username = username
+    self.email = email
     self.password_hash = self.hash_password(password)
     self.channel_description = channel_description
 
   user_id = db.Column(db.Integer, primary_key=True)
-  email = db.Column(db.String(320), unique=True, nullable=False)
   username = db.Column(db.String(40), unique=True, nullable=False)
-  channel_description = db.Column(db.String(100), nullable=False)
-  password_hash = db.Column(db.String(128), nullable=False)
+  email = db.Column(db.String(320), unique=True, nullable=False)
+  password_hash = db.Column(db.String(128), unique=True, nullable=False)
+  channel_description = db.Column(db.String(400), unique=True, nullable=False)
   playlists = db.relationship('Playlist', backref='user', lazy=True)
   files = db.relationship('File', backref='user', lazy=True)
+  comments = db.relationship('Comment', backref='user', lazy=True)
+  subscribed = db.relationship('User', secondary=subscribers, primaryjoin=(subscribers.c.subscriber_id == user_id), secondaryjoin=(subscribers.c.subscribed_id == user_id), lazy='dynamic', backref=db.backref('subscribers', lazy='dynamic'))
+  favorites = db.relationship('File', secondary=user_favorites, lazy='subquery', backref=db.backref('users', lazy=True))
+  contacted = db.relationship('User', secondary=contacts, primaryjoin=(contacts.c.contacter_id == user_id), secondaryjoin=(contacts.c.contacted_id == user_id), lazy='dynamic', backref=db.backref('contacts', lazy='dynamic'))
 
   def hash_password(self, password):
     pw_hash = pbkdf2_sha256.hash(password)
@@ -41,11 +76,6 @@ class User(db.Model):
   def __repr__(self):
     return '<User {id} [{name}]>'.format(id=self.user_id,name=self.username)
 
-files = db.Table('files',
-  db.Column('file_id', db.Integer, db.ForeignKey('File.file_id'), primary_key=True),
-  db.Column('playlist_id', db.Integer, db.ForeignKey('Playlist.playlist_id'), primary_key=True)
-)
-
 class Playlist(db.Model):
   __tablename__ = 'Playlist'
 
@@ -56,9 +86,9 @@ class Playlist(db.Model):
 
   playlist_id = db.Column(db.Integer, primary_key=True)
   user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
-  title = db.Column(db.String(100), nullable=False)
-  description = db.Column(db.String(400), nullable=False)
-  files = db.relationship('File', secondary=files, lazy='subquery', backref=db.backref('playlists', lazy=True))
+  title = db.Column(db.String(100), unique=True, nullable=False)
+  description = db.Column(db.String(400), unique=True, nullable=False)
+  files = db.relationship('File', secondary=playlist_files, lazy='subquery', backref=db.backref('playlists', lazy=True))
 
   def to_json(self):
     return {
@@ -89,15 +119,16 @@ class File(db.Model):
 
   file_id = db.Column(db.Integer, primary_key=True)
   user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
-  title = db.Column(db.String(100), nullable=False)
-  description = db.Column(db.String(400), nullable=False)
+  title = db.Column(db.String(100), unique=True, nullable=False)
+  description = db.Column(db.String(400), unique=True, nullable=False)
   permissions = db.Column(db.String(40), nullable=False)
   upload_date = db.Column(db.Date(), nullable=False)
   views = db.Column(db.Integer, nullable=False)
-  upvoates = db.Column(db.Integer, nullable=False)
+  upvotes = db.Column(db.Integer, nullable=False)
   downvotes = db.Column(db.Integer, nullable=False)
   mimetype = db.Column(db.String(40), nullable=False)
   file_type = db.Column(db.String(40), nullable=False)
+  comments = db.relationship('Comment', backref='file', lazy=True)
 
   def to_json(self):
     return {
@@ -120,11 +151,12 @@ class File(db.Model):
 class Category(db.Model):
   __tablename__ = 'Category'
 
-  def __init__(self, category_id, category):
+  def __init__(self, category):
     self.category = category
 
   category_id = db.Column(db.Integer, primary_key=True) 
   category = db.Column(db.String(40), nullable=False)
+  files = db.relationship('File', secondary=files_categories, lazy='dynamic', backref=db.backref('categories', lazy='dynamic'))
 
   def to_json(self):
     return {
@@ -134,3 +166,69 @@ class Category(db.Model):
 
   def __repr__(self):
     return '<Category {id} [{category}]>'.format(id=self.category_id,name=self.category)
+
+class Keyword(db.Model):
+  __tablename__ = 'Keyword'
+
+  def __init__(self, keyword):
+    self.keyword = keyword
+
+  keyword_id = db.Column(db.Integer, primary_key=True) 
+  keyword = db.Column(db.String(40), nullable=False)
+  files = db.relationship('File', secondary=files_keywords, lazy='dynamic', backref=db.backref('keywords', lazy='dynamic'))
+
+  def to_json(self):
+    return {
+      'keyword_id': self.keyword_id, 
+      'keyword': self.keyword, 
+    }
+
+  def __repr__(self):
+    return '<Keyword {id} [{keyword}]>'.format(id=self.keyword_id,name=self.keyword)
+
+class Comment(db.Model):
+  __tablename__ = 'Comment'
+
+  def __init__(self, user_id, comment, comment_date):
+    self.user_id = user_id
+    self.comment = comment
+    self.comment_date = comment_date
+
+  comment_id = db.Column(db.Integer, primary_key=True) 
+  user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
+  file_id = db.Column(db.Integer, db.ForeignKey('File.file_id'), nullable=False)
+  comment = db.Column(db.String(40), nullable=False)
+  comment_date = db.Column(db.Date(), nullable=False)
+
+  def to_json(self):
+    return {
+      'comment_id': self.comment_id, 
+      'user_id': self.user_id,
+      'file_id': self.file_id,
+      'comment': self.comment, 
+      'comment_date': self.comment_date
+    }
+
+  def __repr__(self):
+    return '<Comment {id} [{owner}]>'.format(id=self.comment_id,owner=self.user_id)
+
+class Message(db.Model):
+  __tablename__ = 'Message'
+
+  def __init__(self, message, message_date):
+    self.message = message
+    self.message_date = message_date
+
+  message_id = db.Column(db.Integer, primary_key=True) 
+  message = db.Column(db.String(100), nullable=False)
+  message_date = db.Column(db.Date(), nullable=False)
+
+  def to_json(self):
+    return {
+      'message_id': self.message_id, 
+      'message': self.message, 
+      'message_date': self.message_date
+    }
+
+  def __repr__(self):
+    return '<Message {id} [{message}]>'.format(id=self.message_id,name=self.message)

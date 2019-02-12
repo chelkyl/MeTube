@@ -49,7 +49,7 @@ def create_db():
     try:
       admin = User.query.filter_by(username='admin').first()
       if not admin:
-        admin = User('','admin','test')
+        admin = User('admin','email','password', 'channel_description')
         db.session.add(admin)
         db.session.commit()
     except sqlalchemy.exc.InternalError as err:
