@@ -1,20 +1,30 @@
-from os import getenv, path, mkdir
+from os import getenv, path, mkdir, sys
+# workaround to allow flask to find modules
+CUR_DIR = path.dirname(path.abspath(__file__))
+sys.path.append(path.dirname(CUR_DIR+"/"))
 from flask import Flask, request, cli, g
 from passlib.hash import hex_sha256
 from time import time
 from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
-# NOTE: DO NOT put custom module imports here, do a search for 'cmih' and put it there
+from db import *
+from response import ResponseObject as Response
 
+# NOTES:
 # flask g is for storing data during requests like a temp global dictionary
 
-ALLOWED_FILE_EXT = set(['png','jpg','jpeg','gif','txt'])
+# extensions are lowercase
+DOC_EXT   = ['txt','rtf','odf','ods','doc','docx','xls','xlsx']
+IMG_EXT   = ['png','jpg','jpe','jpeg','gif','svg','bmp']
+SOUND_EXT = ['weba','wav','opus','ogg','mp3','flac','aac']
+VIDEO_EXT = ['webm','opgg','mp4']
+ALLOWED_FILE_EXT = set(DOC_EXT+IMG_EXT+SOUND_EXT+VIDEO_EXT)
 
 app = Flask(__name__)
 auth = HTTPBasicAuth()
 
-def configure_app(is_flask=False):
-  prefix = 'server.config.' if is_flask else 'config.'
+def configure_app():
+  prefix = 'config.'
   configs = {
     'production': prefix+'ProductionCfg',
     'dev': prefix+'DevCfg',
@@ -47,17 +57,6 @@ def clear_db():
 def recreate_db():
   clear_db()
   create_db()
-
-# NOTE: cmih Put custom module imports here
-if __name__ == "__main__":
-  cli.load_dotenv()
-  from db import *
-  from response import ResponseObject as Response
-  configure_app(is_flask=False)
-else:
-  from server.db import *
-  from server.response import ResponseObject as Response
-  configure_app(is_flask=True)
 
 @app.route('/')
 def index():
@@ -174,6 +173,7 @@ def upload_file():
     return Response("missing file in request",400,True).end()
   
   file = request.files['file']
+  mimetype = file.content_type
   filename = file.filename
   if filename == '':
     return Response("filename is blank",400,True).end()
@@ -182,7 +182,7 @@ def upload_file():
 
   realname = hex_sha256.hash(filename+str(time()))
   print(realname)
-  fileEntry = File(userid, realname, app.config['UPLOAD_DIR'], filename)
+  fileEntry = File(userid, realname, app.config['UPLOAD_DIR'], filename, mimetype)
   db.session.add(fileEntry)
   db.session.commit()
   if fileEntry.file_id:
@@ -197,5 +197,8 @@ def upload_file():
 
 
 
+cli.load_dotenv()
+configure_app()
+# flask run ignores app.run
 if __name__ == "__main__":
   app.run()

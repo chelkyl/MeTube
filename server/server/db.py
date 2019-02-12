@@ -44,19 +44,20 @@ class User(db.Model):
 class File(db.Model):
   __tablename__ = 'File'
 
-  def __init__(self, user_id, realname, dest, filename):
+  def __init__(self, user_id, realname, dest, filename, mimetype):
     self.user_id = user_id
     self.realname = realname
     self.path = path.join(dest,realname)
     # metadata
     self.filename = filename
+    self.mimetype = mimetype
   file_id = db.Column(db.Integer, primary_key=True)
   user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
   realname = db.Column(db.String(100), unique=True, nullable=False)
   path = db.Column(db.String(250), unique=True, nullable=False)
   # metadata
   filename = db.Column(db.String(100), nullable=False)
-
+  mimetype = db.Column(db.String(16), nullable=False)
 
   def to_json(self):
     return {

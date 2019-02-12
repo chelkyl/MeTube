@@ -1,10 +1,14 @@
 import os
+from pathlib import Path
 
 class Config(object):
   DEBUG = False
   TESTING = False
+
+  MAX_CONTENT_LENGTH = 1024 * 1024 * 512   # 512 megabytes
   UPLOAD_DIR = os.getenv('UPLOAD_DIR') or None
   assert (UPLOAD_DIR != None), 'Missing UPLOAD_DIR env var, check your .flaskenv file'
+  Path(UPLOAD_DIR).mkdir(parents=True,exist_ok=True)
   DIALECT  = os.getenv('DB_DIALECT') or None
   USERNAME = os.getenv('DB_USER') or None
   PASSWORD = os.getenv('DB_PASS') or None
@@ -27,7 +31,8 @@ class ProductionCfg(Config):
 
 class DevCfg(Config):
   DEBUG = True
-  SQLALCHEMY_ECHO = True
+  # shows sqlalchemy engine statements
+  # SQLALCHEMY_ECHO = True
 
 class TestCfg(Config):
   TESTING = True
