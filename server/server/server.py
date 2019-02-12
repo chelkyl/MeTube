@@ -5,6 +5,7 @@ sys.path.append(path.dirname(CUR_DIR+"/"))
 from flask import Flask, request, cli, g
 from passlib.hash import hex_sha256
 from time import time
+import sqlalchemy
 from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
 from db import *
@@ -22,14 +23,15 @@ ALLOWED_FILE_EXT = set(DOC_EXT+IMG_EXT+SOUND_EXT+VIDEO_EXT)
 
 app = Flask(__name__)
 auth = HTTPBasicAuth()
+ERR_IN_CREATE = False
+FIX_ERR_IN_CREATE = True
 
 def configure_app():
-  prefix = 'config.'
   configs = {
-    'production': prefix+'ProductionCfg',
-    'dev': prefix+'DevCfg',
-    'test': prefix+'TestCfg',
-    'default': prefix+'DevCfg'
+    'production': 'config.ProductionCfg',
+    'dev': 'config.DevCfg',
+    'test': 'config.TestCfg',
+    'default': 'config.DevCfg'
   }
   cfg_name = getenv('SERVER_CFG') or 'default'
   app.config.from_object(configs[cfg_name])
@@ -41,22 +43,43 @@ def configure_app():
   create_db()
 
 def create_db():
+  global ERR_IN_CREATE
   with app.app_context():
     db.create_all()
-    admin = User.query.filter_by(username='admin').first()
-    if not admin:
-      admin = User('','admin','test')
-      db.session.add(admin)
-      db.session.commit()
+    try:
+      admin = User.query.filter_by(username='admin').first()
+      if not admin:
+        admin = User('','admin','test')
+        db.session.add(admin)
+        db.session.commit()
+    except sqlalchemy.exc.InternalError as err:
+      isFatal = not FIX_ERR_IN_CREATE or ERR_IN_CREATE
+      if not FIX_ERR_IN_CREATE:
+        print("Will not try to fix")
+      elif ERR_IN_CREATE:
+        print("Could not be fixed")
+      if isFatal:
+        print("Fatal, exiting")
+        exit
+      # print(err._sql_message()) TMI message
+      print("Error:",err._message())
+      print("Trying to fix, recreating database")
+      ERR_IN_CREATE = True
+      recreate_db()
 
 def clear_db():
   with app.app_context():
     db.session.commit()
+    # db.engine.execute('set FOREIGN_KEY_CHECKS = 0')
     db.drop_all()
+    # db.engine.execute('set FOREIGN_KEY_CHECKS = 1')
 
 def recreate_db():
+  global ERR_IN_CREATE
   clear_db()
   create_db()
+  if ERR_IN_CREATE:
+    print("Successfully fixed error")
 
 @app.route('/')
 def index():
