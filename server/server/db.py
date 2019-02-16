@@ -37,10 +37,38 @@ files_keywords = db.Table('files_keywords',
   db.Column('keyword_id', db.Integer, db.ForeignKey('Keyword.keyword_id'), primary_key=True)
 )
 
+class Admin(db.Model):
+  __tablename__ = 'Admin'
+
+  def __init__(self, username, password):
+    self.username = username
+    self.password_hash = self.hash_password(password)
+
+  admin_id = db.Column(db.Integer, primary_key=True)
+  username = db.Column(db.String(40), unique=True, nullable=False)
+  password_hash = db.Column(db.String(128), unique=True, nullable=False)
+
+  def hash_password(self, password):
+    pw_hash = pbkdf2_sha256.hash(password)
+    return pw_hash
+
+  def verify_password(self, password):
+    return pbkdf2_sha256.verify(password, self.password_hash)
+
+  def to_json(self):
+    return {
+      'admin_id': self.admin_id,
+      'username': self.username,
+      'password': self.password_hash
+    }
+
+  def __repr__(self):
+    return '<Admin {id} [{name}]>'.format(id=self.admin_id,name=self.username)
+
 class User(db.Model):
   __tablename__ = 'User'
 
-  def __init__(self, username, email, password, channel_description):
+  def __init__(self, username, email, password, channel_description=''):
     self.username = username
     self.email = email
     self.password_hash = self.hash_password(password)
@@ -50,7 +78,7 @@ class User(db.Model):
   username = db.Column(db.String(40), unique=True, nullable=False)
   email = db.Column(db.String(320), unique=True, nullable=False)
   password_hash = db.Column(db.String(128), unique=True, nullable=False)
-  channel_description = db.Column(db.String(400), unique=True, nullable=False)
+  channel_description = db.Column(db.String(400), nullable=False)
   playlists = db.relationship('Playlist', backref='user', lazy=True)
   files = db.relationship('File', backref='user', lazy=True)
   comments = db.relationship('Comment', backref='user', lazy=True)
@@ -87,8 +115,8 @@ class Playlist(db.Model):
 
   playlist_id = db.Column(db.Integer, primary_key=True)
   user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
-  title = db.Column(db.String(100), unique=True, nullable=False)
-  description = db.Column(db.String(400), unique=True, nullable=False)
+  title = db.Column(db.String(100), nullable=False)
+  description = db.Column(db.String(400), nullable=False)
   files = db.relationship('File', secondary=playlist_files, lazy='subquery', backref=db.backref('playlists', lazy=True))
 
   def to_json(self):
@@ -121,7 +149,7 @@ class File(db.Model):
   file_id = db.Column(db.Integer, primary_key=True)
   user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
   title = db.Column(db.String(100), unique=True, nullable=False)
-  description = db.Column(db.String(400), unique=True, nullable=False)
+  description = db.Column(db.String(400), nullable=False)
   permissions = db.Column(db.String(40), nullable=False)
   upload_date = db.Column(db.Date(), nullable=False)
   views = db.Column(db.Integer, nullable=False)

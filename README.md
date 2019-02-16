@@ -9,8 +9,10 @@ Confirmed packages and versions:
   - passlib 1.7.1
   - python-dotenv 0.10.1
   - Flask-HTTPAuth 3.2.4
+  - flask-cors 3.0.7
+- Node 8.11.3
 
-Installation can be done with `pip install Flask Flask-sqlalchemy PyMySql passlib python-dotenv Flask-HTTPAuth --user`
+Installation can be done with `pip install Flask Flask-sqlalchemy PyMySql passlib python-dotenv Flask-HTTPAuth flask-cors --user`
 
 ## Setup
 0. Create a database in Buffet
@@ -44,7 +46,23 @@ Installation can be done with `pip install Flask Flask-sqlalchemy PyMySql passli
     flask run
     ```
 5. Open your browser to the link on the line 'Running on ...'
-   - e.g. 127.0.0.1:5000
+   - e.g. localhost:5000
+6. Install node, using a package manager is recommended. See https://nodejs.org/en/download/package-manager/
+    - nvm is good
+7. Go to the client
+    ```
+    cd client
+    ```
+8. Load node if needed and install dependencies using npm, the package manager included with node. This may take some time.
+    ```
+    npm install
+    ```
+9. Run the client
+    ```
+    npm run
+    ```
+10. Open your browser to the link on the line 'Local: ...'
+    - e.g. localhost:3000
 
 ## Testing
 Tests on the server are run using a Postman collection in the tests folder.
@@ -54,3 +72,17 @@ Tests on the server are run using a Postman collection in the tests folder.
 
 ## Notes
 
+
+## TODO
+- Improve server and client authentication to use tokens
+  - See https://stackoverflow.com/questions/49819183/react-what-is-the-best-way-to-handle-authenticated-logged-in-state
+  - See https://flask-httpauth.readthedocs.io/en/latest/
+- Add server routes for all tables
+  - Add server video stream route and headers
+  - See https://medium.com/@daspinola/video-stream-with-node-js-and-html5-320b3191a6b6
+  - https://stackoverflow.com/questions/24976123/streaming-a-video-file-to-an-html5-video-player-with-node-js-so-that-the-video-c
+- Add components then build pages
+  - Home page
+  - File item card
+  - File item display page
+  - and more

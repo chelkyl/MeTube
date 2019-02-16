@@ -141,9 +141,9 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"should have returned user_id:1, username:admin\", function () {",
+									"pm.test(\"should have returned admin_id:1, username:admin\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.response.user_id).to.eql(1);",
+									"    pm.expect(jsonData.response.admin_id).to.eql(1);",
 									"    pm.expect(jsonData.response.username).to.eql('admin');",
 									"});",
 									""
@@ -160,12 +160,12 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{host}}/users/1",
+							"raw": "{{host}}/admin/1",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
-								"users",
+								"admin",
 								"1"
 							]
 						}
@@ -228,7 +228,7 @@
 					"response": []
 				},
 				{
-					"name": "GET users (almost) empty",
+					"name": "GET users empty",
 					"event": [
 						{
 							"listen": "test",
@@ -240,9 +240,9 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"should have returned response with array with just admin\", function () {",
+									"pm.test(\"should have returned response with empty array\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.response.length).to.eql(1);",
+									"    pm.expect(jsonData.response.length).to.eql(0);",
 									"});",
 									""
 								],
@@ -618,9 +618,9 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"should have returned user_id:2, username:bob\", function () {",
+									"pm.test(\"should have returned user_id:1, username:bob\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.response).to.have.property('user_id',2);",
+									"    pm.expect(jsonData.response).to.have.property('user_id',1);",
 									"    pm.expect(jsonData.response).to.have.property('username','bob');",
 									"});",
 									""
@@ -668,9 +668,9 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"should have returned user_id:3, username:joe\", function () {",
+									"pm.test(\"should have returned user_id:2, username:joe\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.response).to.have.property('user_id',3);",
+									"    pm.expect(jsonData.response).to.have.property('user_id',2);",
 									"    pm.expect(jsonData.response).to.have.property('username','joe');",
 									"});",
 									""
@@ -816,15 +816,13 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"should have returned list of 3\", function () {",
+									"pm.test(\"should have returned list of 2\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.response.length).to.eql(3);",
+									"    pm.expect(jsonData.response.length).to.eql(2);",
 									"    pm.expect(jsonData.response[0]).to.have.property('user_id',1);",
-									"    pm.expect(jsonData.response[0]).to.have.property('username','admin');",
+									"    pm.expect(jsonData.response[0]).to.have.property('username','bob');",
 									"    pm.expect(jsonData.response[1]).to.have.property('user_id',2);",
-									"    pm.expect(jsonData.response[1]).to.have.property('username','bob');",
-									"    pm.expect(jsonData.response[2]).to.have.property('user_id',3);",
-									"    pm.expect(jsonData.response[2]).to.have.property('username','joe');",
+									"    pm.expect(jsonData.response[1]).to.have.property('username','joe');",
 									"});",
 									""
 								],
@@ -852,7 +850,7 @@
 					"response": []
 				},
 				{
-					"name": "GET user id 2 (bob)",
+					"name": "GET user id 1 (bob)",
 					"event": [
 						{
 							"listen": "test",
@@ -864,9 +862,9 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"should have returned user_id:2, username:bob\", function () {",
+									"pm.test(\"should have returned user_id:1, username:bob\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.response).to.have.property('user_id',2);",
+									"    pm.expect(jsonData.response).to.have.property('user_id',1);",
 									"    pm.expect(jsonData.response).to.have.property('username','bob');",
 									"});",
 									""
@@ -883,20 +881,20 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{host}}/users/2",
+							"raw": "{{host}}/users/1",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"users",
-								"2"
+								"1"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "DELETE user id 2 (bob) not logged in",
+					"name": "DELETE user id 1 (bob) not logged in",
 					"event": [
 						{
 							"listen": "test",
@@ -923,20 +921,20 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{host}}/users/2",
+							"raw": "{{host}}/users/1",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"users",
-								"2"
+								"1"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "DELETE user id 2 (bob) logged in as other",
+					"name": "DELETE user id 1 (bob) logged in as other",
 					"event": [
 						{
 							"listen": "test",
@@ -975,20 +973,20 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{host}}/users/2",
+							"raw": "{{host}}/users/1",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"users",
-								"2"
+								"1"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "DELETE user id 2 (bob)",
+					"name": "DELETE user id 1 (bob)",
 					"event": [
 						{
 							"listen": "test",
@@ -999,9 +997,9 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"should have returned user_id:2, username:bob\", function () {",
+									"pm.test(\"should have returned user_id:1, username:bob\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.response).to.have.property('user_id',2);",
+									"    pm.expect(jsonData.response).to.have.property('user_id',1);",
 									"    pm.expect(jsonData.response).to.have.property('username','bob');",
 									"});",
 									""
@@ -1033,20 +1031,20 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{host}}/users/2",
+							"raw": "{{host}}/users/1",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"users",
-								"2"
+								"1"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "GET user id 2 (bob) removed",
+					"name": "GET user id 1 (bob) removed",
 					"event": [
 						{
 							"listen": "test",
@@ -1058,9 +1056,9 @@
 									"    pm.response.to.have.status(404);",
 									"});",
 									"",
-									"pm.test(\"should have returned error that user_id 2 was not found\", function () {",
+									"pm.test(\"should have returned error that user_id 1 was not found\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.error).to.eql(\"user_id 2 not found\");",
+									"    pm.expect(jsonData.error).to.eql(\"user_id 1 not found\");",
 									"});",
 									""
 								],
@@ -1076,13 +1074,13 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{host}}/users/2",
+							"raw": "{{host}}/users/1",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"users",
-								"2"
+								"1"
 							]
 						}
 					},
@@ -1144,7 +1142,7 @@
 					"response": []
 				},
 				{
-					"name": "GET users (almost) empty",
+					"name": "GET users empty",
 					"event": [
 						{
 							"listen": "test",
@@ -1156,9 +1154,9 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"should have returned response with array with just admin\", function () {",
+									"pm.test(\"should have returned response with empty array\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.response.length).to.eql(1);",
+									"    pm.expect(jsonData.response.length).to.eql(0);",
 									"});",
 									""
 								],
@@ -1198,9 +1196,9 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"should have returned user_id:2, username:bob\", function () {",
+									"pm.test(\"should have returned user_id:1, username:bob\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.response).to.have.property('user_id',2);",
+									"    pm.expect(jsonData.response).to.have.property('user_id',1);",
 									"    pm.expect(jsonData.response).to.have.property('username','bob');",
 									"});",
 									""
@@ -1248,9 +1246,9 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"should have returned user_id:3, username:joe\", function () {",
+									"pm.test(\"should have returned user_id:2, username:joe\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.response).to.have.property('user_id',3);",
+									"    pm.expect(jsonData.response).to.have.property('user_id',2);",
 									"    pm.expect(jsonData.response).to.have.property('username','joe');",
 									"});",
 									""
@@ -1298,15 +1296,13 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"should have returned list of 3\", function () {",
+									"pm.test(\"should have returned list of 2\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.response.length).to.eql(3);",
+									"    pm.expect(jsonData.response.length).to.eql(2);",
 									"    pm.expect(jsonData.response[0]).to.have.property('user_id',1);",
-									"    pm.expect(jsonData.response[0]).to.have.property('username','admin');",
+									"    pm.expect(jsonData.response[0]).to.have.property('username','bob');",
 									"    pm.expect(jsonData.response[1]).to.have.property('user_id',2);",
-									"    pm.expect(jsonData.response[1]).to.have.property('username','bob');",
-									"    pm.expect(jsonData.response[2]).to.have.property('user_id',3);",
-									"    pm.expect(jsonData.response[2]).to.have.property('username','joe');",
+									"    pm.expect(jsonData.response[1]).to.have.property('username','joe');",
 									"});",
 									""
 								],

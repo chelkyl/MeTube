@@ -7,6 +7,7 @@ from passlib.hash import hex_sha256
 from time import time
 import sqlalchemy
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 from flask_httpauth import HTTPBasicAuth
 from db import *
 from response import ResponseObject as Response
@@ -22,7 +23,9 @@ VIDEO_EXT = ['webm','opgg','mp4']
 ALLOWED_FILE_EXT = set(DOC_EXT+IMG_EXT+SOUND_EXT+VIDEO_EXT)
 
 app = Flask(__name__)
+CORS(app)
 auth = HTTPBasicAuth()
+admin_auth = HTTPBasicAuth()
 ERR_IN_CREATE = False
 FIX_ERR_IN_CREATE = True
 
@@ -47,9 +50,9 @@ def create_db():
   with app.app_context():
     db.create_all()
     try:
-      admin = User.query.filter_by(username='admin').first()
+      admin = Admin.query.filter_by(username='admin').first()
       if not admin:
-        admin = User('admin','email','password', 'channel_description')
+        admin = Admin(username='admin',password='test')
         db.session.add(admin)
         db.session.commit()
     except sqlalchemy.exc.InternalError as err:
@@ -69,10 +72,22 @@ def create_db():
 
 def clear_db():
   with app.app_context():
+    print('session commit')
     db.session.commit()
-    # db.engine.execute('set FOREIGN_KEY_CHECKS = 0')
+    # TODO: setting FOREIGN_KEY_CHECKS doesn't always seem to work, maybe because it is per session and mysqlAlchemy is switching out sessions
+    result = db.engine.execute('show variables where variable_name="FOREIGN_KEY_CHECKS"')
+    data = get_query_data(result)[0]
+    message = "Foreign checks are off for current session, drop statement may succeed" if data['Value'] is 'ON' else "Foreign checks are on"
+    print(message,data)
+    print('Turning foreign checks off')
+    db.engine.execute('set FOREIGN_KEY_CHECKS=0')
+    result = db.engine.execute('show variables where variable_name="FOREIGN_KEY_CHECKS"')
+    data = get_query_data(result)[0]
+    message = "Successfully turned off, drop statement should succeed" if data['Value'] is 'ON' else "Failed to turn off, drop statement may error"
+    print(message,data)
+    print('Trying to drop all tables')
     db.drop_all()
-    # db.engine.execute('set FOREIGN_KEY_CHECKS = 1')
+    db.engine.execute('set FOREIGN_KEY_CHECKS=1')
 
 def recreate_db():
   global ERR_IN_CREATE
@@ -93,10 +108,18 @@ def verify_password(username,password):
   g.user = user
   return True
 
+@admin_auth.verify_password
+def verify_admin_password(username,password):
+  admin = Admin.query.filter_by(username=username).first()
+  if not admin or not admin.verify_password(password):
+    return False
+  g.admin = admin
+  return True
+
 @app.route('/db',methods=['DELETE'])
-@auth.login_required
+@admin_auth.login_required
 def delete_db():
-  if g.user.username != "admin":
+  if g.admin.username != "admin":
     return Response("Unauthorized",401,True).end()
   recreate_db()
   return "OK"
@@ -134,7 +157,7 @@ def add_user():
     return Response({'not unique':notUniq},400,isError=True).end()
   
   # valid parameters, create and return it
-  newUser = User(email,username,password)
+  newUser = User(email=email,username=username,password=password)
   db.session.add(newUser)
   db.session.commit()
   return Response(newUser.to_json()).end()
@@ -166,23 +189,94 @@ def get_query_data(resultProxy):
     ret.append(dict(rowProxy.items()))
   return ret
 
+# data must be a list of the same dict type
+# options = {
+#   search: string query,
+#   sorter: {
+#     column: name,
+#     sortDescending: order
+#   },
+#   columns: [columns to select]
+# }
+def filter_data(data,options):
+  if len(data) == 0:
+    return []
+  ret = []
+  search = options['search']
+  sorter = options['sorter']
+  # do search
+  if search:
+    for entry in data:
+      if search in entry.keys() or seach in entry.values():
+        ret.append(entry)
+  else:
+    ret = data
+  # do sorting
+  if sorter:
+    sortKey = sorter['column']
+    isReverse = sorter['sortDescending']
+    ret.sort(reverse=isReverse, key=lambda entry: entry[sortKey])
+  return ret
 
-# TODO: filter, sort, paginate
+# TODO: add call to filter_data
 @app.route('/users',methods=['GET'])
 def get_users():
-  result = db.engine.execute('SELECT user_id,email,username,password_hash,channel_description FROM User')
+  result = db.engine.execute('SELECT user_id,email,username,channel_description FROM User')
   data = get_query_data(result)
   return Response(data).end()
   # users = User.query
   # return Response([user.to_json() for user in users.all()]).end()
 
+@app.route('/admin',methods=['GET'])
+def get_admins():
+  result = db.engine.execute('SELECT user_id,username FROM Admin')
+  data = get_query_data(result)
+  return Response(data).end()
+  # admins = Admin.query
+  # return Response([admins.to_json() for admin in admins.all()]).end()
+
 @app.route('/users/<user_id>',methods=['GET'])
 def get_user(user_id):
-  user = User.query.get(user_id)
-  if user:
-    return Response(user.to_json()).end()
+  result = db.engine.execute('SELECT user_id,email,username,channel_description FROM User WHERE user_id={ID}'.format(ID=user_id))
+  data = get_query_data(result)
+  if data:
+    return Response(data[0]).end()
   else:
     return Response("user_id {ID} not found".format(ID=user_id),404,True).end()
+  # user = User.query.get(user_id)
+  # if user:
+  #   return Response(user.to_json()).end()
+  # else:
+  #   return Response("user_id {ID} not found".format(ID=user_id),404,True).end()
+
+@app.route('/admin/<admin_id>',methods=['GET'])
+def get_admin(admin_id):
+  result = db.engine.execute('SELECT admin_id,username FROM Admin WHERE admin_id={ID}'.format(ID=admin_id))
+  data = get_query_data(result)
+  if data:
+    return Response(data[0]).end()
+  else:
+    return Response("admin_id {ID} not found".format(ID=admin_id),404,True).end()
+  # admin = Admin.query.get(admin_id)
+  # if admin:
+  #   return Response(admin.to_json()).end()
+  # else:
+  #   return Response("admin_id {ID} not found".format(ID=admin_id),404,True).end()
+
+@app.route('/login',methods=['POST'])
+def auth_user():
+  req = request.json
+  if req is None:
+    return Response("Unauthorized",401,True).end()
+  username = req.get('username',None)
+  password = req.get('password',None)
+
+  if username is None or password is None:
+    return Response("Unauthorized",401,True).end()
+  user = User.query.filter_by(username=username).first()
+  if not user or not user.verify_password(password):
+    return Response("Unauthorized",401,True).end()
+  return Response("OK").end()
 
 def is_allowed_file(fname):
   return '.' in fname and fname.rsplit('.',1)[1].lower() in ALLOWED_FILE_EXT
