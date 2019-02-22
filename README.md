@@ -12,7 +12,7 @@ Confirmed packages and versions:
   - flask-cors 3.0.7
 - Node 8.11.3
 
-Installation can be done with `pip install Flask Flask-sqlalchemy PyMySql passlib python-dotenv Flask-HTTPAuth flask-cors --user`
+Installation can be done with `pip3 install Flask Flask-sqlalchemy PyMySql passlib python-dotenv Flask-HTTPAuth flask_cors --user`
 
 ## Setup
 0. Create a database in Buffet
@@ -39,7 +39,7 @@ Installation can be done with `pip install Flask Flask-sqlalchemy PyMySql passli
 4. 
    - Run the server using:
     ```
-    python server.py
+    python3 server.py
     ```
    - or
     ```
