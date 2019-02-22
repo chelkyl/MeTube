@@ -383,7 +383,7 @@ def remove_file(file_id):
     result = db.engine.execute('DELETE FROM File WHERE file_id={ID}'.format(ID=file_id))
     remove_file_from_store(file_id)
     return Response(data[0]).end()
-  return Response("file_id {ID} not found".format(ID=user_id),404,True).end()
+  return Response("file_id {ID} not found".format(ID=file_id),404,True).end()
 
   if File:
     db.session.delete(file)
@@ -391,6 +391,184 @@ def remove_file(file_id):
     remove_file_from_store(file_id)
     return Response(file.to_json()).end()
   return Response("file_id {ID} not found".format(ID=file_id),404,True).end()
+
+@app.route('/playlists/upload',methods=['POST'])
+@auth.login_required
+def add_playlist():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  user_id    = None if req is None else req.get('user_id',None)
+  title = None if req is None else req.get('title',None)
+  description = None if req is None else req.get('description',None)
+  # trivial validate not empty
+  missing = []
+  if user_id is None:
+    missing.append('user_id')
+  if title is None:
+    missing.append('title')
+  if description is None:
+    missing.append('description')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  # valid parameters, create and return it
+  newPlaylist = Playlist(user_id=user_id,title=title,description=description)
+  db.session.add(newPlaylist)
+  db.session.commit()
+  return Response(newPlaylist.to_json()).end()
+
+@app.route('/playlists/<playlist_id>',methods=['GET'])
+def get_playlist(playlist_id):
+  result = db.engine.execute('SELECT playlist_id,user_id,title,description FROM Playlist WHERE playlist_id={ID}'.format(ID=playlist_id))
+  data = get_query_data(result)
+  if data:
+    return Response(data[0]).end()
+  else:
+    return Response("playlist_id {ID} not found".format(ID=playlist_id),404,True).end()
+
+@app.route('/playlists/<playlist_id>',methods=['DELETE'])
+@auth.login_required
+def remove_playlist(playlist_id):
+  playlist = Playlist.query.get(playlist_id)
+  if g.user.user_id != int(playlist.user_id):
+    return Response("Unauthorized",401,True).end()
+
+  result = db.engine.execute('SELECT playlist_id,user_id,title,description FROM Playlist WHERE playlist_id={ID}'.format(ID=playlist_id))
+  data = get_query_data(result)
+  if data:
+    result = db.engine.execute('DELETE FROM Playlist WHERE playlist_id={ID}'.format(ID=playlist_id))
+    return Response(data[0]).end()
+  return Response("playlist_id {ID} not found".format(ID=playlist_id),404,True).end()
+
+  if Playlist:
+    db.session.delete(playlist)
+    db.session.commit()
+    return Response(playlist.to_json()).end()
+  return Response("playlist_id {ID} not found".format(ID=playlist_id),404,True).end()
+
+@app.route('/categories/upload',methods=['POST'])
+@admin_auth.login_required
+def add_category():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  category = None if req is None else req.get('category',None)
+  # trivial validate not empty
+  missing = []
+  if category is None:
+    missing.append('category')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  # valid parameters, create and return it
+  newCategory= Category(category=category)
+  db.session.add(newCategory)
+  db.session.commit()
+  return Response(newCategory.to_json()).end()
+
+@app.route('/categories/<category_id>',methods=['GET'])
+def get_category(category_id):
+  result = db.engine.execute('SELECT category_id,category FROM Category WHERE category_id={ID}'.format(ID=category_id))
+  data = get_query_data(result)
+  if data:
+    return Response(data[0]).end()
+  else:
+    return Response("category_id {ID} not found".format(ID=category_id),404,True).end()
+
+@app.route('/categories/<category_id>',methods=['DELETE'])
+@admin_auth.login_required
+def remove_category(category_id):
+  result = db.engine.execute('SELECT category_id,category FROM Category WHERE category_id={ID}'.format(ID=category_id))
+  data = get_query_data(result)
+  if data:
+    result = db.engine.execute('DELETE FROM Category WHERE category_id={ID}'.format(ID=category_id))
+    return Response(data[0]).end()
+  return Response("category_id {ID} not found".format(ID=category_id),404,True).end()
+
+  category = Category.query.get(category_id)
+  if Category:
+    db.session.delete(category)
+    db.session.commit()
+    return Response(category.to_json()).end()
+  return Response("category_id {ID} not found".format(ID=category_id),404,True).end()
+
+@app.route('/keywords/upload',methods=['POST'])
+@admin_auth.login_required
+def add_keyword():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  keyword = None if req is None else req.get('keyword',None)
+  # trivial validate not empty
+  missing = []
+  if keyword is None:
+    missing.append('keyword')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  # valid parameters, create and return it
+  newKeyword= Keyword(keyword=keyword)
+  db.session.add(newKeyword)
+  db.session.commit()
+  return Response(newKeyword.to_json()).end()
+
+@app.route('/keywords/<keyword_id>',methods=['GET'])
+def get_keyword(keyword_id):
+  result = db.engine.execute('SELECT keyword_id,keyword FROM Keyword WHERE keyword_id={ID}'.format(ID=keyword_id))
+  data = get_query_data(result)
+  if data:
+    return Response(data[0]).end()
+  else:
+    return Response("keyword_id {ID} not found".format(ID=keyword_id),404,True).end()
+
+@app.route('/keywords/<keyword_id>',methods=['DELETE'])
+@admin_auth.login_required
+def remove_keyword(keyword_id):
+  result = db.engine.execute('SELECT keyword_id,keyword FROM Keyword WHERE keyword_id={ID}'.format(ID=keyword_id))
+  data = get_query_data(result)
+  if data:
+    result = db.engine.execute('DELETE FROM Keyword WHERE keyword_id={ID}'.format(ID=keyword_id))
+    return Response(data[0]).end()
+  return Response("keyword_id {ID} not found".format(ID=keyword_id),404,True).end()
+
+  keyword = Keyword.query.get(keyword_id)
+  if Keyword:
+    db.session.delete(keyword)
+    db.session.commit()
+    return Response(keyword.to_json()).end()
+  return Response("keyword_id {ID} not found".format(ID=keyword_id),404,True).end()
+
+@app.route('/messages/upload',methods=['POST'])
+@auth.login_required
+def add_message():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  message = None if req is None else req.get('message',None)
+  # trivial validate not empty
+  missing = []
+  if message is None:
+    missing.append('message')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  now = datetime.datetime.now()
+  message_date = now.day
+
+  # valid parameters, create and return it
+  newMessage=Message(message=message, message_date=message_date)
+  db.session.add(newMessage)
+  db.session.commit()
+  return Response(newMessage.to_json()).end()
 
 cli.load_dotenv()
 configure_app()
