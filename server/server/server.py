@@ -1,4 +1,4 @@
-from os import getenv, path, mkdir, sys
+from os import getenv, path, mkdir, sys, path, unlink, listdir
 # workaround to allow flask to find modules
 CUR_DIR = path.dirname(path.abspath(__file__))
 sys.path.append(path.dirname(CUR_DIR+"/"))
@@ -6,6 +6,8 @@ from flask import Flask, request, cli, g
 from passlib.hash import hex_sha256
 from time import time
 import sqlalchemy
+import datetime
+import shutil
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_httpauth import HTTPBasicAuth
@@ -70,6 +72,16 @@ def create_db():
       ERR_IN_CREATE = True
       recreate_db()
 
+def clear_file_store():
+  folder = app.config['UPLOAD_DIR']
+  for file in listdir(folder):
+    file_path = path.join(folder, file)
+    try:
+      if path.isfile(file_path):
+        unlink(file_path)
+    except Exception as e:
+      print(e)
+
 def clear_db():
   with app.app_context():
     print('session commit')
@@ -87,6 +99,7 @@ def clear_db():
     print(message,data)
     print('Trying to drop all tables')
     db.drop_all()
+    clear_file_store()
     db.engine.execute('set FOREIGN_KEY_CHECKS=1')
 
 def recreate_db():
@@ -155,7 +168,7 @@ def add_user():
     notUniq.append('email')
   if notUniq:
     return Response({'not unique':notUniq},400,isError=True).end()
-  
+
   # valid parameters, create and return it
   newUser = User(email=email,username=username,password=password)
   db.session.add(newUser)
@@ -285,10 +298,12 @@ def is_allowed_file(fname):
 @auth.login_required
 def upload_file():
   userid = g.user.user_id
+  now = datetime.datetime.now()
+  upload_date = now.day
 
   if 'file' not in request.files:
     return Response("missing file in request",400,True).end()
-  
+
   file = request.files['file']
   mimetype = file.content_type
   filename = file.filename
@@ -297,14 +312,39 @@ def upload_file():
   if not is_allowed_file(filename):
     return Response("file type not allowed",400,True).end()
 
-  realname = hex_sha256.hash(filename+str(time()))
-  print(realname)
-  fileEntry = File(userid, realname, app.config['UPLOAD_DIR'], filename, mimetype)
+  title = request.form['title']
+  description = request.form['description']
+  permissions = request.form['permissions']
+  file_type = request.form['file_type']
+  # trivial validate not empty
+  missing = []
+  if title is None:
+    missing.append('title')
+  if description is None:
+    missing.append('description')
+  if permissions is None:
+    missing.append('permissions')
+  if file_type is None:
+    missing.append('file_type')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  # make sure title is unique
+  titleUniq = len(File.query.filter_by(title=title).all()) == 0
+  notUniq = []
+  if not titleUniq:
+    notUniq.append('title')
+  if notUniq:
+    return Response({'not unique':notUniq},400,isError=True).end()
+
+  fileEntry = File(user_id=userid,title=title,description=description,permissions=permissions,upload_date = upload_date,views=0,upvotes=0,downvotes=0,mimetype=mimetype,file_type=file_type)
   db.session.add(fileEntry)
   db.session.commit()
   if fileEntry.file_id:
     try:
-      file.save(fileEntry.path)
+      file.save(app.config['UPLOAD_DIR']+"/"+str(fileEntry.file_id))
       return Response(fileEntry.to_json()).end()
     except FileNotFoundError:
       db.session.delete(fileEntry)
@@ -312,7 +352,45 @@ def upload_file():
       return Response("Could not save file",400,True).end()
   return Response("Could not add file to database",500,True).end()
 
+@app.route('/files/<file_id>',methods=['GET'])
+def get_file(file_id):
+  result = db.engine.execute('SELECT file_id,user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type FROM File WHERE file_id={ID}'.format(ID=file_id))
+  data = get_query_data(result)
+  if data:
+    return Response(data[0]).end()
+  else:
+    return Response("file_id {ID} not found".format(ID=file_id),404,True).end()
 
+def remove_file_from_store(file_id):
+  folder = app.config['UPLOAD_DIR']
+  file_path = path.join(folder, str(file_id))
+  try:
+    if path.isfile(file_path):
+      unlink(file_path)
+  except Exception as e:
+    print(e)
+
+@app.route('/files/<file_id>',methods=['DELETE'])
+@auth.login_required
+def remove_file(file_id):
+  file = File.query.get(file_id)
+  if g.user.user_id != int(file.user_id):
+    return Response("Unauthorized",401,True).end()
+
+  result = db.engine.execute('SELECT file_id,user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type FROM File WHERE file_id={ID}'.format(ID=file_id))
+  data = get_query_data(result)
+  if data:
+    result = db.engine.execute('DELETE FROM File WHERE file_id={ID}'.format(ID=file_id))
+    remove_file_from_store(file_id)
+    return Response(data[0]).end()
+  return Response("file_id {ID} not found".format(ID=user_id),404,True).end()
+
+  if File:
+    db.session.delete(file)
+    db.session.commit()
+    remove_file_from_store(file_id)
+    return Response(file.to_json()).end()
+  return Response("file_id {ID} not found".format(ID=file_id),404,True).end()
 
 cli.load_dotenv()
 configure_app()

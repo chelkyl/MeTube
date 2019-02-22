@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "ff29dd74-e4a4-44f9-823a-6516dbe3508a",
+		"_postman_id": "c2f8209c-df6a-4534-a445-dd8763d6baf2",
 		"name": "MeTube-API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -9,7 +9,7 @@
 			"name": "initial",
 			"item": [
 				{
-					"name": "Get trivial",
+					"name": "trivial",
 					"event": [
 						{
 							"listen": "test",
@@ -1436,7 +1436,27 @@
 								},
 								{
 									"key": "user_id",
-									"value": "2",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "title",
+									"value": "Bob's File",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "A test description of Bob's file.",
+									"type": "text"
+								},
+								{
+									"key": "permissions",
+									"value": "private",
+									"type": "text"
+								},
+								{
+									"key": "file_type",
+									"value": "text",
 									"type": "text"
 								}
 							]
@@ -1449,6 +1469,214 @@
 							"path": [
 								"files",
 								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET file_id 1 (Bob's file)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "98b015d7-d8b1-4d71-84bd-10e3f917f603",
+								"exec": [
+									"/*",
+									"// Due to a postman issue, the file selected is not saved",
+									"// so the below tests will always fail when running automatically",
+									"",
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned file_id:1, user_id:1\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.have.property('file_id',1);",
+									"    pm.expect(jsonData.response).to.have.property('user_id',1);",
+									"});",
+									"",
+									"*/"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/files/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"files",
+								"1"
+							]
+						},
+						"description": "GET file"
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE file_id 1 (Bob's file) not logged in",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "0256301a-7d5e-4bce-82d4-ceb4a5936acd",
+								"exec": [
+									"pm.test(\"Status code should be 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/files/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"files",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE file_id 1 (Bob's file) logged in as other",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f808a42d-15b3-426d-86bc-0a419e232b32",
+								"exec": [
+									"/*",
+									"// Due to a postman issue, the file selected is not saved",
+									"// so the below tests will always fail when running automatically",
+									"",
+									"pm.test(\"Status code should be 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"*/"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "test",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "joe",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/files/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"files",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE file_id 1 (Bob's file)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "0b086f1f-d924-4129-a58d-73ab36c63301",
+								"exec": [
+									"/*",
+									"// Due to a postman issue, the file selected is not saved",
+									"// so the below tests will always fail when running automatically",
+									"",
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned file_id:1, user_id:1\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.have.property('file_id',1);",
+									"    pm.expect(jsonData.response).to.have.property('user_id',1);",
+									"});",
+									"",
+									"*/"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "bob",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "test",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/files/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"files",
+								"1"
 							]
 						}
 					},
