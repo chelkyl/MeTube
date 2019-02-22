@@ -59,7 +59,7 @@ Installation can be done with `pip3 install Flask Flask-sqlalchemy PyMySql passl
     ```
 9. Run the client
     ```
-    npm run
+    npm start
     ```
 10. Open your browser to the link on the line 'Local: ...'
     - e.g. localhost:3000
