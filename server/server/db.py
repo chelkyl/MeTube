@@ -12,9 +12,17 @@ subscribers = db.Table('subscribers',
 
 contacts = db.Table('contacts',
   db.Column('contacter_id', db.Integer, db.ForeignKey('User.user_id')),
-  db.Column('contacted_id', db.Integer, db.ForeignKey('User.user_id')),
-  db.Column('message_id', db.Integer, db.ForeignKey('Message.message_id'), primary_key=True),
-  db.Column('relationship', db.String(40))
+  db.Column('contacted_id', db.Integer, db.ForeignKey('User.user_id'))
+)
+
+friends = db.Table('friends',
+  db.Column('friender_id', db.Integer, db.ForeignKey('User.user_id')),
+  db.Column('friended_id', db.Integer, db.ForeignKey('User.user_id'))
+)
+
+blocks = db.Table('blocks',
+  db.Column('blocker_id', db.Integer, db.ForeignKey('User.user_id')),
+  db.Column('blocked_id', db.Integer, db.ForeignKey('User.user_id'))
 )
 
 user_favorites = db.Table('user_favorites',
@@ -85,6 +93,8 @@ class User(db.Model):
   subscribed = db.relationship('User', secondary=subscribers, primaryjoin=(subscribers.c.subscriber_id == user_id), secondaryjoin=(subscribers.c.subscribed_id == user_id), lazy='dynamic', backref=db.backref('subscribers', lazy='dynamic'))
   favorites = db.relationship('File', secondary=user_favorites, lazy='subquery', backref=db.backref('users', lazy=True))
   contacted = db.relationship('User', secondary=contacts, primaryjoin=(contacts.c.contacter_id == user_id), secondaryjoin=(contacts.c.contacted_id == user_id), lazy='dynamic', backref=db.backref('contacts', lazy='dynamic'))
+  friended = db.relationship('User', secondary=friends, primaryjoin=(friends.c.friender_id == user_id), secondaryjoin=(friends.c.friended_id == user_id), lazy='dynamic', backref=db.backref('friends', lazy='dynamic'))
+  blocked = db.relationship('User', secondary=blocks, primaryjoin=(blocks.c.blocker_id == user_id), secondaryjoin=(blocks.c.blocked_id == user_id), lazy='dynamic', backref=db.backref('blocks', lazy='dynamic'))
 
   def hash_password(self, password):
     pw_hash = pbkdf2_sha256.hash(password)
@@ -101,6 +111,10 @@ class User(db.Model):
       'password': self.password_hash,
       'channel_description': self.channel_description
     }
+
+  def is_contact(self, user):
+    return self.contacted.filter(
+      contacts.c.contacted_id == user.user_id).count() > 0
 
   def __repr__(self):
     return '<User {id} [{name}]>'.format(id=self.user_id,name=self.username)
@@ -244,17 +258,23 @@ class Comment(db.Model):
 class Message(db.Model):
   __tablename__ = 'Message'
 
-  def __init__(self, message, message_date):
+  def __init__(self, contacter_id, contacted_id, message, message_date):
+    self.contacter_id = contacter_id
+    self.contacted_id = contacted_id
     self.message = message
     self.message_date = message_date
 
   message_id = db.Column(db.Integer, primary_key=True)
+  contacter_id = db.Column(db.Integer, db.ForeignKey('contacts.contacter_id'), nullable=False)
+  contacted_id = db.Column(db.Integer, db.ForeignKey('contacts.contacted_id'), nullable=False)
   message = db.Column(db.String(100), nullable=False)
   message_date = db.Column(db.Date(), nullable=False)
 
   def to_json(self):
     return {
       'message_id': self.message_id,
+      'contacter_id': self.contacter_id,
+      'contacted_id': self.contacted_id,
       'message': self.message,
       'message_date': self.message_date
     }

@@ -298,8 +298,7 @@ def is_allowed_file(fname):
 @auth.login_required
 def upload_file():
   userid = g.user.user_id
-  now = datetime.datetime.now()
-  upload_date = now.day
+  upload_date = datetime.datetime.now()
 
   if 'file' not in request.files:
     return Response("missing file in request",400,True).end()
@@ -545,27 +544,91 @@ def remove_keyword(keyword_id):
     return Response(keyword.to_json()).end()
   return Response("keyword_id {ID} not found".format(ID=keyword_id),404,True).end()
 
-@app.route('/messages/upload',methods=['POST'])
+@app.route('/users/add_contact',methods=['PATCH'])
 @auth.login_required
-def add_message():
+def add_contact():
   # shorten name for easier access
   req = request.json
   # get json data
-  message = None if req is None else req.get('message',None)
+  contacter_id = None if req is None else req.get('contacter_id',None)
+  contacted_id = None if req is None else req.get('contacted_id',None)
   # trivial validate not empty
   missing = []
-  if message is None:
-    missing.append('message')
+  if contacter_id is None:
+    missing.append('contacter_id')
+  if contacted_id is None:
+    missing.append('contacted_id')
 
   # return error if missing any
   if missing:
     return Response({'missing':missing},400,isError=True).end()
 
-  now = datetime.datetime.now()
-  message_date = now.day
+  contacter=User.query.get(contacter_id)
+  contacted=User.query.get(contacted_id)
+  if not contacter.is_contact(contacted):
+    contacter.contacted.append(contacted)
+    db.session.commit()
+    return Response("Contact created",200,False).end()
+  return Response("Contact already exists",404,True).end()
+
+@app.route('/users/remove_contact',methods=['PATCH'])
+@auth.login_required
+def remove_contact():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  contact_remover_id = None if req is None else req.get('contact_remover_id',None)
+  contact_removed_id = None if req is None else req.get('contact_removed_id',None)
+  # trivial validate not empty
+  missing = []
+  if contact_remover_id is None:
+    missing.append('contact_remover_id')
+  if contact_removed_id is None:
+    missing.append('contact_removed_id')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  contact_remover=User.query.get(contact_remover_id)
+  contact_removed=User.query.get(contact_removed_id)
+  if contact_remover.is_contact(contact_removed):
+    contact_remover.contacted.remove(contact_removed)
+    db.session.commit()
+    return Response("Contact removed",200,False).end()
+  return Response("No contact already exists",404,True).end()
+
+@app.route('/messages/upload',methods=['POST'])
+@auth.login_required
+def add_message():
+  message_date  = datetime.datetime.now()
+
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  message = None if req is None else req.get('message',None)
+  contacter_id = None if req is None else req.get('contacter_id',None)
+  contacted_id = None if req is None else req.get('contacted_id',None)
+  # trivial validate not empty
+  missing = []
+  if message is None:
+    missing.append('message')
+  if contacter_id is None:
+    missing.append('contacter_id')
+  if contacted_id is None:
+    missing.append('contacted_id')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  contacter = User.query.get(contacter_id)
+  contacted = User.query.get(contacted_id)
+  if not contacter.is_contact(contacted):
+    return Response("{ID} is not a contact".format(ID=contacted_id),404,True).end()
 
   # valid parameters, create and return it
-  newMessage=Message(message=message, message_date=message_date)
+  newMessage=Message(contacter_id=contacter_id, contacted_id=contacted_id, message=message, message_date=message_date)
   db.session.add(newMessage)
   db.session.commit()
   return Response(newMessage.to_json()).end()

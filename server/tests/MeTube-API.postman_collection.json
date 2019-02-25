@@ -3304,7 +3304,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"message\":\"hey\"}"
+							"raw": "{\"contacter_id\": \"1\", \"contacted_id\": \"2\", \"message\":\"hey\"}"
 						},
 						"url": {
 							"raw": "{{host}}/messages/upload",
@@ -3320,7 +3320,66 @@
 					"response": []
 				},
 				{
-					"name": "POST message logged as user_id 1 (bob)",
+					"name": "POST bob add joe as contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "559e736b-dc7f-481c-9c7b-55133a3227ee",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "bob",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "test",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"contacter_id\":\"1\",\"contacted_id\":\"2\"}"
+						},
+						"url": {
+							"raw": "{{host}}/users/add_contact",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"add_contact"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST bob(1) message joe(2)",
 					"event": [
 						{
 							"listen": "test",
@@ -3369,7 +3428,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"message\":\"hey\"}"
+							"raw": "{\"contacter_id\": \"1\", \"contacted_id\": \"2\", \"message\":\"hey\"}"
 						},
 						"url": {
 							"raw": "{{host}}/messages/upload",
@@ -3379,6 +3438,65 @@
 							"path": [
 								"messages",
 								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST bob remove joe as contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "559e736b-dc7f-481c-9c7b-55133a3227ee",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "bob",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "test",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"contact_remover_id\":\"1\",\"contact_removed_id\":\"2\"}"
+						},
+						"url": {
+							"raw": "{{host}}/users/remove_contact",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"remove_contact"
 							]
 						}
 					},
