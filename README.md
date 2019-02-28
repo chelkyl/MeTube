@@ -68,6 +68,7 @@ Installation can be done with `pip3 install Flask Flask-sqlalchemy PyMySql passl
 Tests on the server are run using a Postman collection in the tests folder.
 1. Open Postman and click Import
 2. Import the Postman collection file in the tests folder.
+3. Users will need to add their own personal path to BobFile1.txt to the json file in order to pass all tests.
 3. After making changes to the collection, export it and overwrite the file.
 
 ## Notes
