@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "c2f8209c-df6a-4534-a445-dd8763d6baf2",
+		"_postman_id": "2191691f-aaba-4492-bc61-22e62e9c1416",
 		"name": "MeTube-API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -1358,7 +1358,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": "/Users/ChaseIson 1/Documents/CS/4620/MeTube/server/tests/BobFile1.txt"
 								},
 								{
 									"key": "user_id",
@@ -1388,10 +1388,6 @@
 							"script": {
 								"id": "51d3d6bc-bcf8-4d3f-a02d-bf4a795e10a8",
 								"exec": [
-									"/*",
-									"// Due to a postman issue, the file selected is not saved",
-									"// so the below tests will always fail when running automatically",
-									"",
 									"pm.test(\"Status code should be 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
@@ -1399,9 +1395,8 @@
 									"pm.test(\"should have returned file_id:1, user_id:2\", function () {",
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.response).to.have.property('file_id',1);",
-									"    pm.expect(jsonData.response).to.have.property('user_id',2);",
-									"});",
-									"*/"
+									"    pm.expect(jsonData.response).to.have.property('user_id',1);",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -1431,7 +1426,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": "/Users/ChaseIson 1/Documents/CS/4620/MeTube/server/tests/BobFile1.txt"
 								},
 								{
 									"key": "user_id",
@@ -1481,10 +1476,6 @@
 							"script": {
 								"id": "98b015d7-d8b1-4d71-84bd-10e3f917f603",
 								"exec": [
-									"/*",
-									"// Due to a postman issue, the file selected is not saved",
-									"// so the below tests will always fail when running automatically",
-									"",
 									"pm.test(\"Status code should be 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
@@ -1494,8 +1485,7 @@
 									"    pm.expect(jsonData.response).to.have.property('file_id',1);",
 									"    pm.expect(jsonData.response).to.have.property('user_id',1);",
 									"});",
-									"",
-									"*/"
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -1569,15 +1559,10 @@
 							"script": {
 								"id": "f808a42d-15b3-426d-86bc-0a419e232b32",
 								"exec": [
-									"/*",
-									"// Due to a postman issue, the file selected is not saved",
-									"// so the below tests will always fail when running automatically",
-									"",
 									"pm.test(\"Status code should be 401\", function () {",
 									"    pm.response.to.have.status(401);",
 									"});",
-									"",
-									"*/"
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -1626,10 +1611,6 @@
 							"script": {
 								"id": "0b086f1f-d924-4129-a58d-73ab36c63301",
 								"exec": [
-									"/*",
-									"// Due to a postman issue, the file selected is not saved",
-									"// so the below tests will always fail when running automatically",
-									"",
 									"pm.test(\"Status code should be 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
@@ -1639,8 +1620,7 @@
 									"    pm.expect(jsonData.response).to.have.property('file_id',1);",
 									"    pm.expect(jsonData.response).to.have.property('user_id',1);",
 									"});",
-									"",
-									"*/"
+									""
 								],
 								"type": "text/javascript"
 							}
