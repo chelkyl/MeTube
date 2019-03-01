@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "557b87d9-a5c0-411d-b74f-98c140b79aa9",
+		"_postman_id": "71bca9e2-6435-447b-bed2-86fa36e167cd",
 		"name": "MeTube-API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -894,7 +894,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH bob subscribes to joe",
+					"name": "LINK bob subscribes to joe",
 					"event": [
 						{
 							"listen": "test",
@@ -926,7 +926,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "LINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -953,7 +953,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH bob friends joe",
+					"name": "LINK bob friends joe",
 					"event": [
 						{
 							"listen": "test",
@@ -985,7 +985,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "LINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -1012,7 +1012,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH bob unsubscribes from joe",
+					"name": "UNLINK bob unsubscribes from joe",
 					"event": [
 						{
 							"listen": "test",
@@ -1044,7 +1044,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "UNLINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -1071,7 +1071,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH bob unfriends joe",
+					"name": "UNLINK bob unfriends joe",
 					"event": [
 						{
 							"listen": "test",
@@ -1103,7 +1103,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "UNLINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -1130,7 +1130,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH bob blocks joe",
+					"name": "LINK bob blocks joe",
 					"event": [
 						{
 							"listen": "test",
@@ -1162,7 +1162,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "LINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -1189,7 +1189,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH joe subscribes to bob while blocked",
+					"name": "LINK joe subscribes to bob while blocked",
 					"event": [
 						{
 							"listen": "test",
@@ -1221,7 +1221,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "LINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -1248,7 +1248,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH joe friends bob while blocked",
+					"name": "LINK joe friends bob while blocked",
 					"event": [
 						{
 							"listen": "test",
@@ -1280,7 +1280,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "LINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -1307,7 +1307,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH bob unblocks joe",
+					"name": "UNLINK bob unblocks joe",
 					"event": [
 						{
 							"listen": "test",
@@ -1339,7 +1339,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "UNLINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -1830,7 +1830,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "(add source path here)/MeTube/server/tests/BobFile1.txt"
+									"src": "{{path}}/MeTube/server/tests/BobFile1.txt"
 								},
 								{
 									"key": "user_id",
@@ -1898,7 +1898,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "(add source path here)/MeTube/server/tests/BobFile1.txt"
+									"src": "{{path}}/MeTube/server/tests/BobFile1.txt"
 								},
 								{
 									"key": "user_id",
@@ -1985,7 +1985,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH joe favorites Bob's file",
+					"name": "LINK joe favorites Bob's file",
 					"event": [
 						{
 							"listen": "test",
@@ -2017,7 +2017,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "LINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -2044,7 +2044,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH joe unfavorites Bob's file",
+					"name": "UNLINK joe unfavorites Bob's file",
 					"event": [
 						{
 							"listen": "test",
@@ -2076,7 +2076,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "UNLINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -2103,7 +2103,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH bob blocks joe",
+					"name": "LINK bob blocks joe",
 					"event": [
 						{
 							"listen": "test",
@@ -2135,7 +2135,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "LINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -2162,7 +2162,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH joe favorites Bob's file while blocked",
+					"name": "LINK joe favorites Bob's file while blocked",
 					"event": [
 						{
 							"listen": "test",
@@ -2194,7 +2194,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "LINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -2728,7 +2728,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "(add source path here)/MeTube/server/tests/BobFile1.txt"
+									"src": "{{path}}/MeTube/server/tests/BobFile1.txt"
 								},
 								{
 									"key": "user_id",
@@ -2771,7 +2771,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH bob adds his file to his playlist",
+					"name": "LINK bob adds his file to his playlist",
 					"event": [
 						{
 							"listen": "test",
@@ -2803,7 +2803,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "LINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -2830,7 +2830,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH joe tries to remove file from bobs playlist",
+					"name": "UNLINK joe tries to remove file from bobs playlist",
 					"event": [
 						{
 							"listen": "test",
@@ -2862,7 +2862,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "UNLINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -2889,7 +2889,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH bob removes his file from his playlist",
+					"name": "UNLINK bob removes his file from his playlist",
 					"event": [
 						{
 							"listen": "test",
@@ -2921,7 +2921,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "UNLINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -2948,7 +2948,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH joe tries to add file to bob's playlist",
+					"name": "LINK joe tries to add file to bob's playlist",
 					"event": [
 						{
 							"listen": "test",
@@ -2980,7 +2980,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "LINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -4382,7 +4382,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH bob add joe as contact",
+					"name": "LINK bob add joe as contact",
 					"event": [
 						{
 							"listen": "test",
@@ -4414,7 +4414,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "LINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -4441,7 +4441,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH henry add bob as contact",
+					"name": "LINK henry add bob as contact",
 					"event": [
 						{
 							"listen": "test",
@@ -4473,7 +4473,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "LINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -4565,7 +4565,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH bob remove joe as contact",
+					"name": "UNLINK bob remove joe as contact",
 					"event": [
 						{
 							"listen": "test",
@@ -4597,7 +4597,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "UNLINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -4624,7 +4624,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH bob blocks joe",
+					"name": "LINK bob blocks joe",
 					"event": [
 						{
 							"listen": "test",
@@ -4656,7 +4656,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "LINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -4683,7 +4683,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH bob blocks henry",
+					"name": "LINK bob blocks henry",
 					"event": [
 						{
 							"listen": "test",
@@ -4715,7 +4715,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "LINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -4742,7 +4742,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH joe adds bob as contact while blocked",
+					"name": "LINK joe adds bob as contact while blocked",
 					"event": [
 						{
 							"listen": "test",
@@ -4774,7 +4774,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "LINK",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -4860,7 +4860,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH bob unblocks henry",
+					"name": "UNLINK bob unblocks henry",
 					"event": [
 						{
 							"listen": "test",
@@ -4892,7 +4892,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "UNLINK",
 						"header": [
 							{
 								"key": "Content-Type",

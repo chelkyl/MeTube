@@ -544,7 +544,7 @@ def remove_keyword(keyword_id):
     return Response(keyword.to_json()).end()
   return Response("keyword_id {ID} not found".format(ID=keyword_id),404,True).end()
 
-@app.route('/users/add_contact',methods=['PATCH'])
+@app.route('/users/add_contact',methods=['LINK'])
 @auth.login_required
 def add_contact():
   # shorten name for easier access
@@ -575,7 +575,7 @@ def add_contact():
     return Response("Contact created",200,False).end()
   return Response("Contact already exists",404,True).end()
 
-@app.route('/users/remove_contact',methods=['PATCH'])
+@app.route('/users/remove_contact',methods=['UNLINK'])
 @auth.login_required
 def remove_contact():
   # shorten name for easier access
@@ -648,7 +648,7 @@ def add_message():
   db.session.commit()
   return Response(newMessage.to_json()).end()
 
-@app.route('/users/subscribe',methods=['PATCH'])
+@app.route('/users/subscribe',methods=['LINK'])
 @auth.login_required
 def subscribe():
   # shorten name for easier access
@@ -679,7 +679,7 @@ def subscribe():
     return Response("Subscription created",200,False).end()
   return Response("Subscription already exists",404,True).end()
 
-@app.route('/users/unsubscribe',methods=['PATCH'])
+@app.route('/users/unsubscribe',methods=['UNLINK'])
 @auth.login_required
 def unsubscribe():
   # shorten name for easier access
@@ -706,7 +706,7 @@ def unsubscribe():
     return Response("Subscription removed",200,False).end()
   return Response("No subscription exists",404,True).end()
 
-@app.route('/users/friend',methods=['PATCH'])
+@app.route('/users/friend',methods=['LINK'])
 @auth.login_required
 def friend():
   # shorten name for easier access
@@ -737,7 +737,7 @@ def friend():
     return Response("Friendship created",200,False).end()
   return Response("Friendship already exists",404,True).end()
 
-@app.route('/users/unfriend',methods=['PATCH'])
+@app.route('/users/unfriend',methods=['UNLINK'])
 @auth.login_required
 def unfriend():
   # shorten name for easier access
@@ -764,7 +764,7 @@ def unfriend():
     return Response("Friendship removed",200,False).end()
   return Response("No friendship exists",404,True).end()
 
-@app.route('/users/block',methods=['PATCH'])
+@app.route('/users/block',methods=['LINK'])
 @auth.login_required
 def block():
   # shorten name for easier access
@@ -791,7 +791,7 @@ def block():
     return Response("Blocking created",200,False).end()
   return Response("Blocking already exists",404,True).end()
 
-@app.route('/users/unblock',methods=['PATCH'])
+@app.route('/users/unblock',methods=['UNLINK'])
 @auth.login_required
 def unblock():
   # shorten name for easier access
@@ -818,7 +818,7 @@ def unblock():
     return Response("Blocking removed",200,False).end()
   return Response("No blocking exists",404,True).end()
 
-@app.route('/users/favorite',methods=['PATCH'])
+@app.route('/users/favorite',methods=['LINK'])
 @auth.login_required
 def favorite():
   # shorten name for easier access
@@ -850,7 +850,7 @@ def favorite():
     return Response("User favorite created",200,False).end()
   return Response("User favorite already exists",404,True).end()
 
-@app.route('/users/unfavorite',methods=['PATCH'])
+@app.route('/users/unfavorite',methods=['UNLINK'])
 @auth.login_required
 def unfavorite():
   # shorten name for easier access
@@ -877,7 +877,7 @@ def unfavorite():
     return Response("User favorite removed",200,False).end()
   return Response("No favorite exists",404,True).end()
 
-@app.route('/playlists/add_file',methods=['PATCH'])
+@app.route('/playlists/add_file',methods=['LINK'])
 @auth.login_required
 def add_file_to_playlist():
   # shorten name for easier access
@@ -905,7 +905,7 @@ def add_file_to_playlist():
   db.session.commit()
   return Response("File added to playlist",200,False).end()
 
-@app.route('/playlists/remove_file',methods=['PATCH'])
+@app.route('/playlists/remove_file',methods=['UNLINK'])
 @auth.login_required
 def remove_file_from_playlist():
   # shorten name for easier access
