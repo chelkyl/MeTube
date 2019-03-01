@@ -379,6 +379,9 @@ def remove_file(file_id):
   result = db.engine.execute('SELECT file_id,user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type FROM File WHERE file_id={ID}'.format(ID=file_id))
   data = get_query_data(result)
   if data:
+    comments=Comment.query.filter_by(file_id=file_id).all()
+    for comment in comments:
+      result = db.engine.execute('DELETE FROM Comment WHERE comment_id={ID}'.format(ID=comment.comment_id))
     result = db.engine.execute('DELETE FROM File WHERE file_id={ID}'.format(ID=file_id))
     remove_file_from_store(file_id)
     return Response(data[0]).end()
@@ -934,6 +937,74 @@ def remove_file_from_playlist():
     db.session.commit()
     return Response("File removed from playlist",200,False).end()
   return Response("Playlist does not contain file",404,True).end()
+
+@app.route('/comments/add_comment',methods=['POST'])
+@auth.login_required
+def add_comment():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  user_id    = None if req is None else req.get('user_id',None)
+  file_id    = None if req is None else req.get('file_id',None)
+  comment = None if req is None else req.get('comment',None)
+  comment_date = datetime.datetime.now()
+
+  # trivial validate not empty
+  missing = []
+  if user_id is None:
+    missing.append('user_id')
+  if file_id is None:
+    missing.append('file_id')
+  if comment is None:
+    missing.append('comment')
+  if comment_date is None:
+    missing.append('comment_date')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  file=File.query.get(file_id)
+  user=User.query.get(user_id)
+  file_owner=User.query.get(file.user_id)
+
+  if file_owner.is_blocked(user):
+    return Response("Commenting user is blocked from file owners content",401,True).end()
+
+  # valid parameters, create and return it
+  newComment = Comment(user_id=user_id,file_id=file_id,comment=comment,comment_date=comment_date)
+  db.session.add(newComment)
+  db.session.commit()
+  return Response(newComment.to_json()).end()
+
+@app.route('/comments/<comment_id>',methods=['GET'])
+def get_comment(comment_id):
+  result = db.engine.execute('SELECT comment_id,user_id,file_id,comment,comment_date FROM Comment WHERE comment_id={ID}'.format(ID=comment_id))
+  data = get_query_data(result)
+  if data:
+    return Response(data[0]).end()
+  else:
+    return Response("comment_id {ID} not found".format(ID=comment_id),404,True).end()
+
+@app.route('/comments/<comment_id>',methods=['DELETE'])
+@auth.login_required
+def remove_comment(comment_id):
+  comment = Comment.query.get(comment_id)
+  if g.user.user_id != int(comment.user_id):
+    return Response("Unauthorized",401,True).end()
+
+  result = db.engine.execute('SELECT comment_id,user_id,file_id,comment,comment_date FROM Comment WHERE comment_id={ID}'.format(ID=comment_id))
+  data = get_query_data(result)
+  if data:
+    result = db.engine.execute('DELETE FROM Comment WHERE comment_id={ID}'.format(ID=comment_id))
+    return Response(data[0]).end()
+  return Response("comment_id {ID} not found".format(ID=comment_id),404,True).end()
+
+  if Comment:
+    db.session.delete(comment)
+    db.session.commit()
+    return Response(comment.to_json()).end()
+  return Response("comment_id {ID} not found".format(ID=comment_id),404,True).end()
 
 cli.load_dotenv()
 configure_app()

@@ -252,8 +252,9 @@ class Keyword(db.Model):
 class Comment(db.Model):
   __tablename__ = 'Comment'
 
-  def __init__(self, user_id, comment, comment_date):
+  def __init__(self, user_id, file_id, comment, comment_date):
     self.user_id = user_id
+    self.file_id = file_id
     self.comment = comment
     self.comment_date = comment_date
 
