@@ -69,6 +69,7 @@ Tests on the server are run using a Postman collection in the tests folder.
 1. Open Postman and click Import
 2. Import the Postman collection file in the tests folder.
 3. After making changes to the collection, export it and overwrite the file.
+(Users will need to add the source path for BobFile1.txt to the json test file in order to pass all tests.)
 
 ## Notes
 
