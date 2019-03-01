@@ -565,6 +565,10 @@ def add_contact():
 
   contacting_user=User.query.get(contacting_id)
   contacted_user=User.query.get(contacted_id)
+
+  if contacted_user.is_blocked(contacting_user):
+    return Response("Contacting user is blocked",401,True).end()
+
   if not contacting_user.is_contact(contacted_user):
     contacting_user.contacted.append(contacted_user)
     db.session.commit()
@@ -593,6 +597,13 @@ def remove_contact():
   contact_removing=User.query.get(contact_removing_id)
   contact_removed=User.query.get(contact_removed_id)
   if contact_removing.is_contact(contact_removed):
+    sent_messages = Message.query.filter_by(contacting_id=contact_removing_id, contacted_id=contact_removed_id).all()
+    received_messages = Message.query.filter_by(contacting_id=contact_removed_id, contacted_id=contact_removing_id).all()
+    for message in sent_messages:
+      result = db.engine.execute('DELETE FROM Message WHERE message_id={ID}'.format(ID=message.message_id))
+    for message in received_messages:
+      result = db.engine.execute('DELETE FROM Message WHERE message_id={ID}'.format(ID=message.message_id))
+
     contact_removing.contacted.remove(contact_removed)
     db.session.commit()
     return Response("Contact removed",200,False).end()
@@ -624,6 +635,10 @@ def add_message():
 
   contacting_user = User.query.get(contacting_id)
   contacted_user = User.query.get(contacted_id)
+
+  if contacted_user.is_blocked(contacting_user):
+    return Response("Contacting user is blocked",401,True).end()
+
   if not contacting_user.is_contact(contacted_user):
     return Response("{ID} is not a contact to contacting user".format(ID=contacted_id),404,True).end()
 
@@ -654,6 +669,10 @@ def subscribe():
 
   subscribing_user=User.query.get(subscribing_id)
   subscribed_user=User.query.get(subscribed_id)
+
+  if subscribed_user.is_blocked(subscribing_user):
+    return Response("Subscribing user is blocked",401,True).end()
+
   if not subscribing_user.is_subscriber(subscribed_user):
     subscribing_user.subscribed.append(subscribed_user)
     db.session.commit()
@@ -686,6 +705,177 @@ def unsubscribe():
     db.session.commit()
     return Response("Subscription removed",200,False).end()
   return Response("No subscription exists",404,True).end()
+
+@app.route('/users/friend',methods=['PATCH'])
+@auth.login_required
+def friend():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  friending_id = None if req is None else req.get('friending_id',None)
+  friended_id = None if req is None else req.get('friended_id',None)
+  # trivial validate not empty
+  missing = []
+  if friending_id is None:
+    missing.append('friending_id')
+  if friended_id is None:
+    missing.append('friended_id')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  friending_user=User.query.get(friending_id)
+  friended_user=User.query.get(friended_id)
+
+  if friended_user.is_blocked(friending_user):
+    return Response("Friending user is blocked",401,True).end()
+
+  if not friending_user.is_friend(friended_user):
+    friending_user.friended.append(friended_user)
+    db.session.commit()
+    return Response("Friendship created",200,False).end()
+  return Response("Friendship already exists",404,True).end()
+
+@app.route('/users/unfriend',methods=['PATCH'])
+@auth.login_required
+def unfriend():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  unfriending_id = None if req is None else req.get('unfriending_id',None)
+  unfriended_id = None if req is None else req.get('unfriended_id',None)
+  # trivial validate not empty
+  missing = []
+  if unfriending_id is None:
+    missing.append('unfriending_id')
+  if unfriended_id is None:
+    missing.append('unfriended_id')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  unfriending_user=User.query.get(unfriending_id)
+  unfriended_user=User.query.get(unfriended_id)
+  if unfriending_user.is_friend(unfriended_user):
+    unfriending_user.friended.remove(unfriended_user)
+    db.session.commit()
+    return Response("Friendship removed",200,False).end()
+  return Response("No friendship exists",404,True).end()
+
+@app.route('/users/block',methods=['PATCH'])
+@auth.login_required
+def block():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  blocking_id = None if req is None else req.get('blocking_id',None)
+  blocked_id = None if req is None else req.get('blocked_id',None)
+  # trivial validate not empty
+  missing = []
+  if blocking_id is None:
+    missing.append('blocking_id')
+  if blocked_id is None:
+    missing.append('blocked_id')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  blocking_user=User.query.get(blocking_id)
+  blocked_user=User.query.get(blocked_id)
+  if not blocking_user.is_blocked(blocked_user):
+    blocking_user.blocked.append(blocked_user)
+    db.session.commit()
+    return Response("Blocking created",200,False).end()
+  return Response("Blocking already exists",404,True).end()
+
+@app.route('/users/unblock',methods=['PATCH'])
+@auth.login_required
+def unblock():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  unblocking_id = None if req is None else req.get('unblocking_id',None)
+  unblocked_id = None if req is None else req.get('unblocked_id',None)
+  # trivial validate not empty
+  missing = []
+  if unblocking_id is None:
+    missing.append('unblocking_id')
+  if unblocked_id is None:
+    missing.append('unblocked_id')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  unblocking_user=User.query.get(unblocking_id)
+  unblocked_user=User.query.get(unblocked_id)
+  if unblocking_user.is_blocked(unblocked_user):
+    unblocking_user.blocked.remove(unblocked_user)
+    db.session.commit()
+    return Response("Blocking removed",200,False).end()
+  return Response("No blocking exists",404,True).end()
+
+@app.route('/users/favorite',methods=['PATCH'])
+@auth.login_required
+def favorite():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  file_id = None if req is None else req.get('file_id',None)
+  user_id = None if req is None else req.get('user_id',None)
+  # trivial validate not empty
+  missing = []
+  if file_id is None:
+    missing.append('file_id')
+  if user_id is None:
+    missing.append('user_id')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  file=File.query.get(file_id)
+  user=User.query.get(user_id)
+  file_owner=User.query.get(file.user_id)
+
+  if file_owner.is_blocked(user):
+    return Response("Favoriting user is blocked from file owners content",401,True).end()
+
+  if not user.is_favorite(file):
+    user.favorites.append(file)
+    db.session.commit()
+    return Response("User favorite created",200,False).end()
+  return Response("User favorite already exists",404,True).end()
+
+@app.route('/users/unfavorite',methods=['PATCH'])
+@auth.login_required
+def unfavorite():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  file_id = None if req is None else req.get('file_id',None)
+  user_id = None if req is None else req.get('user_id',None)
+  # trivial validate not empty
+  missing = []
+  if user_id is None:
+    missing.append('user_id')
+  if file_id is None:
+    missing.append('file_id')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  user=User.query.get(user_id)
+  file=File.query.get(file_id)
+  if user.is_favorite(file):
+    user.favorites.remove(file)
+    db.session.commit()
+    return Response("User favorite removed",200,False).end()
+  return Response("No favorite exists",404,True).end()
 
 cli.load_dotenv()
 configure_app()

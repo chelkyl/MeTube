@@ -16,12 +16,12 @@ contacts = db.Table('contacts',
 )
 
 friends = db.Table('friends',
-  db.Column('friender_id', db.Integer, db.ForeignKey('User.user_id')),
+  db.Column('friending_id', db.Integer, db.ForeignKey('User.user_id')),
   db.Column('friended_id', db.Integer, db.ForeignKey('User.user_id'))
 )
 
 blocks = db.Table('blocks',
-  db.Column('blocker_id', db.Integer, db.ForeignKey('User.user_id')),
+  db.Column('blocking_id', db.Integer, db.ForeignKey('User.user_id')),
   db.Column('blocked_id', db.Integer, db.ForeignKey('User.user_id'))
 )
 
@@ -91,10 +91,10 @@ class User(db.Model):
   files = db.relationship('File', backref='user', lazy=True)
   comments = db.relationship('Comment', backref='user', lazy=True)
   subscribed = db.relationship('User', secondary=subscribers, primaryjoin=(subscribers.c.subscribing_id == user_id), secondaryjoin=(subscribers.c.subscribed_id == user_id), lazy='dynamic', backref=db.backref('subscribers', lazy='dynamic'))
-  favorites = db.relationship('File', secondary=user_favorites, lazy='subquery', backref=db.backref('users', lazy=True))
+  favorites = db.relationship('File', secondary=user_favorites, lazy='dynamic', backref=db.backref('users', lazy=True))
   contacted = db.relationship('User', secondary=contacts, primaryjoin=(contacts.c.contacting_id == user_id), secondaryjoin=(contacts.c.contacted_id == user_id), lazy='dynamic', backref=db.backref('contacts', lazy='dynamic'))
-  friended = db.relationship('User', secondary=friends, primaryjoin=(friends.c.friender_id == user_id), secondaryjoin=(friends.c.friended_id == user_id), lazy='dynamic', backref=db.backref('friends', lazy='dynamic'))
-  blocked = db.relationship('User', secondary=blocks, primaryjoin=(blocks.c.blocker_id == user_id), secondaryjoin=(blocks.c.blocked_id == user_id), lazy='dynamic', backref=db.backref('blocks', lazy='dynamic'))
+  friended = db.relationship('User', secondary=friends, primaryjoin=(friends.c.friending_id == user_id), secondaryjoin=(friends.c.friended_id == user_id), lazy='dynamic', backref=db.backref('friends', lazy='dynamic'))
+  blocked = db.relationship('User', secondary=blocks, primaryjoin=(blocks.c.blocking_id == user_id), secondaryjoin=(blocks.c.blocked_id == user_id), lazy='dynamic', backref=db.backref('blocks', lazy='dynamic'))
 
   def hash_password(self, password):
     pw_hash = pbkdf2_sha256.hash(password)
@@ -119,6 +119,18 @@ class User(db.Model):
   def is_subscriber(self, user):
     return self.subscribed.filter(
       subscribers.c.subscribed_id == user.user_id).count() > 0
+
+  def is_friend(self, user):
+    return self.friended.filter(
+      friends.c.friended_id == user.user_id).count() > 0
+
+  def is_blocked(self, user):
+    return self.blocked.filter(
+      blocks.c.blocked_id == user.user_id).count() > 0
+
+  def is_favorite(self, file):
+    return self.favorites.filter(
+      user_favorites.c.file_id == file.file_id).count() > 0
 
   def __repr__(self):
     return '<User {id} [{name}]>'.format(id=self.user_id,name=self.username)
