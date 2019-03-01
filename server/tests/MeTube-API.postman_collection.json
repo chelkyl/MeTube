@@ -1830,7 +1830,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": null
+									"src": "(add source path here)/MeTube/server/tests/BobFile1.txt"
 								},
 								{
 									"key": "user_id",
@@ -1898,7 +1898,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": null
+									"src": "(add source path here)/MeTube/server/tests/BobFile1.txt"
 								},
 								{
 									"key": "user_id",
