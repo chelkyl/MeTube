@@ -147,7 +147,7 @@ class Playlist(db.Model):
   user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
   title = db.Column(db.String(100), nullable=False)
   description = db.Column(db.String(400), nullable=False)
-  files = db.relationship('File', secondary=playlist_files, lazy='subquery', backref=db.backref('playlists', lazy=True))
+  files = db.relationship('File', secondary=playlist_files, lazy='dynamic', backref=db.backref('playlists', lazy=True))
 
   def to_json(self):
     return {
@@ -156,6 +156,10 @@ class Playlist(db.Model):
       'title': self.title,
       'description': self.description
     }
+
+  def contains_file(self, file):
+    return self.files.filter(
+      playlist_files.c.file_id == file.file_id).count() > 0
 
   def __repr__(self):
     return '<Playlist {id} [{owner}]>'.format(id=self.playlist_id,owner=self.user_id)

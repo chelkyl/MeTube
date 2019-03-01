@@ -877,6 +877,64 @@ def unfavorite():
     return Response("User favorite removed",200,False).end()
   return Response("No favorite exists",404,True).end()
 
+@app.route('/playlists/add_file',methods=['PATCH'])
+@auth.login_required
+def add_file_to_playlist():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  file_id = None if req is None else req.get('file_id',None)
+  playlist_id = None if req is None else req.get('playlist_id',None)
+  # trivial validate not empty
+  missing = []
+  if file_id is None:
+    missing.append('file_id')
+  if playlist_id is None:
+    missing.append('playlist_id')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  file=File.query.get(file_id)
+  playlist=Playlist.query.get(playlist_id)
+  if g.user.user_id != int(playlist.user_id):
+    return Response("Unauthorized",401,True).end()
+
+  playlist.files.append(file)
+  db.session.commit()
+  return Response("File added to playlist",200,False).end()
+
+@app.route('/playlists/remove_file',methods=['PATCH'])
+@auth.login_required
+def remove_file_from_playlist():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  file_id = None if req is None else req.get('file_id',None)
+  playlist_id = None if req is None else req.get('playlist_id',None)
+  # trivial validate not empty
+  missing = []
+  if file_id is None:
+    missing.append('file_id')
+  if playlist_id is None:
+    missing.append('playlist_id')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  playlist=Playlist.query.get(playlist_id)
+  file=File.query.get(file_id)
+  if g.user.user_id != int(playlist.user_id):
+    return Response("Unauthorized",401,True).end()
+
+  if playlist.contains_file(file):
+    playlist.files.remove(file)
+    db.session.commit()
+    return Response("File removed from playlist",200,False).end()
+  return Response("Playlist does not contain file",404,True).end()
+
 cli.load_dotenv()
 configure_app()
 # flask run ignores app.run
