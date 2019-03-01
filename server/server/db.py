@@ -6,12 +6,12 @@ from passlib.hash import pbkdf2_sha256
 db = SQLAlchemy()
 
 subscribers = db.Table('subscribers',
-  db.Column('subscriber_id', db.Integer, db.ForeignKey('User.user_id')),
+  db.Column('subscribing_id', db.Integer, db.ForeignKey('User.user_id')),
   db.Column('subscribed_id', db.Integer, db.ForeignKey('User.user_id'))
 )
 
 contacts = db.Table('contacts',
-  db.Column('contacter_id', db.Integer, db.ForeignKey('User.user_id')),
+  db.Column('contacting_id', db.Integer, db.ForeignKey('User.user_id')),
   db.Column('contacted_id', db.Integer, db.ForeignKey('User.user_id'))
 )
 
@@ -90,9 +90,9 @@ class User(db.Model):
   playlists = db.relationship('Playlist', backref='user', lazy=True)
   files = db.relationship('File', backref='user', lazy=True)
   comments = db.relationship('Comment', backref='user', lazy=True)
-  subscribed = db.relationship('User', secondary=subscribers, primaryjoin=(subscribers.c.subscriber_id == user_id), secondaryjoin=(subscribers.c.subscribed_id == user_id), lazy='dynamic', backref=db.backref('subscribers', lazy='dynamic'))
+  subscribed = db.relationship('User', secondary=subscribers, primaryjoin=(subscribers.c.subscribing_id == user_id), secondaryjoin=(subscribers.c.subscribed_id == user_id), lazy='dynamic', backref=db.backref('subscribers', lazy='dynamic'))
   favorites = db.relationship('File', secondary=user_favorites, lazy='subquery', backref=db.backref('users', lazy=True))
-  contacted = db.relationship('User', secondary=contacts, primaryjoin=(contacts.c.contacter_id == user_id), secondaryjoin=(contacts.c.contacted_id == user_id), lazy='dynamic', backref=db.backref('contacts', lazy='dynamic'))
+  contacted = db.relationship('User', secondary=contacts, primaryjoin=(contacts.c.contacting_id == user_id), secondaryjoin=(contacts.c.contacted_id == user_id), lazy='dynamic', backref=db.backref('contacts', lazy='dynamic'))
   friended = db.relationship('User', secondary=friends, primaryjoin=(friends.c.friender_id == user_id), secondaryjoin=(friends.c.friended_id == user_id), lazy='dynamic', backref=db.backref('friends', lazy='dynamic'))
   blocked = db.relationship('User', secondary=blocks, primaryjoin=(blocks.c.blocker_id == user_id), secondaryjoin=(blocks.c.blocked_id == user_id), lazy='dynamic', backref=db.backref('blocks', lazy='dynamic'))
 
@@ -115,6 +115,10 @@ class User(db.Model):
   def is_contact(self, user):
     return self.contacted.filter(
       contacts.c.contacted_id == user.user_id).count() > 0
+
+  def is_subscriber(self, user):
+    return self.subscribed.filter(
+      subscribers.c.subscribed_id == user.user_id).count() > 0
 
   def __repr__(self):
     return '<User {id} [{name}]>'.format(id=self.user_id,name=self.username)
@@ -258,14 +262,14 @@ class Comment(db.Model):
 class Message(db.Model):
   __tablename__ = 'Message'
 
-  def __init__(self, contacter_id, contacted_id, message, message_date):
-    self.contacter_id = contacter_id
+  def __init__(self, contacting_id, contacted_id, message, message_date):
+    self.contacting_id = contacting_id
     self.contacted_id = contacted_id
     self.message = message
     self.message_date = message_date
 
   message_id = db.Column(db.Integer, primary_key=True)
-  contacter_id = db.Column(db.Integer, db.ForeignKey('contacts.contacter_id'), nullable=False)
+  contacting_id = db.Column(db.Integer, db.ForeignKey('contacts.contacting_id'), nullable=False)
   contacted_id = db.Column(db.Integer, db.ForeignKey('contacts.contacted_id'), nullable=False)
   message = db.Column(db.String(100), nullable=False)
   message_date = db.Column(db.Date(), nullable=False)
@@ -273,7 +277,7 @@ class Message(db.Model):
   def to_json(self):
     return {
       'message_id': self.message_id,
-      'contacter_id': self.contacter_id,
+      'contacting_id': self.contacting_id,
       'contacted_id': self.contacted_id,
       'message': self.message,
       'message_date': self.message_date

@@ -550,12 +550,12 @@ def add_contact():
   # shorten name for easier access
   req = request.json
   # get json data
-  contacter_id = None if req is None else req.get('contacter_id',None)
+  contacting_id = None if req is None else req.get('contacting_id',None)
   contacted_id = None if req is None else req.get('contacted_id',None)
   # trivial validate not empty
   missing = []
-  if contacter_id is None:
-    missing.append('contacter_id')
+  if contacting_id is None:
+    missing.append('contacting_id')
   if contacted_id is None:
     missing.append('contacted_id')
 
@@ -563,10 +563,10 @@ def add_contact():
   if missing:
     return Response({'missing':missing},400,isError=True).end()
 
-  contacter=User.query.get(contacter_id)
-  contacted=User.query.get(contacted_id)
-  if not contacter.is_contact(contacted):
-    contacter.contacted.append(contacted)
+  contacting_user=User.query.get(contacting_id)
+  contacted_user=User.query.get(contacted_id)
+  if not contacting_user.is_contact(contacted_user):
+    contacting_user.contacted.append(contacted_user)
     db.session.commit()
     return Response("Contact created",200,False).end()
   return Response("Contact already exists",404,True).end()
@@ -577,12 +577,12 @@ def remove_contact():
   # shorten name for easier access
   req = request.json
   # get json data
-  contact_remover_id = None if req is None else req.get('contact_remover_id',None)
+  contact_removing_id = None if req is None else req.get('contact_removing_id',None)
   contact_removed_id = None if req is None else req.get('contact_removed_id',None)
   # trivial validate not empty
   missing = []
-  if contact_remover_id is None:
-    missing.append('contact_remover_id')
+  if contact_removing_id is None:
+    missing.append('contact_removing_id')
   if contact_removed_id is None:
     missing.append('contact_removed_id')
 
@@ -590,13 +590,13 @@ def remove_contact():
   if missing:
     return Response({'missing':missing},400,isError=True).end()
 
-  contact_remover=User.query.get(contact_remover_id)
+  contact_removing=User.query.get(contact_removing_id)
   contact_removed=User.query.get(contact_removed_id)
-  if contact_remover.is_contact(contact_removed):
-    contact_remover.contacted.remove(contact_removed)
+  if contact_removing.is_contact(contact_removed):
+    contact_removing.contacted.remove(contact_removed)
     db.session.commit()
     return Response("Contact removed",200,False).end()
-  return Response("No contact already exists",404,True).end()
+  return Response("No contact exists",404,True).end()
 
 @app.route('/messages/upload',methods=['POST'])
 @auth.login_required
@@ -607,14 +607,14 @@ def add_message():
   req = request.json
   # get json data
   message = None if req is None else req.get('message',None)
-  contacter_id = None if req is None else req.get('contacter_id',None)
+  contacting_id = None if req is None else req.get('contacting_id',None)
   contacted_id = None if req is None else req.get('contacted_id',None)
   # trivial validate not empty
   missing = []
   if message is None:
     missing.append('message')
-  if contacter_id is None:
-    missing.append('contacter_id')
+  if contacting_id is None:
+    missing.append('contacting_id')
   if contacted_id is None:
     missing.append('contacted_id')
 
@@ -622,16 +622,70 @@ def add_message():
   if missing:
     return Response({'missing':missing},400,isError=True).end()
 
-  contacter = User.query.get(contacter_id)
-  contacted = User.query.get(contacted_id)
-  if not contacter.is_contact(contacted):
-    return Response("{ID} is not a contact".format(ID=contacted_id),404,True).end()
+  contacting_user = User.query.get(contacting_id)
+  contacted_user = User.query.get(contacted_id)
+  if not contacting_user.is_contact(contacted_user):
+    return Response("{ID} is not a contact to contacting user".format(ID=contacted_id),404,True).end()
 
   # valid parameters, create and return it
-  newMessage=Message(contacter_id=contacter_id, contacted_id=contacted_id, message=message, message_date=message_date)
+  newMessage=Message(contacting_id=contacting_id, contacted_id=contacted_id, message=message, message_date=message_date)
   db.session.add(newMessage)
   db.session.commit()
   return Response(newMessage.to_json()).end()
+
+@app.route('/users/subscribe',methods=['PATCH'])
+@auth.login_required
+def subscribe():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  subscribing_id = None if req is None else req.get('subscribing_id',None)
+  subscribed_id = None if req is None else req.get('subscribed_id',None)
+  # trivial validate not empty
+  missing = []
+  if subscribing_id is None:
+    missing.append('subscribing_id')
+  if subscribed_id is None:
+    missing.append('subscribed_id')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  subscribing_user=User.query.get(subscribing_id)
+  subscribed_user=User.query.get(subscribed_id)
+  if not subscribing_user.is_subscriber(subscribed_user):
+    subscribing_user.subscribed.append(subscribed_user)
+    db.session.commit()
+    return Response("Subscription created",200,False).end()
+  return Response("Subscription already exists",404,True).end()
+
+@app.route('/users/unsubscribe',methods=['PATCH'])
+@auth.login_required
+def unsubscribe():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  unsubscribing_id = None if req is None else req.get('unsubscribing_id',None)
+  unsubscribed_id = None if req is None else req.get('unsubscribed_id',None)
+  # trivial validate not empty
+  missing = []
+  if unsubscribing_id is None:
+    missing.append('unsubscribing_id')
+  if unsubscribed_id is None:
+    missing.append('unsubscribed_id')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  unsubscribing_user=User.query.get(unsubscribing_id)
+  unsubscribed_user=User.query.get(unsubscribed_id)
+  if unsubscribing_user.is_subscriber(unsubscribed_user):
+    unsubscribing_user.subscribed.remove(unsubscribed_user)
+    db.session.commit()
+    return Response("Subscription removed",200,False).end()
+  return Response("No subscription exists",404,True).end()
 
 cli.load_dotenv()
 configure_app()
