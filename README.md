@@ -120,7 +120,7 @@ The web app is hosted on http://webapp.cs.clemson.edu/~username
   - Note: I think docs do not need to be supported
   - 360x640px (mobile full-width) and 216x384px (widescreen grid list) or close should be good
   - maybe store in file_store/thumbnails directory
-  - maybe name pattern <name>.<ext> and <name>_mobile.<ext>
+  - maybe name pattern `<name>.<ext>` and `<name>_mobile.<ext>`
   - for images and docs, see https://github.com/algoo/preview-generator
   - for videos, see https://github.com/algoo/preview-generator/issues/27
     - https://github.com/flavioribeiro/video-thumbnail-generator
