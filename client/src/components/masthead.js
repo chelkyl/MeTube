@@ -15,11 +15,16 @@ import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import { withStyles } from '@material-ui/core/styles';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const styles = theme => ({
   root: {
     display: 'flex'
+  },
+  appBar: {
+    [theme.breakpoints.up('sm')]: {
+      zIndex: theme.zIndex.drawer + 1
+    }
   },
   grow: {
     flexGrow: 1
@@ -30,7 +35,8 @@ const styles = theme => ({
   },
   title: {
     display: 'block',
-    width: '7em'
+    width: '7em',
+    textDecoration: 'none'
   },
   search: {
     position: 'relative',
@@ -76,27 +82,12 @@ const styles = theme => ({
   }
 });
 
-// class ButtonLink extends Link {
-//   render() {
-//     const link = super.render();
-//     return <Button {...link.props}
-//       onClick={
-//         (e) => {
-//           console.log(this.history,link.to);
-//           this.history.push(link.to);
-//         }
-//       }
-//     />;
-//   }
-// }
-
 class Masthead extends React.Component {
   constructor(props) {
     super(props);
     this.toggleDrawer = this.toggleDrawer.bind(this);
     this.state = {
-      anchorEl: null,
-      // page: 'home'
+      anchorEl: null
     };
   }
 
@@ -112,10 +103,11 @@ class Masthead extends React.Component {
   };
 
   handleNav = (selectedNav) => () => {
-    console.log('clicked',selectedNav);
-    // this.setState({page: selectedNav});
-    // this.props.history.push(selectedNav);
     this.handleProfileMenuClose();
+  }
+
+  shouldComponentUpdate(nextProps,nextState) {
+    return this.props.isLoggedIn !== nextProps.isLoggedIn;
   }
 
   render() {
@@ -136,12 +128,12 @@ class Masthead extends React.Component {
 
     return (
       <div className={classes.root}>
-        <AppBar position="static">
+        <AppBar className={classes.appBar} position="static">
           <Toolbar>
-            <IconButton className={classes.menuButton} color="inherit" aria-label="Menu" onClick={this.toggleDrawer(true)}>
+            <IconButton className={classes.menuButton} color="inherit" aria-label="Menu" onClick={this.props.onToggleDrawer}>
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" color="inherit" className={classes.title} noWrap>
+            <Typography variant="h6" component={Link} to="/" color="inherit" className={classes.title} noWrap>
               MeTube
             </Typography>
             <div className={classes.search}>
@@ -149,9 +141,9 @@ class Masthead extends React.Component {
                 <SearchIcon />
               </div>
               <InputBase placeholder="Search..." classes={{
-                root: classes.inputRoot,
-                input: classes.inputInput
-              }}/>
+                  root: classes.inputRoot,
+                  input: classes.inputInput
+                }}/>
             </div>
             <div className={classes.grow} />
             <div>
@@ -180,4 +172,4 @@ Masthead.propTypes = {
   classes: PropTypes.object.isRequired
 };
 
-export default withRouter(withStyles(styles)(Masthead));
+export default withStyles(styles)(Masthead);

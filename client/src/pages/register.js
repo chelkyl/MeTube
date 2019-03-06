@@ -8,6 +8,7 @@ import {
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 import axios from 'axios';
+import { Redirect } from 'react-router-dom';
 
 const styles = theme => ({
   container: {
@@ -38,14 +39,18 @@ const styles = theme => ({
   }
 });
 
-class Register extends React.Component {
+class RegisterPage extends React.Component {
   constructor(props) {
     super(props);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.state = {};
+    this.state = {
+      statusMessage: '',
+      successRegister: false
+    };
   }
 
+  // TODO: validate inputs
   handleChange = (key) => (e) => {
     this.setState({[key]:e.currentTarget.value});
   }
@@ -56,11 +61,33 @@ class Register extends React.Component {
     axios.post('http://localhost:5000/users', {email, username, password})
       .then(res => {
         console.log(res);
+        this.setState({successRegister:true});
+      })
+      .catch(err => {
+        if(err.response) {
+          console.log(err.response);
+          const { status } = err.response;
+          if (status >= 500 && status < 600) {
+            this.setState({statusMessage:`Server error ${status}, please contact the admins`});
+          }
+          else {
+            this.setState({statusMessage:`Sorry, unknown error ${status}`});
+          }
+        }
+        else if(err.request) {
+          console.log(err.request);
+          this.setState({statusMessage:err.message});
+        }
+        else {
+          console.log(err);
+          this.setState({statusMessage:'Sorry, unknown error'});
+        }
       });
   }
 
   render() {
     const {classes} = this.props;
+    const { statusMessage, successRegister } = this.state;
 
     return (
       <div className={classes.container}>
@@ -68,10 +95,14 @@ class Register extends React.Component {
           <Typography variant="h5" component="h3">
             Register
           </Typography>
+          <Typography variant="body1" color="error">
+            {statusMessage}
+          </Typography>
           <form className={classes.form} onSubmit={e => this.handleSubmit(e)}>
             <TextField id='email' label='Email' type='email' required={true}
               className={classes.textField} margin='normal' variant='outlined'
-                onChange={this.handleChange('email')}/>
+              onChange={this.handleChange('email')}
+              autoFocus/>
             <TextField id='username' label='Username' type='text' required={true}
               className={classes.textField} margin='normal' variant='outlined'
               onChange={this.handleChange('username')}/>
@@ -82,14 +113,18 @@ class Register extends React.Component {
               Register
             </Button>
           </form>
+          {successRegister ? (
+              <Redirect to="/login"/>
+            ) : null
+          }
         </Paper>
       </div>
     );
   }
 }
 
-Register.propTypes = {
+RegisterPage.propTypes = {
   classes: PropTypes.object.isRequired
 };
 
-export default withStyles(styles)(Register);
+export default withStyles(styles)(RegisterPage);

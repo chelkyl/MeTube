@@ -8,6 +8,7 @@ from time import time
 import sqlalchemy
 import datetime
 import shutil
+from operator import itemgetter
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_httpauth import HTTPBasicAuth
@@ -204,39 +205,137 @@ def get_query_data(resultProxy):
 
 # data must be a list of the same dict type
 # options = {
-#   search: string query,
-#   sorter: {
-#     column: name,
-#     sortDescending: order
-#   },
-#   columns: [columns to select]
+#   filters: [{
+#     any: (bool) found in any column (exact or contains)
+#     column: string,
+#     value:  string,
+#     cmp: min, max, exact, contains, TODO: word_contains, fuzzy?
+#   }],
+#   sorters: [{
+#     column: string,
+#     descending: bool 
+#   }],
+#   bounds: {
+#     start: num,
+#     limit: num,
+#   }
 # }
-def filter_data(data,options):
+def filter_sort_paginate(data,opts):
   if len(data) == 0:
     return []
+  
   ret = []
-  search = options['search']
-  sorter = options['sorter']
-  # do search
-  if search:
+  filters = opts['filters']
+  sorters = opts['sorters']
+  bounds  = opts['bounds']
+  
+  if filters:
     for entry in data:
-      if search in entry.keys() or seach in entry.values():
-        ret.append(entry)
+      for f in filters:
+        keep = False
+        if f.get('any', False):
+          # tests if value appears in entry
+          if f['cmp'] == 'exact' and f['value'] in entry.values():
+            keep = True
+          else:
+            # if f['cmp'] == 'contains' or other value
+            for value in entry.values():
+              if f['value'] in str(value):
+                keep = True
+                break
+        else:
+          # specific filters
+          if f['column'] in entry.keys():
+            if f['cmp'] == 'exact' and f['value'] == entry[f['column']]:
+              keep = True
+            elif f['cmp'] == 'contains' and f['value'] in str(entry[f['column']]):
+              keep = True
+            elif f['cmp'] == 'min' and f.value >= entry[f['column']]:
+              keep = True
+            elif f['cmp'] == 'max' and f['value'] <= entry[f['column']]:
+              keep = True
+        # this entry matched a filter, stop checking other filters
+        if keep:
+          ret.append(entry)
+          break
   else:
     ret = data
-  # do sorting
-  if sorter:
-    sortKey = sorter['column']
-    isReverse = sorter['sortDescending']
-    ret.sort(reverse=isReverse, key=lambda entry: entry[sortKey])
-  return ret
+  
+  if sorters:
+    # sorted() handles multi sort stability (according to docs)
+    for sorter in sorters:
+      column = sorter['column']
+      descending = sorter['descending'] in ['true','True']
+      ret = sorted(ret, key=itemgetter(column), reverse=descending)
+  
+  if bounds:
+    start = int(bounds['start']) if bounds['start'] else 0
+    limit = int(bounds['limit']) if bounds['limit'] else len(ret)
+    return ret[start:limit]
+  else:
+    return ret
 
-# TODO: add call to filter_data
+# url args only for basic search opts
+# more specific filters/options are in form data
+# 
+# support:
+# landing/home:
+#   trending
+#   ?type=file&daysAgo=14&sortDsc=views
+#   best of 0001
+#   ?type=file&upload_dateBeg=01-01-0001&upload_dateEnd=12-31-0001&sortDsc=views
+# browse search (users, files, and playlists):
+#   ?q=hello&sortDsc=views&start=5&limit=10
+#   ?q=hello+world&tag=a&tag=b&cat=image&cat=video&sortAsc=rank&sortDsc=views&start=5&limit=3
+# browse search files:
+#   ?type=file&q=hello+world&tag=a&tag=b&cat=image&cat=video&sortAsc=rank&sortDsc=views&start=5&limit=3
+# browse search users/channels:
+#   ?type=user?q=bob+jo&sortAsc=uploads&start=0&limit=1
+#   ?type=user?q=bob+jo&uploadsMin=20&subsMin=5
+# user channel (files):
+#   user_id=1&perms=1&tag=b&cat=image&cat=video&sortAsc=rank&sortDsc=views&start=5&limit=3
+#   playlist_id=2&...
+# user channel (playlist):
+#   user_id=2&name=favorites...
+#   user_id=2&creation_date=01-01-0001&...
+# user channel (contacts):
+#   user_id=2
+#   user_id=2&daysAgo=14
+#   user_id=2&dateBeg=01-01-0001
+# user channel (subscriptions):
+#   name=Best+Channel&subsMin=20
+#  
+def get_request_opts(req):
+  opts = {
+    'filters': [],
+    'sorters': [],
+    'bounds': {
+      'start': req.args.get('b',0),
+      'limit': req.args.get('l',None)
+    }
+  }
+
+  if req.is_json:
+    if 'filters' in req.json:
+      opts['filters'] = req.json['filters']
+    if 'sorters' in req.json:
+      opts['sorters'] = req.json['sorters']
+
+  if 'q' in req.args:
+    opts['filters'].append({
+      'any': True,
+      'value': req.args.get('q'),
+      'cmp': 'contains'
+    })
+
+  return opts
+
 @app.route('/users',methods=['GET'])
 def get_users():
   result = db.engine.execute('SELECT user_id,email,username,channel_description FROM User')
   data = get_query_data(result)
-  return Response(data).end()
+  opts = get_request_opts(request)
+  return Response(filter_sort_paginate(data,opts)).end()
   # users = User.query
   # return Response([user.to_json() for user in users.all()]).end()
 
@@ -350,6 +449,13 @@ def upload_file():
       db.session.commit()
       return Response("Could not save file",400,True).end()
   return Response("Could not add file to database",500,True).end()
+
+@app.route('/files',methods=['GET'])
+def get_files():
+  result = db.engine.execute('file_id,user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type FROM File')
+  data = get_query_data(result)
+  opts = get_request_opts(request)
+  return Response(filter_sort_paginate(data,opts)).end()
 
 @app.route('/files/<file_id>',methods=['GET'])
 def get_file(file_id):

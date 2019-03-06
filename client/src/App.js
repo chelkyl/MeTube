@@ -1,23 +1,58 @@
 import React, { Component } from 'react';
+import classNames from 'classnames';
 // import logo from './logo.svg';
 import Masthead from './components/masthead';
 import Sidebar from './components/sidebar';
-import Home from './pages/home';
-import Login from './pages/login';
-import Register from './pages/register';
-import PageNotFound from './pages/pageNotFound';
+import HomePage from './pages/home';
+import LoginPage from './pages/login';
+import RegisterPage from './pages/register';
+import Error404Page from './pages/pageNotFound';
 import {
-  BrowserRouter as Router,
+  BrowserRouter,
   Route,
   Switch
 } from 'react-router-dom';
-import './App.css';
+import { withStyles } from '@material-ui/core/styles';
+
+const drawerWidth = 240;
+
+const styles = theme => ({
+  root: {
+    display: 'block'
+  },
+  drawer: {
+    [theme.breakpoints.up('sm')]: {
+      width: drawerWidth,
+      flexShrink: 0
+    }
+  },
+  content: {
+    flexGrow: 1,
+    flexShrink: 0,
+    padding: theme.spacing.unit * 3,
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen
+    }),
+    marginLeft: 0,
+    textAlign: 'center'
+  },
+  contentShift: {
+    [theme.breakpoints.up('sm')]: {
+      transition: theme.transitions.create('margin', {
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.enteringScreen
+      }),
+      marginLeft: drawerWidth
+    }
+  },
+  toolbar: theme.mixins.toolbar
+});
 
 // TODO: better authentication, see https://stackoverflow.com/questions/49819183/react-what-is-the-best-way-to-handle-authenticated-logged-in-state
 class App extends Component {
   constructor(props) {
     super(props);
-    this.toggleDrawer = this.toggleDrawer.bind(this);
     this.state = {
       sidebarOpen: false,
       loggedIn: false
@@ -25,28 +60,61 @@ class App extends Component {
   }
 
   toggleDrawer = (open) => {
-    this.setState({sidebarOpen: open});
+    if (open === true || open === false) {
+      this.setState({sidebarOpen: open});
+    }
+    else {
+      this.setState({sidebarOpen: !this.state.sidebarOpen});
+    }
   }
 
   render() {
     const {sidebarOpen, loggedIn} = this.state;
+    const { classes } = this.props;
+
     return (
-      <div className="App">
-        <Router>
+      <div className={classes.root}>
+        <BrowserRouter basename={process.env.REACT_APP_ROOT_DIR}>
           <>
+            {/* <AppBar position="fixed" className={classes.appBar}>
+              <Toolbar>
+                <Typography variant="h6" color="inherit" noWrap>
+                  Title
+                </Typography>
+              </Toolbar>
+            </AppBar> */}
             <Masthead isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
-            <Sidebar open={sidebarOpen} onToggleDrawer={this.toggleDrawer}/>
-            <Switch>
-              <Route path='/' exact component={Home}/>
-              <Route path='/login' component={Login}/>
-              <Route path='/register' component={Register}/>
-              <Route component={PageNotFound}/>
-            </Switch>
-          </>
-        </Router>
+            <Sidebar className={classes.drawer} isOpen={sidebarOpen}
+              isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
+            <main className={classNames(classes.content, {
+                  [classes.contentShift]: sidebarOpen
+                })}>
+              <Switch>
+                <Route path='/' exact component={HomePage}/>
+                <Route path='/login' component={LoginPage}/>
+                <Route path='/register' component={RegisterPage}/>
+                <Route component={Error404Page}/>
+              </Switch>
+            </main>
+
+            {/*
+            <Masthead className={classes.appBar}
+              isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
+            <Sidebar className={classes.drawer} open={sidebarOpen}
+              isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
+            <main className={classes.content}>
+              <Switch>
+                <Route path='/' exact component={Home}/>
+                <Route path='/login' component={Login}/>
+                <Route path='/register' component={Register}/>
+                <Route component={PageNotFound}/>
+              </Switch>
+            </main> */}
+            </>
+        </BrowserRouter>
       </div>
     );
   }
 }
 
-export default App;
+export default withStyles(styles)(App);

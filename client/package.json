@@ -1,6 +1,7 @@
 {
   "name": "client",
   "version": "0.1.0",
+  "homepage": "http://webapp.cs.clemson.edu:3000/~username",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^3.9.2",
@@ -13,10 +14,11 @@
     "react-scripts": "2.1.5"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "BROWSER=none react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "push": "rsync -av build/ webapp.cs.clemson.edu:~/public_html"
   },
   "eslintConfig": {
     "extends": "react-app"
