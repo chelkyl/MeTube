@@ -26,7 +26,7 @@ Installation can be done with `pip3 install Flask Flask-sqlalchemy PyMySql passl
    ```
    cd server/server
    ```
-4. Edit the file named '.env' with the following and fill in the `<variables>` with your buffet database info
+4. Copy the file named '.env.template' as '.env' which contains the following and fill in the `<variables>` with your buffet database info
    - the host, port, and dialect probably do not need to be changed
    ```
    DB_USER=<username>
@@ -36,7 +36,7 @@ Installation can be done with `pip3 install Flask Flask-sqlalchemy PyMySql passl
    DB_NAME=<database-name>
    DB_DIALECT=mysql
    ```
-   - Your current directory should now have a `.env` and `.flaskenv` in it
+   - Your current directory should now have `.env.template`, `.env`, and `.flaskenv` in it
 5. Run the server using:
    ```
    python3 server.py
@@ -58,7 +58,7 @@ Installation can be done with `pip3 install Flask Flask-sqlalchemy PyMySql passl
    ```
    npm install
    ```
-4. Edit the file named '.env' with the following and fill in the `<variables>` as desired
+4. Copy the file named '.env.template' as '.env' which contains the following and fill in the `<variables>` as desired
    ```
    REACT_APP_ROOT_DIR=/~<your_Clemson_username>
    ```
@@ -83,7 +83,7 @@ The web app is hosted on http://webapp.cs.clemson.edu/~username
    ```
    cd client
    ```
-2. Edit package.json `homepage` replacing `<username>` with your Clemson username
+2. Edit package.json on the line with `homepage` replacing `<username>` with your Clemson username
    ```
    "homepage": "http://webapp.cs.clemson.edu:3000/~<username>"
    ```

@@ -1,7 +1,7 @@
 {
   "name": "client",
   "version": "0.1.0",
-  "homepage": "http://webapp.cs.clemson.edu:3000/~username",
+  "homepage": "http://webapp.cs.clemson.edu:3000/~<username>",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^3.9.2",
