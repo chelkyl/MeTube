@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "67205035-156a-47b8-99e0-0c321a17a46a",
+		"_postman_id": "5b755904-a317-4015-92c0-bb2228869b7f",
 		"name": "MeTube-API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -850,6 +850,110 @@
 					"response": []
 				},
 				{
+					"name": "GET users search for bob",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1459cfab-cd1a-48de-abf6-b92d0d09ae75",
+								"exec": [
+									"",
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned list of 1\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.length).to.eql(1);",
+									"    pm.expect(jsonData.response[0]).to.have.property('user_id',1);",
+									"    pm.expect(jsonData.response[0]).to.have.property('username','bob');",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/users?q=bob",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "bob"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET users filter for bob",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1459cfab-cd1a-48de-abf6-b92d0d09ae75",
+								"exec": [
+									"",
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned list of 1\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.length).to.eql(1);",
+									"    pm.expect(jsonData.response[0]).to.have.property('user_id',1);",
+									"    pm.expect(jsonData.response[0]).to.have.property('username','bob');",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"filters\": [\n\t\t{\n\t\t\t\"column\": \"username\",\n\t\t\t\"value\": \"bob\",\n\t\t\t\"cmp\": \"exact\"\n\t\t}\n\t]\n}"
+						},
+						"url": {
+							"raw": "{{host}}/users",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "GET user id 1 (bob)",
 					"event": [
 						{
@@ -888,6 +992,228 @@
 							"path": [
 								"users",
 								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET users sort by username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1459cfab-cd1a-48de-abf6-b92d0d09ae75",
+								"exec": [
+									"",
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned list of 2\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.length).to.eql(2);",
+									"    pm.expect(jsonData.response[0]).to.have.property('user_id',1);",
+									"    pm.expect(jsonData.response[0]).to.have.property('username','bob');",
+									"    pm.expect(jsonData.response[1]).to.have.property('user_id',2);",
+									"    pm.expect(jsonData.response[1]).to.have.property('username','joe');",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"sorters\": [\n\t\t{\n\t\t\t\"column\": \"username\",\n\t\t\t\"descending\": \"false\"\n\t\t}\n\t]\n}"
+						},
+						"url": {
+							"raw": "{{host}}/users",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET users sort by username dsc",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1459cfab-cd1a-48de-abf6-b92d0d09ae75",
+								"exec": [
+									"",
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned list of 2\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.length).to.eql(2);",
+									"    pm.expect(jsonData.response[0]).to.have.property('user_id',2);",
+									"    pm.expect(jsonData.response[0]).to.have.property('username','joe');",
+									"    pm.expect(jsonData.response[1]).to.have.property('user_id',1);",
+									"    pm.expect(jsonData.response[1]).to.have.property('username','bob');",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"filters\": [],\n\t\"sorters\": [\n\t\t{\n\t\t\t\"column\": \"username\",\n\t\t\t\"descending\": \"true\"\n\t\t}\n\t]\n}"
+						},
+						"url": {
+							"raw": "{{host}}/users",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET users sort by multi: channel_description asc then user_id dsc",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1459cfab-cd1a-48de-abf6-b92d0d09ae75",
+								"exec": [
+									"",
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned list of 2\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.length).to.eql(2);",
+									"    pm.expect(jsonData.response[0]).to.have.property('user_id',2);",
+									"    pm.expect(jsonData.response[0]).to.have.property('username','joe');",
+									"    pm.expect(jsonData.response[1]).to.have.property('user_id',1);",
+									"    pm.expect(jsonData.response[1]).to.have.property('username','bob');",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"filters\": [],\n\t\"sorters\": [\n\t\t{\n\t\t\t\"column\": \"channel_description\",\n\t\t\t\"descending\": \"false\"\n\t\t},\n\t\t{\n\t\t\t\"column\": \"user_id\",\n\t\t\t\"descending\": \"true\"\n\t\t}\n\t]\n}"
+						},
+						"url": {
+							"raw": "{{host}}/users",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET users [ 0 : 1]",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1459cfab-cd1a-48de-abf6-b92d0d09ae75",
+								"exec": [
+									"",
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned list of 1\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.length).to.eql(1);",
+									"    pm.expect(jsonData.response[0]).to.have.property('user_id',1);",
+									"    pm.expect(jsonData.response[0]).to.have.property('username','bob');",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/users?b=0&l=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "b",
+									"value": "0"
+								},
+								{
+									"key": "l",
+									"value": "1"
+								}
 							]
 						}
 					},
@@ -1557,6 +1883,56 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "POST users create henry after delete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "26ce2526-2d94-4404-bca6-e71dbff03ff5",
+								"exec": [
+									"",
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned user_id:3, username:henry\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.have.property('user_id',3);",
+									"    pm.expect(jsonData.response).to.have.property('username','henry');",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"email\":\"henry@domain.com\",\"username\":\"henry\",\"password\":\"test\"}"
+						},
+						"url": {
+							"raw": "{{host}}/users",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -1830,7 +2206,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "{{path}}/MeTube/server/tests/BobFile1.txt"
+									"src": ""
 								},
 								{
 									"key": "user_id",
@@ -1898,7 +2274,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "{{path}}/MeTube/server/tests/BobFile1.txt"
+									"src": ""
 								},
 								{
 									"key": "user_id",
@@ -2728,7 +3104,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "{{path}}/MeTube/server/tests/BobFile1.txt"
+									"src": ""
 								},
 								{
 									"key": "user_id",
@@ -5252,7 +5628,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "{{path}}/MeTube/server/tests/BobFile1.txt"
+									"src": ""
 								},
 								{
 									"key": "user_id",
