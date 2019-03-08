@@ -456,7 +456,7 @@ def upload_file():
 
 @app.route('/files',methods=['GET'])
 def get_files():
-  result = db.engine.execute('file_id,user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type FROM File')
+  result = db.engine.execute('SELECT file_id,user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type FROM File')
   data = get_query_data(result)
   opts = get_request_opts(request)
   return Response(filter_sort_paginate(data,opts)).end()
