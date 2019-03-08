@@ -13,7 +13,7 @@ import {
   green
 } from '@material-ui/core/colors';
 import { withStyles } from '@material-ui/core/styles';
-import axios from 'axios';
+import { ApiClient } from '../apiclient';
 import { Redirect } from 'react-router-dom';
 
 const styles = theme => ({
@@ -78,7 +78,7 @@ class LoginPage extends React.Component {
   // }
 
   validateLogin = (creds) => {
-    axios.post('http://localhost:5000/login', creds)
+    ApiClient.post('/login', creds)
       .then(res => {
         console.log(res);
         this.setState(
