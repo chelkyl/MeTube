@@ -553,10 +553,17 @@ def add_playlist():
     return Response({'missing':missing},400,isError=True).end()
 
   # valid parameters, create and return it
-  newPlaylist = Playlist(user_id=user_id,title=title,description=description)
-  db.session.add(newPlaylist)
-  db.session.commit()
-  return Response(newPlaylist.to_json()).end()
+  #newPlaylist = Playlist(user_id=user_id,title=title,description=description)
+  #db.session.add(newPlaylist)
+  #db.session.commit()
+  sql = text("""INSERT INTO Playlist(user_id, title, description) VALUES(:user_id, :title, :description)""")
+  result = db.engine.execute(sql, user_id=user_id, title=title, description=description)
+  result = db.engine.execute('SELECT playlist_id,user_id,title,description FROM Playlist WHERE playlist_id={ID}'.format(ID=result.lastrowid))
+  data = get_query_data(result)
+  if data:
+    return Response(data[0]).end()
+  else:
+    return Response("Playlist creation failed",500,True).end()
 
 @app.route('/playlists/<playlist_id>',methods=['GET'])
 def get_playlist(playlist_id):
