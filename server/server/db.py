@@ -5,6 +5,13 @@ from passlib.hash import pbkdf2_sha256
 
 db = SQLAlchemy()
 
+def hash_password(password):
+  pw_hash = pbkdf2_sha256.hash(password)
+  return pw_hash
+
+def verify_password(password, hash_password):
+  return pbkdf2_sha256.verify(password, hash_password)
+
 subscribers = db.Table('subscribers',
   db.Column('subscribing_id', db.Integer, db.ForeignKey('User.user_id')),
   db.Column('subscribed_id', db.Integer, db.ForeignKey('User.user_id'))

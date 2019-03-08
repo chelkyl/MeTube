@@ -6,6 +6,7 @@ from flask import Flask, request, cli, g
 from passlib.hash import hex_sha256
 from time import time
 import sqlalchemy
+from sqlalchemy.sql import text
 import datetime
 import shutil
 from operator import itemgetter
@@ -146,6 +147,7 @@ def add_user():
   email    = None if req is None else req.get('email',None)
   username = None if req is None else req.get('username',None)
   password = None if req is None else req.get('password',None)
+  channel_description = '' if req is None else req.get('channel_description','')
   # trivial validate not empty
   missing = []
   if email is None:
@@ -160,8 +162,15 @@ def add_user():
     return Response({'missing':missing},400,isError=True).end()
 
   # make sure username and email are unique
-  unameUniq = len(User.query.filter_by(username=username).all()) == 0
-  emailUniq = len(User.query.filter_by(email=email).all()) == 0
+  result = db.engine.execute('SELECT user_id FROM User WHERE username={UNAME}'.format(UNAME=username))
+  data = get_query_data(result)
+  unameUniq = (len(data) == 0) if data else False
+  result = db.engine.execute('SELECT user_id FROM User WHERE email={EMAIL}'.format(EMAIL=email))
+  data = get_query_data(result)
+  emailUniq = (len(data) == 0) if data else False
+  # unameUniq = len(User.query.filter_by(username=username).all()) == 0
+  # emailUniq = len(User.query.filter_by(email=email).all()) == 0
+
   notUniq = []
   if not unameUniq:
     notUniq.append('username')
@@ -171,10 +180,13 @@ def add_user():
     return Response({'not unique':notUniq},400,isError=True).end()
 
   # valid parameters, create and return it
-  newUser = User(email=email,username=username,password=password)
-  db.session.add(newUser)
-  db.session.commit()
-  return Response(newUser.to_json()).end()
+  result = db.engine.execute("INSERT INTO User (username,email,password,channel_description) VALUES({}, {}, {}, {})".format(username, email, hash_password(password), channel_description))
+  # newUser = User(email=email,username=username,password=password)
+  # db.session.add(newUser)
+  # db.session.commit()
+  result = db.engine.execute('SELECT user_id, username, email, channel_description FROM User WHERE user_id={ID}'.format(ID=result.lastrowid))
+  data = get_query_data(result)
+  return Response(data).end()
 
 @app.route('/users/<user_id>',methods=['DELETE'])
 @auth.login_required
