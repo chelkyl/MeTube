@@ -185,6 +185,10 @@ def remove_user(user_id):
   result = db.engine.execute('SELECT user_id,email,username,password_hash,channel_description FROM User WHERE user_id={ID}'.format(ID=user_id))
   data = get_query_data(result)
   if data:
+    #Unlinks neccessary relationships
+    user_favorites_list=db.session.query(user_favorites).filter(user_id==user_id).all()
+    for user_favorite in user_favorites_list:
+      result = db.engine.execute('DELETE FROM user_favorites WHERE user_id={ID}'.format(ID=user_id))
     result = db.engine.execute('DELETE FROM User WHERE user_id={ID}'.format(ID=user_id))
     return Response(data[0]).end()
   return Response("user_id {ID} not found".format(ID=user_id),404,True).end()
@@ -213,7 +217,7 @@ def get_query_data(resultProxy):
 #   }],
 #   sorters: [{
 #     column: string,
-#     descending: bool 
+#     descending: bool
 #   }],
 #   bounds: {
 #     start: num,
@@ -223,12 +227,12 @@ def get_query_data(resultProxy):
 def filter_sort_paginate(data,opts):
   if len(data) == 0:
     return []
-  
+
   ret = []
   filters = opts['filters']
   sorters = opts['sorters']
   bounds  = opts['bounds']
-  
+
   if filters:
     for entry in data:
       for f in filters:
@@ -260,14 +264,14 @@ def filter_sort_paginate(data,opts):
           break
   else:
     ret = data
-  
+
   if sorters:
     # sorted() handles multi sort stability (according to docs)
     for sorter in sorters:
       column = sorter['column']
       descending = sorter['descending'] in ['true','True']
       ret = sorted(ret, key=itemgetter(column), reverse=descending)
-  
+
   if bounds:
     start = int(bounds['start']) if bounds['start'] else 0
     limit = int(bounds['limit']) if bounds['limit'] else len(ret)
@@ -277,7 +281,7 @@ def filter_sort_paginate(data,opts):
 
 # url args only for basic search opts
 # more specific filters/options are in form data
-# 
+#
 # support:
 # landing/home:
 #   trending
@@ -304,7 +308,7 @@ def filter_sort_paginate(data,opts):
 #   user_id=2&dateBeg=01-01-0001
 # user channel (subscriptions):
 #   name=Best+Channel&subsMin=20
-#  
+#
 def get_request_opts(req):
   opts = {
     'filters': [],
@@ -485,9 +489,23 @@ def remove_file(file_id):
   result = db.engine.execute('SELECT file_id,user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type FROM File WHERE file_id={ID}'.format(ID=file_id))
   data = get_query_data(result)
   if data:
+    #Unlinks neccessary relationships
     comments=Comment.query.filter_by(file_id=file_id).all()
     for comment in comments:
       result = db.engine.execute('DELETE FROM Comment WHERE comment_id={ID}'.format(ID=comment.comment_id))
+    user_favorites_list=db.session.query(user_favorites).filter(file_id==file_id).all()
+    for user_favorite in user_favorites_list:
+      result = db.engine.execute('DELETE FROM user_favorites WHERE file_id={ID}'.format(ID=file_id))
+    playlist_files_list=db.session.query(playlist_files).filter(file_id==file_id).all()
+    for playlist_file in playlist_files_list:
+      result = db.engine.execute('DELETE FROM playlist_files WHERE file_id={ID}'.format(ID=file_id))
+    files_categories_list=db.session.query(files_categories).filter(file_id==file_id).all()
+    for file_category in files_categories_list:
+      result = db.engine.execute('DELETE FROM files_categories WHERE file_id={ID}'.format(ID=file_id))
+    files_keywords_list=db.session.query(files_keywords).filter(file_id==file_id).all()
+    for file_keyword in files_keywords_list:
+      result = db.engine.execute('DELETE FROM files_keywords WHERE file_id={ID}'.format(ID=file_id))
+
     result = db.engine.execute('DELETE FROM File WHERE file_id={ID}'.format(ID=file_id))
     remove_file_from_store(file_id)
     return Response(data[0]).end()
@@ -547,6 +565,10 @@ def remove_playlist(playlist_id):
   result = db.engine.execute('SELECT playlist_id,user_id,title,description FROM Playlist WHERE playlist_id={ID}'.format(ID=playlist_id))
   data = get_query_data(result)
   if data:
+    #Unlinks neccessary relationships
+    playlist_files_list=db.session.query(playlist_files).filter(playlist_id==playlist_id).all()
+    for playlist_file in playlist_files_list:
+      result = db.engine.execute('DELETE FROM playlist_files WHERE playlist_id={ID}'.format(ID=playlist_id))
     result = db.engine.execute('DELETE FROM Playlist WHERE playlist_id={ID}'.format(ID=playlist_id))
     return Response(data[0]).end()
   return Response("playlist_id {ID} not found".format(ID=playlist_id),404,True).end()
@@ -594,6 +616,10 @@ def remove_category(category_id):
   result = db.engine.execute('SELECT category_id,category FROM Category WHERE category_id={ID}'.format(ID=category_id))
   data = get_query_data(result)
   if data:
+    #Unlinks neccessary relationships
+    files_categories_list=db.session.query(files_categories).filter(category_id==category_id).all()
+    for file_category in files_categories_list:
+      result = db.engine.execute('DELETE FROM files_categories WHERE category_id={ID}'.format(ID=category_id))
     result = db.engine.execute('DELETE FROM Category WHERE category_id={ID}'.format(ID=category_id))
     return Response(data[0]).end()
   return Response("category_id {ID} not found".format(ID=category_id),404,True).end()
@@ -642,6 +668,10 @@ def remove_keyword(keyword_id):
   result = db.engine.execute('SELECT keyword_id,keyword FROM Keyword WHERE keyword_id={ID}'.format(ID=keyword_id))
   data = get_query_data(result)
   if data:
+    #Unlinks neccessary relationships
+    files_keywords_list=db.session.query(files_keywords).filter(keyword_id==keyword_id).all()
+    for file_keyword in files_keywords_list:
+      result = db.engine.execute('DELETE FROM files_keywords WHERE keyword_id={ID}'.format(ID=keyword_id))
     result = db.engine.execute('DELETE FROM Keyword WHERE keyword_id={ID}'.format(ID=keyword_id))
     return Response(data[0]).end()
   return Response("keyword_id {ID} not found".format(ID=keyword_id),404,True).end()
@@ -679,8 +709,9 @@ def add_contact():
     return Response("Contacting user is blocked",401,True).end()
 
   if not contacting_user.is_contact(contacted_user):
-    contacting_user.contacted.append(contacted_user)
-    db.session.commit()
+    #contacting_user.contacted.append(contacted_user)
+    result = db.engine.execute("INSERT INTO contacts VALUES({}, {})".format(contacting_id, contacted_id))
+    #db.session.commit()
     return Response("Contact created",200,False).end()
   return Response("Contact already exists",404,True).end()
 
@@ -706,6 +737,7 @@ def remove_contact():
   contact_removing=User.query.get(contact_removing_id)
   contact_removed=User.query.get(contact_removed_id)
   if contact_removing.is_contact(contact_removed):
+    #Unlinks neccessary relationships
     sent_messages = Message.query.filter_by(contacting_id=contact_removing_id, contacted_id=contact_removed_id).all()
     received_messages = Message.query.filter_by(contacting_id=contact_removed_id, contacted_id=contact_removing_id).all()
     for message in sent_messages:
@@ -713,8 +745,9 @@ def remove_contact():
     for message in received_messages:
       result = db.engine.execute('DELETE FROM Message WHERE message_id={ID}'.format(ID=message.message_id))
 
-    contact_removing.contacted.remove(contact_removed)
-    db.session.commit()
+    #contact_removing.contacted.remove(contact_removed)
+    result = db.engine.execute("DELETE FROM contacts WHERE contacting_id = {} AND contacted_id = {}".format(contact_removing_id, contact_removed_id))
+    #db.session.commit()
     return Response("Contact removed",200,False).end()
   return Response("No contact exists",404,True).end()
 
@@ -783,8 +816,9 @@ def subscribe():
     return Response("Subscribing user is blocked",401,True).end()
 
   if not subscribing_user.is_subscriber(subscribed_user):
-    subscribing_user.subscribed.append(subscribed_user)
-    db.session.commit()
+    #subscribing_user.subscribed.append(subscribed_user)
+    result = db.engine.execute("INSERT INTO subscribers VALUES({}, {})".format(subscribing_id, subscribed_id))
+    #db.session.commit()
     return Response("Subscription created",200,False).end()
   return Response("Subscription already exists",404,True).end()
 
@@ -810,8 +844,9 @@ def unsubscribe():
   unsubscribing_user=User.query.get(unsubscribing_id)
   unsubscribed_user=User.query.get(unsubscribed_id)
   if unsubscribing_user.is_subscriber(unsubscribed_user):
-    unsubscribing_user.subscribed.remove(unsubscribed_user)
-    db.session.commit()
+    #unsubscribing_user.subscribed.remove(unsubscribed_user)
+    result = db.engine.execute("DELETE FROM subscribers WHERE subscribing_id = {} AND subscribed_id = {}".format(unsubscribing_id, unsubscribed_id))
+    #db.session.commit()
     return Response("Subscription removed",200,False).end()
   return Response("No subscription exists",404,True).end()
 
@@ -841,8 +876,9 @@ def friend():
     return Response("Friending user is blocked",401,True).end()
 
   if not friending_user.is_friend(friended_user):
-    friending_user.friended.append(friended_user)
-    db.session.commit()
+    #friending_user.friended.append(friended_user)
+    result = db.engine.execute("INSERT INTO friends VALUES({}, {})".format(friending_id, friended_id))
+    #db.session.commit()
     return Response("Friendship created",200,False).end()
   return Response("Friendship already exists",404,True).end()
 
@@ -868,8 +904,9 @@ def unfriend():
   unfriending_user=User.query.get(unfriending_id)
   unfriended_user=User.query.get(unfriended_id)
   if unfriending_user.is_friend(unfriended_user):
-    unfriending_user.friended.remove(unfriended_user)
-    db.session.commit()
+    #unfriending_user.friended.remove(unfriended_user)
+    result = db.engine.execute("DELETE FROM friends WHERE friending_id = {} AND friended_id = {}".format(unfriending_id, unfriended_id))
+    #db.session.commit()
     return Response("Friendship removed",200,False).end()
   return Response("No friendship exists",404,True).end()
 
@@ -895,8 +932,9 @@ def block():
   blocking_user=User.query.get(blocking_id)
   blocked_user=User.query.get(blocked_id)
   if not blocking_user.is_blocked(blocked_user):
-    blocking_user.blocked.append(blocked_user)
-    db.session.commit()
+    #blocking_user.blocked.append(blocked_user)
+    result = db.engine.execute("INSERT INTO blocks VALUES({}, {})".format(blocking_id, blocked_id))
+    #db.session.commit()
     return Response("Blocking created",200,False).end()
   return Response("Blocking already exists",404,True).end()
 
@@ -922,8 +960,9 @@ def unblock():
   unblocking_user=User.query.get(unblocking_id)
   unblocked_user=User.query.get(unblocked_id)
   if unblocking_user.is_blocked(unblocked_user):
-    unblocking_user.blocked.remove(unblocked_user)
-    db.session.commit()
+    #unblocking_user.blocked.remove(unblocked_user)
+    result = db.engine.execute("DELETE FROM blocks WHERE blocking_id = {} AND blocked_id = {}".format(unblocking_id, unblocked_id))
+    #db.session.commit()
     return Response("Blocking removed",200,False).end()
   return Response("No blocking exists",404,True).end()
 
@@ -954,8 +993,9 @@ def favorite():
     return Response("Favoriting user is blocked from file owners content",401,True).end()
 
   if not user.is_favorite(file):
-    user.favorites.append(file)
-    db.session.commit()
+    #user.favorites.append(file)
+    result = db.engine.execute("INSERT INTO user_favorites VALUES({}, {})".format(file_id, user_id))
+    #db.session.commit()
     return Response("User favorite created",200,False).end()
   return Response("User favorite already exists",404,True).end()
 
@@ -981,8 +1021,9 @@ def unfavorite():
   user=User.query.get(user_id)
   file=File.query.get(file_id)
   if user.is_favorite(file):
-    user.favorites.remove(file)
-    db.session.commit()
+    #user.favorites.remove(file)
+    result = db.engine.execute("DELETE FROM user_favorites WHERE file_id = {} AND user_id = {}".format(file_id, user_id))
+    #db.session.commit()
     return Response("User favorite removed",200,False).end()
   return Response("No favorite exists",404,True).end()
 
@@ -1010,8 +1051,9 @@ def add_file_to_playlist():
   if g.user.user_id != int(playlist.user_id):
     return Response("Unauthorized",401,True).end()
 
-  playlist.files.append(file)
-  db.session.commit()
+  #playlist.files.append(file)
+  result = db.engine.execute("INSERT INTO playlist_files VALUES({}, {})".format(file_id, playlist_id))
+  #db.session.commit()
   return Response("File added to playlist",200,False).end()
 
 @app.route('/playlists/remove_file',methods=['UNLINK'])
@@ -1039,8 +1081,9 @@ def remove_file_from_playlist():
     return Response("Unauthorized",401,True).end()
 
   if playlist.contains_file(file):
-    playlist.files.remove(file)
-    db.session.commit()
+    #playlist.files.remove(file)
+    result = db.engine.execute("DELETE FROM playlist_files WHERE file_id = {} AND playlist_id = {}".format(file_id, playlist_id))
+    #db.session.commit()
     return Response("File removed from playlist",200,False).end()
   return Response("Playlist does not contain file",404,True).end()
 
@@ -1111,6 +1154,122 @@ def remove_comment(comment_id):
     db.session.commit()
     return Response(comment.to_json()).end()
   return Response("comment_id {ID} not found".format(ID=comment_id),404,True).end()
+
+@app.route('/categories/add_to_file',methods=['LINK'])
+@auth.login_required
+def add_category_to_file():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  file_id = None if req is None else req.get('file_id',None)
+  category_id = None if req is None else req.get('category_id',None)
+  # trivial validate not empty
+  missing = []
+  if file_id is None:
+    missing.append('file_id')
+  if category_id is None:
+    missing.append('category_id')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  file=File.query.get(file_id)
+  category=Category.query.get(category_id)
+  if g.user.user_id != int(file.user_id):
+    return Response("Unauthorized",401,True).end()
+
+  #playlist.files.append(file)
+  result = db.engine.execute("INSERT INTO files_categories VALUES({}, {})".format(file_id, category_id))
+  #db.session.commit()
+  return Response("Category added to file",200,False).end()
+
+@app.route('/categories/remove_from_file',methods=['UNLINK'])
+@auth.login_required
+def remove_category_from_file():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  file_id = None if req is None else req.get('file_id',None)
+  category_id = None if req is None else req.get('category_id',None)
+  # trivial validate not empty
+  missing = []
+  if file_id is None:
+    missing.append('file_id')
+  if category_id is None:
+    missing.append('category_id')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  category=Category.query.get(category_id)
+  file=File.query.get(file_id)
+  if g.user.user_id != int(file.user_id):
+    return Response("Unauthorized",401,True).end()
+
+  #playlist.files.remove(file)
+  result = db.engine.execute("DELETE FROM files_categories WHERE file_id = {} AND category_id = {}".format(file_id, category_id))
+  #db.session.commit()
+  return Response("Category removed from file",200,False).end()
+
+@app.route('/keywords/add_to_file',methods=['LINK'])
+@auth.login_required
+def add_keyword_to_file():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  file_id = None if req is None else req.get('file_id',None)
+  keyword_id = None if req is None else req.get('keyword_id',None)
+  # trivial validate not empty
+  missing = []
+  if file_id is None:
+    missing.append('file_id')
+  if keyword_id is None:
+    missing.append('keyword_id')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  file=File.query.get(file_id)
+  keyword=Keyword.query.get(keyword_id)
+  if g.user.user_id != int(file.user_id):
+    return Response("Unauthorized",401,True).end()
+
+  #playlist.files.append(file)
+  result = db.engine.execute("INSERT INTO files_keywords VALUES({}, {})".format(file_id, keyword_id))
+  #db.session.commit()
+  return Response("Keyword added to file",200,False).end()
+
+@app.route('/keywords/remove_from_file',methods=['UNLINK'])
+@auth.login_required
+def remove_keyword_from_file():
+  # shorten name for easier access
+  req = request.json
+  # get json data
+  file_id = None if req is None else req.get('file_id',None)
+  keyword_id = None if req is None else req.get('keyword_id',None)
+  # trivial validate not empty
+  missing = []
+  if file_id is None:
+    missing.append('file_id')
+  if keyword_id is None:
+    missing.append('keyword_id')
+
+  # return error if missing any
+  if missing:
+    return Response({'missing':missing},400,isError=True).end()
+
+  keyword=Keyword.query.get(keyword_id)
+  file=File.query.get(file_id)
+  if g.user.user_id != int(file.user_id):
+    return Response("Unauthorized",401,True).end()
+
+  #playlist.files.remove(file)
+  result = db.engine.execute("DELETE FROM files_keywords WHERE file_id = {} AND keyword_id = {}".format(file_id, keyword_id))
+  #db.session.commit()
+  return Response("Keyword removed from file",200,False).end()
 
 cli.load_dotenv()
 configure_app()
