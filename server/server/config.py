@@ -33,7 +33,7 @@ class ProductionCfg(Config):
 class DevCfg(Config):
   DEBUG = True
   # shows sqlalchemy engine statements
-  # SQLALCHEMY_ECHO = True
+  SQLALCHEMY_ECHO = True
 
 class TestCfg(Config):
   TESTING = True

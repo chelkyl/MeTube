@@ -162,12 +162,10 @@ def add_user():
     return Response({'missing':missing},400,isError=True).end()
 
   # make sure username and email are unique
-  result = db.engine.execute('SELECT user_id FROM User WHERE username={UNAME}'.format(UNAME=username))
-  data = get_query_data(result)
-  unameUniq = (len(data) == 0) if data else False
-  result = db.engine.execute('SELECT user_id FROM User WHERE email={EMAIL}'.format(EMAIL=email))
-  data = get_query_data(result)
-  emailUniq = (len(data) == 0) if data else False
+  result = db.engine.execute(text("SELECT user_id FROM User WHERE username=:uname"), uname=username)
+  unameUniq = len(get_query_data(result)) == 0
+  result = db.engine.execute(text("SELECT user_id FROM User WHERE email=:email"), email=email)
+  emailUniq = len(get_query_data(result)) == 0
   # unameUniq = len(User.query.filter_by(username=username).all()) == 0
   # emailUniq = len(User.query.filter_by(email=email).all()) == 0
 
@@ -180,13 +178,13 @@ def add_user():
     return Response({'not unique':notUniq},400,isError=True).end()
 
   # valid parameters, create and return it
-  result = db.engine.execute("INSERT INTO User (username,email,password,channel_description) VALUES({}, {}, {}, {})".format(username, email, hash_password(password), channel_description))
+  result = db.engine.execute(text("INSERT INTO User (username,email,password_hash,channel_description) VALUES(:uname,:email,:password_hash,:channel_description)"),uname=username,email=email,password_hash=hash_password(password),channel_description=channel_description)
   # newUser = User(email=email,username=username,password=password)
   # db.session.add(newUser)
   # db.session.commit()
   result = db.engine.execute('SELECT user_id, username, email, channel_description FROM User WHERE user_id={ID}'.format(ID=result.lastrowid))
   data = get_query_data(result)
-  return Response(data).end()
+  return Response(data[0]).end()
 
 @app.route('/users/<user_id>',methods=['DELETE'])
 @auth.login_required
