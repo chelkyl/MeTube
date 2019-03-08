@@ -4,6 +4,7 @@ from pathlib import Path
 class Config(object):
   DEBUG = False
   TESTING = False
+  SERVE_PUBLIC = False
 
   MAX_CONTENT_LENGTH = 1024 * 1024 * 512   # 512 megabytes
   UPLOAD_DIR = os.getenv('UPLOAD_DIR') or None
@@ -27,7 +28,7 @@ class Config(object):
   SQLALCHEMY_POOL_RECYCLE = 600  # 10 minutes
 
 class ProductionCfg(Config):
-  YAY = True
+  SERVE_PUBLIC = True
 
 class DevCfg(Config):
   DEBUG = True
