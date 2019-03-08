@@ -442,16 +442,22 @@ def upload_file():
   if notUniq:
     return Response({'not unique':notUniq},400,isError=True).end()
 
-  fileEntry = File(user_id=userid,title=title,description=description,permissions=permissions,upload_date = upload_date,views=0,upvotes=0,downvotes=0,mimetype=mimetype,file_type=file_type)
-  db.session.add(fileEntry)
-  db.session.commit()
-  if fileEntry.file_id:
+  #fileEntry = File(user_id=userid,title=title,description=description,permissions=permissions,upload_date = upload_date,views=0,upvotes=0,downvotes=0,mimetype=mimetype,file_type=file_type)
+  #db.session.add(fileEntry)
+  #db.session.commit()
+  sql = text("""INSERT INTO File(user_id, title, description, permissions, upload_date, views, upvotes, downvotes, mimetype, file_type) VALUES(:user_id, :title, :description, :permissions, :upload_date, :views, :upvotes, :downvotes, :mimetype, :file_type)""")
+  result = db.engine.execute(sql, user_id=userid,title=title,description=description,permissions=permissions,upload_date = upload_date,views=0,upvotes=0,downvotes=0,mimetype=mimetype,file_type=file_type)
+  result = db.engine.execute('SELECT file_id,user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type FROM File WHERE file_id={ID}'.format(ID=result.lastrowid))
+  data = get_query_data(result)
+
+  if data[0]['file_id']:
     try:
-      file.save(app.config['UPLOAD_DIR']+"/"+str(fileEntry.file_id))
-      return Response(fileEntry.to_json()).end()
+      file.save(app.config['UPLOAD_DIR']+"/"+str(data[0]['file_id']))
+      return Response(data[0]).end()
     except FileNotFoundError:
-      db.session.delete(fileEntry)
-      db.session.commit()
+      #db.session.delete(fileEntry)
+      #db.session.commit()
+      result = db.engine.execute('DELETE FROM File WHERE file_id={ID}'.format(ID=data[0]['file_id']))
       return Response("Could not save file",400,True).end()
   return Response("Could not add file to database",500,True).end()
 
@@ -604,10 +610,17 @@ def add_category():
     return Response({'missing':missing},400,isError=True).end()
 
   # valid parameters, create and return it
-  newCategory= Category(category=category)
-  db.session.add(newCategory)
-  db.session.commit()
-  return Response(newCategory.to_json()).end()
+  #newCategory= Category(category=category)
+  #db.session.add(newCategory)
+  #db.session.commit()
+  sql = text("""INSERT INTO Category(category) VALUES(:category)""")
+  result = db.engine.execute(sql, category=category)
+  result = db.engine.execute('SELECT category_id,category FROM Category WHERE category_id={ID}'.format(ID=result.lastrowid))
+  data = get_query_data(result)
+  if data:
+    return Response(data[0]).end()
+  else:
+    return Response("Category creation failed",500,True).end()
 
 @app.route('/categories/<category_id>',methods=['GET'])
 def get_category(category_id):
@@ -656,10 +669,17 @@ def add_keyword():
     return Response({'missing':missing},400,isError=True).end()
 
   # valid parameters, create and return it
-  newKeyword= Keyword(keyword=keyword)
-  db.session.add(newKeyword)
-  db.session.commit()
-  return Response(newKeyword.to_json()).end()
+  #newKeyword= Keyword(keyword=keyword)
+  #db.session.add(newKeyword)
+  #db.session.commit()
+  sql = text("""INSERT INTO Keyword(keyword) VALUES(:keyword)""")
+  result = db.engine.execute(sql, keyword=keyword)
+  result = db.engine.execute('SELECT keyword_id,keyword FROM Keyword WHERE keyword_id={ID}'.format(ID=result.lastrowid))
+  data = get_query_data(result)
+  if data:
+    return Response(data[0]).end()
+  else:
+    return Response("Keyword creation failed",500,True).end()
 
 @app.route('/keywords/<keyword_id>',methods=['GET'])
 def get_keyword(keyword_id):
@@ -793,10 +813,17 @@ def add_message():
     return Response("{ID} is not a contact to contacting user".format(ID=contacted_id),404,True).end()
 
   # valid parameters, create and return it
-  newMessage=Message(contacting_id=contacting_id, contacted_id=contacted_id, message=message, message_date=message_date)
-  db.session.add(newMessage)
-  db.session.commit()
-  return Response(newMessage.to_json()).end()
+  #newMessage=Message(contacting_id=contacting_id, contacted_id=contacted_id, message=message, message_date=message_date)
+  #db.session.add(newMessage)
+  #db.session.commit()
+  sql = text("""INSERT INTO Message(contacting_id, contacted_id, message) VALUES(:contacting_id, :contacted_id, :message)""")
+  result = db.engine.execute(sql, contacting_id=contacting_id, contacted_id=contacted_id, message=message)
+  result = db.engine.execute('SELECT message_id,contacting_id,contacted_id,message,message_date FROM Message WHERE message_id={ID}'.format(ID=result.lastrowid))
+  data = get_query_data(result)
+  if data:
+    return Response(data[0]).end()
+  else:
+    return Response("Message creation failed",500,True).end()
 
 @app.route('/users/subscribe',methods=['LINK'])
 @auth.login_required
@@ -1129,10 +1156,17 @@ def add_comment():
     return Response("Commenting user is blocked from file owners content",401,True).end()
 
   # valid parameters, create and return it
-  newComment = Comment(user_id=user_id,file_id=file_id,comment=comment,comment_date=comment_date)
-  db.session.add(newComment)
-  db.session.commit()
-  return Response(newComment.to_json()).end()
+  #newComment = Comment(user_id=user_id,file_id=file_id,comment=comment,comment_date=comment_date)
+  #db.session.add(newComment)
+  #db.session.commit()
+  sql = text("""INSERT INTO Comment(user_id, file_id, comment) VALUES(:user_id, :file_id, :comment)""")
+  result = db.engine.execute(sql, user_id=user_id, file_id=file_id, comment=comment)
+  result = db.engine.execute('SELECT comment_id,user_id,file_id,comment,comment_date FROM Comment WHERE comment_id={ID}'.format(ID=result.lastrowid))
+  data = get_query_data(result)
+  if data:
+    return Response(data[0]).end()
+  else:
+    return Response("Comment creation failed",500,True).end()
 
 @app.route('/comments/<comment_id>',methods=['GET'])
 def get_comment(comment_id):
