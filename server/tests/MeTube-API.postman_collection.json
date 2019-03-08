@@ -2206,7 +2206,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": "{{path}}/MeTube/server/tests/BobFile1.txt"
 								},
 								{
 									"key": "user_id",
@@ -2274,7 +2274,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": "{{path}}/MeTube/server/tests/BobFile1.txt"
 								},
 								{
 									"key": "user_id",
@@ -3104,7 +3104,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": "{{path}}/MeTube/server/tests/BobFile1.txt"
 								},
 								{
 									"key": "user_id",
@@ -5628,7 +5628,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": "{{path}}/MeTube/server/tests/BobFile1.txt"
 								},
 								{
 									"key": "user_id",
