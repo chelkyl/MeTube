@@ -18,7 +18,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "push": "rsync -av build/ webapp.cs.clemson.edu:~/public_html"
+    "push": "cp .htaccess build/ && rsync -av build/ webapp.cs.clemson.edu:~/public_html"
   },
   "eslintConfig": {
     "extends": "react-app"

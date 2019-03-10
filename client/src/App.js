@@ -8,7 +8,6 @@ import LoginPage from './pages/login';
 import RegisterPage from './pages/register';
 import Error404Page from './pages/pageNotFound';
 import {
-  BrowserRouter,
   Route,
   Switch
 } from 'react-router-dom';
@@ -74,44 +73,40 @@ class App extends Component {
 
     return (
       <div className={classes.root}>
-        <BrowserRouter basename={process.env.REACT_APP_ROOT_DIR}>
-          <>
-            {/* <AppBar position="fixed" className={classes.appBar}>
-              <Toolbar>
-                <Typography variant="h6" color="inherit" noWrap>
-                  Title
-                </Typography>
-              </Toolbar>
-            </AppBar> */}
-            <Masthead isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
-            <Sidebar className={classes.drawer} isOpen={sidebarOpen}
-              isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
-            <main className={classNames(classes.content, {
-                  [classes.contentShift]: sidebarOpen
-                })}>
-              <Switch>
-                <Route path='/' exact component={HomePage}/>
-                <Route path='/login' component={LoginPage}/>
-                <Route path='/register' component={RegisterPage}/>
-                <Route component={Error404Page}/>
-              </Switch>
-            </main>
+        {/* <AppBar position="fixed" className={classes.appBar}>
+          <Toolbar>
+            <Typography variant="h6" color="inherit" noWrap>
+              Title
+            </Typography>
+          </Toolbar>
+        </AppBar> */}
+        <Masthead isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
+        <Sidebar className={classes.drawer} isOpen={sidebarOpen}
+          isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
+        <main className={classNames(classes.content, {
+              [classes.contentShift]: sidebarOpen
+            })}>
+          <Switch>
+            <Route path='/' exact component={HomePage}/>
+            <Route path='/login' component={LoginPage}/>
+            <Route path='/register' component={RegisterPage}/>
+            <Route component={Error404Page}/>
+          </Switch>
+        </main>
 
-            {/*
-            <Masthead className={classes.appBar}
-              isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
-            <Sidebar className={classes.drawer} open={sidebarOpen}
-              isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
-            <main className={classes.content}>
-              <Switch>
-                <Route path='/' exact component={Home}/>
-                <Route path='/login' component={Login}/>
-                <Route path='/register' component={Register}/>
-                <Route component={PageNotFound}/>
-              </Switch>
-            </main> */}
-            </>
-        </BrowserRouter>
+        {/*
+        <Masthead className={classes.appBar}
+          isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
+        <Sidebar className={classes.drawer} open={sidebarOpen}
+          isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
+        <main className={classes.content}>
+          <Switch>
+            <Route path='/' exact component={Home}/>
+            <Route path='/login' component={Login}/>
+            <Route path='/register' component={Register}/>
+            <Route component={PageNotFound}/>
+          </Switch>
+        </main> */}
       </div>
     );
   }

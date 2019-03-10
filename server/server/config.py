@@ -37,4 +37,4 @@ class DevCfg(Config):
 
 class TestCfg(Config):
   TESTING = True
-
+  SQLALCHEMY_ECHO = False

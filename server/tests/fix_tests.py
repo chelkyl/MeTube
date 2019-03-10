@@ -1,4 +1,4 @@
-import sys, json
+import sys, os, json
 from collections import OrderedDict
 
 replaceMap = [
@@ -81,8 +81,8 @@ replaceMap = [
   }
 ]
 
-brokeTestFilePath = "MeTube-API.postman_collection.json"
-fixedTestFilePath = "MeTube-API.postman_collection_fixed.json"
+brokeTestFilePath = os.path.join(os.path.dirname(__file__),"MeTube-API.postman_collection.json")
+fixedTestFilePath = os.path.join(os.path.dirname(__file__),"MeTube-API.postman_collection_fixed.json")
 testFile = open(brokeTestFilePath,'r')
 testDict = json.load(testFile, object_pairs_hook=OrderedDict)
 testFile.close()

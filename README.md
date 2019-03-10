@@ -26,7 +26,7 @@ Installation can be done with `pip3 install Flask Flask-sqlalchemy PyMySql passl
    ```
    cd server/server
    ```
-4. Copy the file named '.env.template' as '.env' which contains the following and fill in the `<variables>` with your buffet database info
+4. Copy the file named '.env.template' and rename as '.env' then fill in the `<variables>` with your buffet database info
    - the host, port, and dialect probably do not need to be changed
    ```
    DB_USER=<username>
@@ -45,7 +45,7 @@ Installation can be done with `pip3 install Flask Flask-sqlalchemy PyMySql passl
    ```
    flask run
    ```
-6. Open your browser to the link on the line 'Running on ...' to determine if it is up
+6. Open your browser to the link on the line 'Running on ...' to determine if it is accessible
    - e.g. localhost:5000
 ### Client
 1. Install node, using a package manager is recommended. See https://nodejs.org/en/download/package-manager/
@@ -58,10 +58,12 @@ Installation can be done with `pip3 install Flask Flask-sqlalchemy PyMySql passl
    ```
    npm install
    ```
-4. Copy the file named '.env.template' as '.env' which contains the following and fill in the `<variables>` as desired
+4. Copy the file named '.env.template' and rename as '.env' then fill in the `<variables>` as desired
    ```
    REACT_APP_ROOT_DIR=/~<your_Clemson_username>
+   REACT_APP_SERVER_IP=localhost:5000
    ```
+   - REACT_APP_SERVER_IP should match the server
 5. Run the client
    ```
    npm start
@@ -74,12 +76,75 @@ Tests on the server are run using a Postman collection in the tests folder.
 1. Open Postman and click Import
 2. Import the Postman collection file in the tests folder.
 3. After making changes to the collection, export it and overwrite the file.
-(Users will need to add the source path for BobFile1.txt to the json test file in order to pass all tests.)
+4. If new tests involving file uploads were created or needs modification, see [Fixing Postman File Upload Issue](#fixing-postman-file-upload-issue)
+5. Run the Python script to fix the exported test collection.
+   ```
+   python tests/fix_tests.py
+   ```
+### fix_tests.py
+The replaceMap structure follows the structure of the Postman collection.
+```
+Example with labels:
+{                              - first layer, folders
+  "tag": "name",               - name of field that distinguishes folders
+  "tagIs": "files",            - folder name
+  "path": ["item"],            - any nested keys to traverse
+  "fix": [                     - to deal with an array of objects, recurse to another layer
+    {                          - second layer, tests
+      "tag": "name",           - name of field that distinguishes tests
+      "tagIs": "POST test",    - test name
+      "path": ["request","body","formdata"],
+      "fix": [                 - recurse to another layer
+        {                      - third layer, test details
+          "tag":"key",
+          "tagIs":"file",
+          "replace": {         - specify all key-value pairs to replace
+            "src": "{{path}}/MeTube/server/tests/BobFile1.txt"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+### Fixing Postman File Upload Issue
+If you created a test using a file upload input or encountered a bug in Postman where you cannot select a file in the file input for a test:
+1. Export the collection
+2. Edit replaceMap in fix_tests.py to fill in the file inputs (or replace any key-value pairs)
+3. Run fix_tests.py
+4. Re-import the fixed collection and test it
 
 ## Publishing
 The web app is hosted on http://webapp.cs.clemson.edu/~username
+### Server
+1. Go to the project root MeTube
+2. Run the shell script copy_to_server.sh to copy (rsync) most files to the webapp server.
+   ```
+   . copy_to_server.sh
+   ```
+3. SSH to the webapp server
+   ```
+   ssh webapp.cs.clemson.edu
+   ```
+4. Install the [dependencies](#dependencies)
+5. Go to the server directory
+   ```
+   cd MeTube/server/server
+   ```
+6. Edit .flaskenv on the line with `SERVER_CFG` replacing its value with `production`
+7. Run the server in the background with public access. It should stay running even after you log out.
+   ```
+   python server.py &
+   ```
+  - or
+   ```
+   flask run --host=0.0.0.0
+   ```
+8. Open your browser to the webapp server to determine if the API is accessible
+   - webapp.cs.clemson.edu:5000
 ### Client
-1. Go to the client
+The webapp server should allow .htaccess files and have mod_rewrite enabled.
+1. Go to the client directory
    ```
    cd client
    ```
@@ -87,25 +152,30 @@ The web app is hosted on http://webapp.cs.clemson.edu/~username
    ```
    "homepage": "http://webapp.cs.clemson.edu:3000/~<username>"
    ```
-3. Build static pages for the front end
+3. Edit .env replacing `<variables>` as needed
+   ` REACT_APP_ROOT_DIR should be your Clemson username
+   - REACT_APP_SERVER_IP should match the server address
+   - e.g. webapp.cs.clemson.edu:5000
+4. Build static pages for the front end incorporating .env variables
    ```
    npm run build
    ```
-4. Push the new static pages to the web app server
+5. Push the new static pages and .htaccess file to the web app server
    - WARNING: npm run push will overwrite files in your public_html folder
-   - Use the second command to specify your own path
+   - Use the alternate command to specify your own path
    ```
    npm run push
    ```
    - or
    ```
-   rsync -av build/ webapp.cs.clemson.edu:~/<your_path>
+   cp .htaccess build/ && rsync -av build/ webapp.cs.clemson.edu:~/<your_path>
    ```
-5. Navigate to `http://webapp.cs.clemson.edu/~<your_Clemson_username>/` to see the app
+6. Navigate to `http://webapp.cs.clemson.edu/~<your_Clemson_username>/` to see the app
    - This is a static website
-   - Not using server-side rendering, so node is not used to keep it running
+   - Does not use server-side rendering, so node is not needed to keep it running
+   - The .htaccess file should enable page refresh and direct navigation to sub-pages
 
-## Notes
+## Misc. Notes
 
 
 ## TODO
