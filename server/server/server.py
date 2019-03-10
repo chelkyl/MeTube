@@ -495,6 +495,15 @@ def remove_file_from_store(file_id):
   except Exception as e:
     print(e)
 
+@app.route('/files/<file_id>/g', methods=['GET'])
+def get_ac_file(file_id):
+  folder = app.config['UPLOAD_DIR']
+  file_path = path.join(folder, str(file_id))
+  try:
+    if path.isfile(file_path):
+      return send_file(file_path,attachment_filename='bobsfile.txt')
+  except Exception as e:
+    print(e)
 @app.route('/files/<file_id>',methods=['DELETE'])
 @auth.login_required
 def remove_file(file_id):
