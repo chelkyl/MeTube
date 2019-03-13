@@ -33,7 +33,7 @@ class Section extends React.Component {
     ApiClient.get(`/${route}?b=${start}&l=${count}`, {filters, sorters})
       .then(res => {
         console.log(res);
-        this.setState({files:res.response});
+        this.setState({files:res.data.response});
       })
       .catch(err => {
         let msg = '';
@@ -66,7 +66,7 @@ class Section extends React.Component {
 
   componentDidMount() {
     const { route, filters, sorters } = this.props;
-    // this.getFiles(route, filters, sorters);
+    this.getFiles(route, filters, sorters);
   }
 
   render() {

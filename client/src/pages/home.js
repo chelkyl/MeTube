@@ -7,6 +7,7 @@ import { ApiClient } from '../apiclient';
 const styles = theme => ({
   container: {
     display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'center',
     textAlign: 'left'
   }
@@ -21,7 +22,9 @@ class HomePage extends React.Component {
     ApiClient.get(`/${route}?b=${start}&l=${count}`, {filters, sorters})
       .then(res => {
         console.log(res);
-        this.setState({[tag]:res.response});
+        if (res.data.response) {
+          this.setState({[tag]:res.data.response});
+        }
       })
       .catch(err => {
         let msg = '';
@@ -55,12 +58,12 @@ class HomePage extends React.Component {
   componentDidMount() {
     const topChannelFilts = [];
     const topChannelSorts = [
-      {
+      /*{
         'column': 'subscribers',
         'descending': 'true'
-      }
+      }*/
     ];
-    //this.getData('topChannels', 'users', topChannelFilts, topChannelSorts);
+    this.getData('topChannels', 'users', topChannelFilts, topChannelSorts);
   }
 
   render() {
@@ -86,7 +89,7 @@ class HomePage extends React.Component {
         <Section name='Trending' route='files'
           filters={trendingFilts}
           sorters={trendingSorts} />
-        {/* {topChannels.map(user => {
+        {topChannels.map(user => {
           return <Section key={`channel-${user.user_id}`} name={user.channel_name}
             route='files'
             filters={[...trendingFilts, {
@@ -95,7 +98,7 @@ class HomePage extends React.Component {
               'cmp': 'exact'
             }]}
             sorters={trendingSorts}/>
-        })} */}
+        })}
       </div>
     );
   }

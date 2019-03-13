@@ -95,15 +95,15 @@ class Sidebar extends React.Component {
             ) : null
           }
           <Divider/>
-          <ListItem button component={Link} to='/browse?type=images' key='Images'>
+          <ListItem button component={Link} to={{pathname:'/browse',search:'?type=images'}} key='Images'>
             <ListItemIcon><PhotoLibrary/></ListItemIcon>
             <ListItemText primary='Images'/>
           </ListItem>
-          <ListItem button component={Link} to='/browse?type=videos' key='Videos'>
+          <ListItem button component={Link} to={{pathname:'/browse',search:'?type=videos'}} key='Videos'>
             <ListItemIcon><VideoLibrary/></ListItemIcon>
             <ListItemText primary='Videos'/>
           </ListItem>
-          <ListItem button component={Link} to='/browse?type=music' key='Music'>
+          <ListItem button component={Link} to={{pathname:'/browse',search:'?type=music'}} key='Music'>
             <ListItemIcon><LibraryMusic/></ListItemIcon>
             <ListItemText primary='Music'/>
           </ListItem>

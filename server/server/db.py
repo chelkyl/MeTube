@@ -189,7 +189,7 @@ class File(db.Model):
 
   file_id = db.Column(db.Integer, primary_key=True)
   user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
-  title = db.Column(db.String(100), unique=True, nullable=False)
+  title = db.Column(db.String(100), unique=False, nullable=False)
   description = db.Column(db.String(400), nullable=False)
   permissions = db.Column(db.String(40), nullable=False)
   upload_date = db.Column(db.Date(), nullable=False)

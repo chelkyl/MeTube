@@ -6,6 +6,8 @@ import Sidebar from './components/sidebar';
 import HomePage from './pages/home';
 import LoginPage from './pages/login';
 import RegisterPage from './pages/register';
+import BrowsePage from './pages/browse';
+import ViewPage from './pages/view';
 import Error404Page from './pages/pageNotFound';
 import {
   Route,
@@ -73,13 +75,6 @@ class App extends Component {
 
     return (
       <div className={classes.root}>
-        {/* <AppBar position="fixed" className={classes.appBar}>
-          <Toolbar>
-            <Typography variant="h6" color="inherit" noWrap>
-              Title
-            </Typography>
-          </Toolbar>
-        </AppBar> */}
         <Masthead isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
         <Sidebar className={classes.drawer} isOpen={sidebarOpen}
           isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
@@ -90,23 +85,11 @@ class App extends Component {
             <Route path='/' exact component={HomePage}/>
             <Route path='/login' component={LoginPage}/>
             <Route path='/register' component={RegisterPage}/>
+            <Route path='/browse' exact component={BrowsePage}/>
+            <Route path='/view/:id' component={ViewPage}/>
             <Route component={Error404Page}/>
           </Switch>
         </main>
-
-        {/*
-        <Masthead className={classes.appBar}
-          isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
-        <Sidebar className={classes.drawer} open={sidebarOpen}
-          isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
-        <main className={classes.content}>
-          <Switch>
-            <Route path='/' exact component={Home}/>
-            <Route path='/login' component={Login}/>
-            <Route path='/register' component={Register}/>
-            <Route component={PageNotFound}/>
-          </Switch>
-        </main> */}
       </div>
     );
   }

@@ -1,8 +1,8 @@
-from os import getenv, path, mkdir, sys, path, unlink, listdir
+from os import getenv, path, mkdir, sys, unlink, listdir, stat
 # workaround to allow flask to find modules
 CUR_DIR = path.dirname(path.abspath(__file__))
 sys.path.append(path.dirname(CUR_DIR+"/"))
-from flask import Flask, request, cli, g
+from flask import Flask, Response, request, cli, g, send_file, send_from_directory
 from passlib.hash import hex_sha256
 from time import time
 import sqlalchemy
@@ -14,7 +14,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_httpauth import HTTPBasicAuth
 from db import *
-from response import ResponseObject as Response
+from response import ResponseObject as JSONResponse
 
 # NOTES:
 # flask g is for storing data during requests like a temp global dictionary
@@ -135,7 +135,7 @@ def verify_admin_password(username,password):
 @admin_auth.login_required
 def delete_db():
   if g.admin.username != "admin":
-    return Response("Unauthorized",401,True).end()
+    return JSONResponse("Unauthorized",401,True).end()
   recreate_db()
   return "OK"
 
@@ -159,7 +159,7 @@ def add_user():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   # make sure username and email are unique
   result = db.engine.execute(text("SELECT user_id FROM User WHERE username=:uname"), uname=username)
@@ -175,7 +175,7 @@ def add_user():
   if not emailUniq:
     notUniq.append('email')
   if notUniq:
-    return Response({'not unique':notUniq},400,isError=True).end()
+    return JSONResponse({'not unique':notUniq},400,isError=True).end()
 
   # valid parameters, create and return it
   result = db.engine.execute(text("INSERT INTO User (username,email,password_hash,channel_description) VALUES(:uname,:email,:password_hash,:channel_description)"),uname=username,email=email,password_hash=hash_password(password),channel_description=channel_description)
@@ -184,13 +184,13 @@ def add_user():
   # db.session.commit()
   result = db.engine.execute('SELECT user_id, username, email, channel_description FROM User WHERE user_id={ID}'.format(ID=result.lastrowid))
   data = get_query_data(result)
-  return Response(data[0]).end()
+  return JSONResponse(data[0]).end()
 
 @app.route('/users/<user_id>',methods=['DELETE'])
 @auth.login_required
 def remove_user(user_id):
   if g.user.user_id != int(user_id):
-    return Response("Unauthorized",401,True).end()
+    return JSONResponse("Unauthorized",401,True).end()
 
   result = db.engine.execute('SELECT user_id,email,username,password_hash,channel_description FROM User WHERE user_id={ID}'.format(ID=user_id))
   data = get_query_data(result)
@@ -200,15 +200,15 @@ def remove_user(user_id):
     for user_favorite in user_favorites_list:
       result = db.engine.execute('DELETE FROM user_favorites WHERE user_id={ID}'.format(ID=user_id))
     result = db.engine.execute('DELETE FROM User WHERE user_id={ID}'.format(ID=user_id))
-    return Response(data[0]).end()
-  return Response("user_id {ID} not found".format(ID=user_id),404,True).end()
+    return JSONResponse(data[0]).end()
+  return JSONResponse("user_id {ID} not found".format(ID=user_id),404,True).end()
 
   user = User.query.get(user_id)
   if user:
     db.session.delete(user)
     db.session.commit()
-    return Response(user.to_json()).end()
-  return Response("user_id {ID} not found".format(ID=user_id),404,True).end()
+    return JSONResponse(user.to_json()).end()
+  return JSONResponse("user_id {ID} not found".format(ID=user_id),404,True).end()
 
 # NOTE: unordered dict
 def get_query_data(resultProxy):
@@ -349,60 +349,60 @@ def get_users():
   result = db.engine.execute('SELECT user_id,email,username,channel_description FROM User')
   data = get_query_data(result)
   opts = get_request_opts(request)
-  return Response(filter_sort_paginate(data,opts)).end()
+  return JSONResponse(filter_sort_paginate(data,opts)).end()
   # users = User.query
-  # return Response([user.to_json() for user in users.all()]).end()
+  # return JSONResponse([user.to_json() for user in users.all()]).end()
 
 @app.route('/admin',methods=['GET'])
 def get_admins():
   result = db.engine.execute('SELECT user_id,username FROM Admin')
   data = get_query_data(result)
-  return Response(data).end()
+  return JSONResponse(data).end()
   # admins = Admin.query
-  # return Response([admins.to_json() for admin in admins.all()]).end()
+  # return JSONResponse([admins.to_json() for admin in admins.all()]).end()
 
 @app.route('/users/<user_id>',methods=['GET'])
 def get_user(user_id):
   result = db.engine.execute('SELECT user_id,email,username,channel_description FROM User WHERE user_id={ID}'.format(ID=user_id))
   data = get_query_data(result)
   if data:
-    return Response(data[0]).end()
+    return JSONResponse(data[0]).end()
   else:
-    return Response("user_id {ID} not found".format(ID=user_id),404,True).end()
+    return JSONResponse("user_id {ID} not found".format(ID=user_id),404,True).end()
   # user = User.query.get(user_id)
   # if user:
-  #   return Response(user.to_json()).end()
+  #   return JSONResponse(user.to_json()).end()
   # else:
-  #   return Response("user_id {ID} not found".format(ID=user_id),404,True).end()
+  #   return JSONResponse("user_id {ID} not found".format(ID=user_id),404,True).end()
 
 @app.route('/admin/<admin_id>',methods=['GET'])
 def get_admin(admin_id):
   result = db.engine.execute('SELECT admin_id,username FROM Admin WHERE admin_id={ID}'.format(ID=admin_id))
   data = get_query_data(result)
   if data:
-    return Response(data[0]).end()
+    return JSONResponse(data[0]).end()
   else:
-    return Response("admin_id {ID} not found".format(ID=admin_id),404,True).end()
+    return JSONResponse("admin_id {ID} not found".format(ID=admin_id),404,True).end()
   # admin = Admin.query.get(admin_id)
   # if admin:
-  #   return Response(admin.to_json()).end()
+  #   return JSONResponse(admin.to_json()).end()
   # else:
-  #   return Response("admin_id {ID} not found".format(ID=admin_id),404,True).end()
+  #   return JSONResponse("admin_id {ID} not found".format(ID=admin_id),404,True).end()
 
 @app.route('/login',methods=['POST'])
 def auth_user():
   req = request.json
   if req is None:
-    return Response("Unauthorized",401,True).end()
+    return JSONResponse("Unauthorized",401,True).end()
   username = req.get('username',None)
   password = req.get('password',None)
 
   if username is None or password is None:
-    return Response("Unauthorized",401,True).end()
+    return JSONResponse("Unauthorized",401,True).end()
   user = User.query.filter_by(username=username).first()
   if not user or not user.verify_password(password):
-    return Response("Unauthorized",401,True).end()
-  return Response("OK").end()
+    return JSONResponse("Unauthorized",401,True).end()
+  return JSONResponse("OK").end()
 
 def is_allowed_file(fname):
   return '.' in fname and fname.rsplit('.',1)[1].lower() in ALLOWED_FILE_EXT
@@ -410,19 +410,19 @@ def is_allowed_file(fname):
 @app.route('/files/upload',methods=['POST'])
 @auth.login_required
 def upload_file():
-  userid = g.user.user_id
+  user_id = g.user.user_id
   upload_date = datetime.datetime.now()
 
   if 'file' not in request.files:
-    return Response("missing file in request",400,True).end()
+    return JSONResponse("missing file in request",400,True).end()
 
   file = request.files['file']
   mimetype = file.content_type
   filename = file.filename
   if filename == '':
-    return Response("filename is blank",400,True).end()
+    return JSONResponse("filename is blank",400,True).end()
   if not is_allowed_file(filename):
-    return Response("file type not allowed",400,True).end()
+    return JSONResponse("file type not allowed",400,True).end()
 
   title = request.form['title']
   description = request.form['description']
@@ -441,7 +441,7 @@ def upload_file():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   # make sure title is unique
   titleUniq = len(File.query.filter_by(title=title).all()) == 0
@@ -449,42 +449,79 @@ def upload_file():
   if not titleUniq:
     notUniq.append('title')
   if notUniq:
-    return Response({'not unique':notUniq},400,isError=True).end()
+    return JSONResponse({'not unique':notUniq},400,isError=True).end()
 
-  #fileEntry = File(user_id=userid,title=title,description=description,permissions=permissions,upload_date = upload_date,views=0,upvotes=0,downvotes=0,mimetype=mimetype,file_type=file_type)
+  #fileEntry = File(user_id=user_id,title=title,description=description,permissions=permissions,upload_date = upload_date,views=0,upvotes=0,downvotes=0,mimetype=mimetype,file_type=file_type)
   #db.session.add(fileEntry)
   #db.session.commit()
   sql = text("""INSERT INTO File(user_id, title, description, permissions, upload_date, views, upvotes, downvotes, mimetype, file_type) VALUES(:user_id, :title, :description, :permissions, :upload_date, :views, :upvotes, :downvotes, :mimetype, :file_type)""")
-  result = db.engine.execute(sql, user_id=userid,title=title,description=description,permissions=permissions,upload_date = upload_date,views=0,upvotes=0,downvotes=0,mimetype=mimetype,file_type=file_type)
+  result = db.engine.execute(sql, user_id=user_id,title=title,description=description,permissions=permissions,upload_date = upload_date,views=0,upvotes=0,downvotes=0,mimetype=mimetype,file_type=file_type)
   result = db.engine.execute('SELECT file_id,user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type FROM File WHERE file_id={ID}'.format(ID=result.lastrowid))
   data = get_query_data(result)
 
-  if data[0]['file_id']:
+  if data and data[0]['file_id']:
     try:
       file.save(app.config['UPLOAD_DIR']+"/"+str(data[0]['file_id']))
-      return Response(data[0]).end()
+      return JSONResponse(data[0]).end()
     except FileNotFoundError:
       #db.session.delete(fileEntry)
       #db.session.commit()
       result = db.engine.execute('DELETE FROM File WHERE file_id={ID}'.format(ID=data[0]['file_id']))
-      return Response("Could not save file",400,True).end()
-  return Response("Could not add file to database",500,True).end()
+      return JSONResponse("Could not save file",400,True).end()
+  return JSONResponse("Could not add file to database",500,True).end()
 
 @app.route('/files',methods=['GET'])
 def get_files():
   result = db.engine.execute('SELECT file_id,user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type FROM File')
   data = get_query_data(result)
   opts = get_request_opts(request)
-  return Response(filter_sort_paginate(data,opts)).end()
+  return JSONResponse(filter_sort_paginate(data,opts)).end()
 
 @app.route('/files/<file_id>',methods=['GET'])
 def get_file(file_id):
   result = db.engine.execute('SELECT file_id,user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type FROM File WHERE file_id={ID}'.format(ID=file_id))
   data = get_query_data(result)
   if data:
-    return Response(data[0]).end()
+    return JSONResponse(data[0]).end()
   else:
-    return Response("file_id {ID} not found".format(ID=file_id),404,True).end()
+    return JSONResponse("file_id {ID} not found".format(ID=file_id),404,True).end()
+
+# TODO: check user permissions
+@app.route('/files/<file_id>/g', methods=['GET'])
+def get_actual_file(file_id):
+  result = db.engine.execute('SELECT user_id,title,permissions,mimetype,file_type FROM File WHERE file_id={ID}'.format(ID=file_id))
+  data = get_query_data(result)
+  if not data:
+    return JSONResponse("file_id {ID} not found".format(ID=file_id),404,True).end()
+  
+  file_path = path.join(app.config['UPLOAD_DIR'], str(file_id))
+  if not path.isfile(file_path):
+    return JSONResponse("file for {ID} not found".format(ID=file_id),404,True).end()
+  
+  info = data[0]
+  ranges = request.headers.get('Range',None)
+  if ranges:
+    # FIXME: should check if ext in SOUND_EXT or ext in VIDEO_EXT
+    beg, end = ranges[ranges.find('=')+1:].split('-')
+    length = -1
+    beg = int(beg)
+    file_size = stat(file_path).st_size
+    if beg >= file_size:
+      return JSONResponse("Invalid range",400,isError=True).end()
+    if end:
+      length = int(end) + 1 - beg
+    else:
+      chunk_end = (int(beg) + 1000 * 1000 * 1)
+      length = chunk_end if beg+chunk_end <= file_size else file_size-beg
+    with open(file_path, 'rb') as f:
+      f.seek(beg)
+      file_chunk = f.read(length)
+    res = Response(file_chunk,206,mimetype=info['mimetype'],content_type=info['mimetype'],direct_passthrough=True)
+    res.headers.add('Content-Range', 'bytes {b}-{l}/{t}'.format(b=beg,l=beg+length-1,t=file_size))
+    return res
+  # no range header given, send entire file
+  else:
+    return send_file(file_path, mimetype=info['mimetype'])
 
 def remove_file_from_store(file_id):
   folder = app.config['UPLOAD_DIR']
@@ -495,21 +532,12 @@ def remove_file_from_store(file_id):
   except Exception as e:
     print(e)
 
-@app.route('/files/<file_id>/g', methods=['GET'])
-def get_ac_file(file_id):
-  folder = app.config['UPLOAD_DIR']
-  file_path = path.join(folder, str(file_id))
-  try:
-    if path.isfile(file_path):
-      return send_file(file_path,attachment_filename='bobsfile.txt')
-  except Exception as e:
-    print(e)
 @app.route('/files/<file_id>',methods=['DELETE'])
 @auth.login_required
 def remove_file(file_id):
   file = File.query.get(file_id)
   if g.user.user_id != int(file.user_id):
-    return Response("Unauthorized",401,True).end()
+    return JSONResponse("Unauthorized",401,True).end()
 
   result = db.engine.execute('SELECT file_id,user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type FROM File WHERE file_id={ID}'.format(ID=file_id))
   data = get_query_data(result)
@@ -533,15 +561,15 @@ def remove_file(file_id):
 
     result = db.engine.execute('DELETE FROM File WHERE file_id={ID}'.format(ID=file_id))
     remove_file_from_store(file_id)
-    return Response(data[0]).end()
-  return Response("file_id {ID} not found".format(ID=file_id),404,True).end()
+    return JSONResponse(data[0]).end()
+  return JSONResponse("file_id {ID} not found".format(ID=file_id),404,True).end()
 
-  if File:
-    db.session.delete(file)
-    db.session.commit()
-    remove_file_from_store(file_id)
-    return Response(file.to_json()).end()
-  return Response("file_id {ID} not found".format(ID=file_id),404,True).end()
+  # if File:
+  #   db.session.delete(file)
+  #   db.session.commit()
+  #   remove_file_from_store(file_id)
+  #   return JSONResponse(file.to_json()).end()
+  # return JSONResponse("file_id {ID} not found".format(ID=file_id),404,True).end()
 
 @app.route('/playlists/upload',methods=['POST'])
 @auth.login_required
@@ -563,7 +591,7 @@ def add_playlist():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   # valid parameters, create and return it
   #newPlaylist = Playlist(user_id=user_id,title=title,description=description)
@@ -574,25 +602,25 @@ def add_playlist():
   result = db.engine.execute('SELECT playlist_id,user_id,title,description FROM Playlist WHERE playlist_id={ID}'.format(ID=result.lastrowid))
   data = get_query_data(result)
   if data:
-    return Response(data[0]).end()
+    return JSONResponse(data[0]).end()
   else:
-    return Response("Playlist creation failed",500,True).end()
+    return JSONResponse("Playlist creation failed",500,True).end()
 
 @app.route('/playlists/<playlist_id>',methods=['GET'])
 def get_playlist(playlist_id):
   result = db.engine.execute('SELECT playlist_id,user_id,title,description FROM Playlist WHERE playlist_id={ID}'.format(ID=playlist_id))
   data = get_query_data(result)
   if data:
-    return Response(data[0]).end()
+    return JSONResponse(data[0]).end()
   else:
-    return Response("playlist_id {ID} not found".format(ID=playlist_id),404,True).end()
+    return JSONResponse("playlist_id {ID} not found".format(ID=playlist_id),404,True).end()
 
 @app.route('/playlists/<playlist_id>',methods=['DELETE'])
 @auth.login_required
 def remove_playlist(playlist_id):
   playlist = Playlist.query.get(playlist_id)
   if g.user.user_id != int(playlist.user_id):
-    return Response("Unauthorized",401,True).end()
+    return JSONResponse("Unauthorized",401,True).end()
 
   result = db.engine.execute('SELECT playlist_id,user_id,title,description FROM Playlist WHERE playlist_id={ID}'.format(ID=playlist_id))
   data = get_query_data(result)
@@ -602,14 +630,14 @@ def remove_playlist(playlist_id):
     for playlist_file in playlist_files_list:
       result = db.engine.execute('DELETE FROM playlist_files WHERE playlist_id={ID}'.format(ID=playlist_id))
     result = db.engine.execute('DELETE FROM Playlist WHERE playlist_id={ID}'.format(ID=playlist_id))
-    return Response(data[0]).end()
-  return Response("playlist_id {ID} not found".format(ID=playlist_id),404,True).end()
+    return JSONResponse(data[0]).end()
+  return JSONResponse("playlist_id {ID} not found".format(ID=playlist_id),404,True).end()
 
   if Playlist:
     db.session.delete(playlist)
     db.session.commit()
-    return Response(playlist.to_json()).end()
-  return Response("playlist_id {ID} not found".format(ID=playlist_id),404,True).end()
+    return JSONResponse(playlist.to_json()).end()
+  return JSONResponse("playlist_id {ID} not found".format(ID=playlist_id),404,True).end()
 
 @app.route('/categories/upload',methods=['POST'])
 @admin_auth.login_required
@@ -625,7 +653,7 @@ def add_category():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   # valid parameters, create and return it
   #newCategory= Category(category=category)
@@ -636,18 +664,18 @@ def add_category():
   result = db.engine.execute('SELECT category_id,category FROM Category WHERE category_id={ID}'.format(ID=result.lastrowid))
   data = get_query_data(result)
   if data:
-    return Response(data[0]).end()
+    return JSONResponse(data[0]).end()
   else:
-    return Response("Category creation failed",500,True).end()
+    return JSONResponse("Category creation failed",500,True).end()
 
 @app.route('/categories/<category_id>',methods=['GET'])
 def get_category(category_id):
   result = db.engine.execute('SELECT category_id,category FROM Category WHERE category_id={ID}'.format(ID=category_id))
   data = get_query_data(result)
   if data:
-    return Response(data[0]).end()
+    return JSONResponse(data[0]).end()
   else:
-    return Response("category_id {ID} not found".format(ID=category_id),404,True).end()
+    return JSONResponse("category_id {ID} not found".format(ID=category_id),404,True).end()
 
 @app.route('/categories/<category_id>',methods=['DELETE'])
 @admin_auth.login_required
@@ -660,15 +688,15 @@ def remove_category(category_id):
     for file_category in files_categories_list:
       result = db.engine.execute('DELETE FROM files_categories WHERE category_id={ID}'.format(ID=category_id))
     result = db.engine.execute('DELETE FROM Category WHERE category_id={ID}'.format(ID=category_id))
-    return Response(data[0]).end()
-  return Response("category_id {ID} not found".format(ID=category_id),404,True).end()
+    return JSONResponse(data[0]).end()
+  return JSONResponse("category_id {ID} not found".format(ID=category_id),404,True).end()
 
   category = Category.query.get(category_id)
   if Category:
     db.session.delete(category)
     db.session.commit()
-    return Response(category.to_json()).end()
-  return Response("category_id {ID} not found".format(ID=category_id),404,True).end()
+    return JSONResponse(category.to_json()).end()
+  return JSONResponse("category_id {ID} not found".format(ID=category_id),404,True).end()
 
 @app.route('/keywords/upload',methods=['POST'])
 @admin_auth.login_required
@@ -684,7 +712,7 @@ def add_keyword():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   # valid parameters, create and return it
   #newKeyword= Keyword(keyword=keyword)
@@ -695,18 +723,18 @@ def add_keyword():
   result = db.engine.execute('SELECT keyword_id,keyword FROM Keyword WHERE keyword_id={ID}'.format(ID=result.lastrowid))
   data = get_query_data(result)
   if data:
-    return Response(data[0]).end()
+    return JSONResponse(data[0]).end()
   else:
-    return Response("Keyword creation failed",500,True).end()
+    return JSONResponse("Keyword creation failed",500,True).end()
 
 @app.route('/keywords/<keyword_id>',methods=['GET'])
 def get_keyword(keyword_id):
   result = db.engine.execute('SELECT keyword_id,keyword FROM Keyword WHERE keyword_id={ID}'.format(ID=keyword_id))
   data = get_query_data(result)
   if data:
-    return Response(data[0]).end()
+    return JSONResponse(data[0]).end()
   else:
-    return Response("keyword_id {ID} not found".format(ID=keyword_id),404,True).end()
+    return JSONResponse("keyword_id {ID} not found".format(ID=keyword_id),404,True).end()
 
 @app.route('/keywords/<keyword_id>',methods=['DELETE'])
 @admin_auth.login_required
@@ -719,15 +747,15 @@ def remove_keyword(keyword_id):
     for file_keyword in files_keywords_list:
       result = db.engine.execute('DELETE FROM files_keywords WHERE keyword_id={ID}'.format(ID=keyword_id))
     result = db.engine.execute('DELETE FROM Keyword WHERE keyword_id={ID}'.format(ID=keyword_id))
-    return Response(data[0]).end()
-  return Response("keyword_id {ID} not found".format(ID=keyword_id),404,True).end()
+    return JSONResponse(data[0]).end()
+  return JSONResponse("keyword_id {ID} not found".format(ID=keyword_id),404,True).end()
 
   keyword = Keyword.query.get(keyword_id)
   if Keyword:
     db.session.delete(keyword)
     db.session.commit()
-    return Response(keyword.to_json()).end()
-  return Response("keyword_id {ID} not found".format(ID=keyword_id),404,True).end()
+    return JSONResponse(keyword.to_json()).end()
+  return JSONResponse("keyword_id {ID} not found".format(ID=keyword_id),404,True).end()
 
 @app.route('/users/add_contact',methods=['LINK'])
 @auth.login_required
@@ -746,20 +774,20 @@ def add_contact():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   contacting_user=User.query.get(contacting_id)
   contacted_user=User.query.get(contacted_id)
 
   if contacted_user.is_blocked(contacting_user):
-    return Response("Contacting user is blocked",401,True).end()
+    return JSONResponse("Contacting user is blocked",401,True).end()
 
   if not contacting_user.is_contact(contacted_user):
     #contacting_user.contacted.append(contacted_user)
     result = db.engine.execute("INSERT INTO contacts VALUES({}, {})".format(contacting_id, contacted_id))
     #db.session.commit()
-    return Response("Contact created",200,False).end()
-  return Response("Contact already exists",404,True).end()
+    return JSONResponse("Contact created",200,False).end()
+  return JSONResponse("Contact already exists",404,True).end()
 
 @app.route('/users/remove_contact',methods=['UNLINK'])
 @auth.login_required
@@ -778,7 +806,7 @@ def remove_contact():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   contact_removing=User.query.get(contact_removing_id)
   contact_removed=User.query.get(contact_removed_id)
@@ -794,8 +822,8 @@ def remove_contact():
     #contact_removing.contacted.remove(contact_removed)
     result = db.engine.execute("DELETE FROM contacts WHERE contacting_id = {} AND contacted_id = {}".format(contact_removing_id, contact_removed_id))
     #db.session.commit()
-    return Response("Contact removed",200,False).end()
-  return Response("No contact exists",404,True).end()
+    return JSONResponse("Contact removed",200,False).end()
+  return JSONResponse("No contact exists",404,True).end()
 
 @app.route('/messages/upload',methods=['POST'])
 @auth.login_required
@@ -819,16 +847,16 @@ def add_message():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   contacting_user = User.query.get(contacting_id)
   contacted_user = User.query.get(contacted_id)
 
   if contacted_user.is_blocked(contacting_user):
-    return Response("Contacting user is blocked",401,True).end()
+    return JSONResponse("Contacting user is blocked",401,True).end()
 
   if not contacting_user.is_contact(contacted_user):
-    return Response("{ID} is not a contact to contacting user".format(ID=contacted_id),404,True).end()
+    return JSONResponse("{ID} is not a contact to contacting user".format(ID=contacted_id),404,True).end()
 
   # valid parameters, create and return it
   #newMessage=Message(contacting_id=contacting_id, contacted_id=contacted_id, message=message, message_date=message_date)
@@ -839,9 +867,9 @@ def add_message():
   result = db.engine.execute('SELECT message_id,contacting_id,contacted_id,message,message_date FROM Message WHERE message_id={ID}'.format(ID=result.lastrowid))
   data = get_query_data(result)
   if data:
-    return Response(data[0]).end()
+    return JSONResponse(data[0]).end()
   else:
-    return Response("Message creation failed",500,True).end()
+    return JSONResponse("Message creation failed",500,True).end()
 
 @app.route('/users/subscribe',methods=['LINK'])
 @auth.login_required
@@ -860,20 +888,20 @@ def subscribe():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   subscribing_user=User.query.get(subscribing_id)
   subscribed_user=User.query.get(subscribed_id)
 
   if subscribed_user.is_blocked(subscribing_user):
-    return Response("Subscribing user is blocked",401,True).end()
+    return JSONResponse("Subscribing user is blocked",401,True).end()
 
   if not subscribing_user.is_subscriber(subscribed_user):
     #subscribing_user.subscribed.append(subscribed_user)
     result = db.engine.execute("INSERT INTO subscribers VALUES({}, {})".format(subscribing_id, subscribed_id))
     #db.session.commit()
-    return Response("Subscription created",200,False).end()
-  return Response("Subscription already exists",404,True).end()
+    return JSONResponse("Subscription created",200,False).end()
+  return JSONResponse("Subscription already exists",404,True).end()
 
 @app.route('/users/unsubscribe',methods=['UNLINK'])
 @auth.login_required
@@ -892,7 +920,7 @@ def unsubscribe():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   unsubscribing_user=User.query.get(unsubscribing_id)
   unsubscribed_user=User.query.get(unsubscribed_id)
@@ -900,8 +928,8 @@ def unsubscribe():
     #unsubscribing_user.subscribed.remove(unsubscribed_user)
     result = db.engine.execute("DELETE FROM subscribers WHERE subscribing_id = {} AND subscribed_id = {}".format(unsubscribing_id, unsubscribed_id))
     #db.session.commit()
-    return Response("Subscription removed",200,False).end()
-  return Response("No subscription exists",404,True).end()
+    return JSONResponse("Subscription removed",200,False).end()
+  return JSONResponse("No subscription exists",404,True).end()
 
 @app.route('/users/friend',methods=['LINK'])
 @auth.login_required
@@ -920,20 +948,20 @@ def friend():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   friending_user=User.query.get(friending_id)
   friended_user=User.query.get(friended_id)
 
   if friended_user.is_blocked(friending_user):
-    return Response("Friending user is blocked",401,True).end()
+    return JSONResponse("Friending user is blocked",401,True).end()
 
   if not friending_user.is_friend(friended_user):
     #friending_user.friended.append(friended_user)
     result = db.engine.execute("INSERT INTO friends VALUES({}, {})".format(friending_id, friended_id))
     #db.session.commit()
-    return Response("Friendship created",200,False).end()
-  return Response("Friendship already exists",404,True).end()
+    return JSONResponse("Friendship created",200,False).end()
+  return JSONResponse("Friendship already exists",404,True).end()
 
 @app.route('/users/unfriend',methods=['UNLINK'])
 @auth.login_required
@@ -952,7 +980,7 @@ def unfriend():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   unfriending_user=User.query.get(unfriending_id)
   unfriended_user=User.query.get(unfriended_id)
@@ -960,8 +988,8 @@ def unfriend():
     #unfriending_user.friended.remove(unfriended_user)
     result = db.engine.execute("DELETE FROM friends WHERE friending_id = {} AND friended_id = {}".format(unfriending_id, unfriended_id))
     #db.session.commit()
-    return Response("Friendship removed",200,False).end()
-  return Response("No friendship exists",404,True).end()
+    return JSONResponse("Friendship removed",200,False).end()
+  return JSONResponse("No friendship exists",404,True).end()
 
 @app.route('/users/block',methods=['LINK'])
 @auth.login_required
@@ -980,7 +1008,7 @@ def block():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   blocking_user=User.query.get(blocking_id)
   blocked_user=User.query.get(blocked_id)
@@ -988,8 +1016,8 @@ def block():
     #blocking_user.blocked.append(blocked_user)
     result = db.engine.execute("INSERT INTO blocks VALUES({}, {})".format(blocking_id, blocked_id))
     #db.session.commit()
-    return Response("Blocking created",200,False).end()
-  return Response("Blocking already exists",404,True).end()
+    return JSONResponse("Blocking created",200,False).end()
+  return JSONResponse("Blocking already exists",404,True).end()
 
 @app.route('/users/unblock',methods=['UNLINK'])
 @auth.login_required
@@ -1008,7 +1036,7 @@ def unblock():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   unblocking_user=User.query.get(unblocking_id)
   unblocked_user=User.query.get(unblocked_id)
@@ -1016,8 +1044,8 @@ def unblock():
     #unblocking_user.blocked.remove(unblocked_user)
     result = db.engine.execute("DELETE FROM blocks WHERE blocking_id = {} AND blocked_id = {}".format(unblocking_id, unblocked_id))
     #db.session.commit()
-    return Response("Blocking removed",200,False).end()
-  return Response("No blocking exists",404,True).end()
+    return JSONResponse("Blocking removed",200,False).end()
+  return JSONResponse("No blocking exists",404,True).end()
 
 @app.route('/users/favorite',methods=['LINK'])
 @auth.login_required
@@ -1036,21 +1064,21 @@ def favorite():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   file=File.query.get(file_id)
   user=User.query.get(user_id)
   file_owner=User.query.get(file.user_id)
 
   if file_owner.is_blocked(user):
-    return Response("Favoriting user is blocked from file owners content",401,True).end()
+    return JSONResponse("Favoriting user is blocked from file owners content",401,True).end()
 
   if not user.is_favorite(file):
     #user.favorites.append(file)
     result = db.engine.execute("INSERT INTO user_favorites VALUES({}, {})".format(file_id, user_id))
     #db.session.commit()
-    return Response("User favorite created",200,False).end()
-  return Response("User favorite already exists",404,True).end()
+    return JSONResponse("User favorite created",200,False).end()
+  return JSONResponse("User favorite already exists",404,True).end()
 
 @app.route('/users/unfavorite',methods=['UNLINK'])
 @auth.login_required
@@ -1069,7 +1097,7 @@ def unfavorite():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   user=User.query.get(user_id)
   file=File.query.get(file_id)
@@ -1077,8 +1105,8 @@ def unfavorite():
     #user.favorites.remove(file)
     result = db.engine.execute("DELETE FROM user_favorites WHERE file_id = {} AND user_id = {}".format(file_id, user_id))
     #db.session.commit()
-    return Response("User favorite removed",200,False).end()
-  return Response("No favorite exists",404,True).end()
+    return JSONResponse("User favorite removed",200,False).end()
+  return JSONResponse("No favorite exists",404,True).end()
 
 @app.route('/playlists/add_file',methods=['LINK'])
 @auth.login_required
@@ -1097,17 +1125,17 @@ def add_file_to_playlist():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   file=File.query.get(file_id)
   playlist=Playlist.query.get(playlist_id)
   if g.user.user_id != int(playlist.user_id):
-    return Response("Unauthorized",401,True).end()
+    return JSONResponse("Unauthorized",401,True).end()
 
   #playlist.files.append(file)
   result = db.engine.execute("INSERT INTO playlist_files VALUES({}, {})".format(file_id, playlist_id))
   #db.session.commit()
-  return Response("File added to playlist",200,False).end()
+  return JSONResponse("File added to playlist",200,False).end()
 
 @app.route('/playlists/remove_file',methods=['UNLINK'])
 @auth.login_required
@@ -1126,19 +1154,19 @@ def remove_file_from_playlist():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   playlist=Playlist.query.get(playlist_id)
   file=File.query.get(file_id)
   if g.user.user_id != int(playlist.user_id):
-    return Response("Unauthorized",401,True).end()
+    return JSONResponse("Unauthorized",401,True).end()
 
   if playlist.contains_file(file):
     #playlist.files.remove(file)
     result = db.engine.execute("DELETE FROM playlist_files WHERE file_id = {} AND playlist_id = {}".format(file_id, playlist_id))
     #db.session.commit()
-    return Response("File removed from playlist",200,False).end()
-  return Response("Playlist does not contain file",404,True).end()
+    return JSONResponse("File removed from playlist",200,False).end()
+  return JSONResponse("Playlist does not contain file",404,True).end()
 
 @app.route('/comments/add_comment',methods=['POST'])
 @auth.login_required
@@ -1164,14 +1192,14 @@ def add_comment():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   file=File.query.get(file_id)
   user=User.query.get(user_id)
   file_owner=User.query.get(file.user_id)
 
   if file_owner.is_blocked(user):
-    return Response("Commenting user is blocked from file owners content",401,True).end()
+    return JSONResponse("Commenting user is blocked from file owners content",401,True).end()
 
   # valid parameters, create and return it
   #newComment = Comment(user_id=user_id,file_id=file_id,comment=comment,comment_date=comment_date)
@@ -1182,38 +1210,38 @@ def add_comment():
   result = db.engine.execute('SELECT comment_id,user_id,file_id,comment,comment_date FROM Comment WHERE comment_id={ID}'.format(ID=result.lastrowid))
   data = get_query_data(result)
   if data:
-    return Response(data[0]).end()
+    return JSONResponse(data[0]).end()
   else:
-    return Response("Comment creation failed",500,True).end()
+    return JSONResponse("Comment creation failed",500,True).end()
 
 @app.route('/comments/<comment_id>',methods=['GET'])
 def get_comment(comment_id):
   result = db.engine.execute('SELECT comment_id,user_id,file_id,comment,comment_date FROM Comment WHERE comment_id={ID}'.format(ID=comment_id))
   data = get_query_data(result)
   if data:
-    return Response(data[0]).end()
+    return JSONResponse(data[0]).end()
   else:
-    return Response("comment_id {ID} not found".format(ID=comment_id),404,True).end()
+    return JSONResponse("comment_id {ID} not found".format(ID=comment_id),404,True).end()
 
 @app.route('/comments/<comment_id>',methods=['DELETE'])
 @auth.login_required
 def remove_comment(comment_id):
   comment = Comment.query.get(comment_id)
   if g.user.user_id != int(comment.user_id):
-    return Response("Unauthorized",401,True).end()
+    return JSONResponse("Unauthorized",401,True).end()
 
   result = db.engine.execute('SELECT comment_id,user_id,file_id,comment,comment_date FROM Comment WHERE comment_id={ID}'.format(ID=comment_id))
   data = get_query_data(result)
   if data:
     result = db.engine.execute('DELETE FROM Comment WHERE comment_id={ID}'.format(ID=comment_id))
-    return Response(data[0]).end()
-  return Response("comment_id {ID} not found".format(ID=comment_id),404,True).end()
+    return JSONResponse(data[0]).end()
+  return JSONResponse("comment_id {ID} not found".format(ID=comment_id),404,True).end()
 
   if Comment:
     db.session.delete(comment)
     db.session.commit()
-    return Response(comment.to_json()).end()
-  return Response("comment_id {ID} not found".format(ID=comment_id),404,True).end()
+    return JSONResponse(comment.to_json()).end()
+  return JSONResponse("comment_id {ID} not found".format(ID=comment_id),404,True).end()
 
 @app.route('/categories/add_to_file',methods=['LINK'])
 @auth.login_required
@@ -1232,17 +1260,17 @@ def add_category_to_file():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   file=File.query.get(file_id)
   category=Category.query.get(category_id)
   if g.user.user_id != int(file.user_id):
-    return Response("Unauthorized",401,True).end()
+    return JSONResponse("Unauthorized",401,True).end()
 
   #playlist.files.append(file)
   result = db.engine.execute("INSERT INTO files_categories VALUES({}, {})".format(file_id, category_id))
   #db.session.commit()
-  return Response("Category added to file",200,False).end()
+  return JSONResponse("Category added to file",200,False).end()
 
 @app.route('/categories/remove_from_file',methods=['UNLINK'])
 @auth.login_required
@@ -1261,17 +1289,17 @@ def remove_category_from_file():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   category=Category.query.get(category_id)
   file=File.query.get(file_id)
   if g.user.user_id != int(file.user_id):
-    return Response("Unauthorized",401,True).end()
+    return JSONResponse("Unauthorized",401,True).end()
 
   #playlist.files.remove(file)
   result = db.engine.execute("DELETE FROM files_categories WHERE file_id = {} AND category_id = {}".format(file_id, category_id))
   #db.session.commit()
-  return Response("Category removed from file",200,False).end()
+  return JSONResponse("Category removed from file",200,False).end()
 
 @app.route('/keywords/add_to_file',methods=['LINK'])
 @auth.login_required
@@ -1290,17 +1318,17 @@ def add_keyword_to_file():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   file=File.query.get(file_id)
   keyword=Keyword.query.get(keyword_id)
   if g.user.user_id != int(file.user_id):
-    return Response("Unauthorized",401,True).end()
+    return JSONResponse("Unauthorized",401,True).end()
 
   #playlist.files.append(file)
   result = db.engine.execute("INSERT INTO files_keywords VALUES({}, {})".format(file_id, keyword_id))
   #db.session.commit()
-  return Response("Keyword added to file",200,False).end()
+  return JSONResponse("Keyword added to file",200,False).end()
 
 @app.route('/keywords/remove_from_file',methods=['UNLINK'])
 @auth.login_required
@@ -1319,17 +1347,22 @@ def remove_keyword_from_file():
 
   # return error if missing any
   if missing:
-    return Response({'missing':missing},400,isError=True).end()
+    return JSONResponse({'missing':missing},400,isError=True).end()
 
   keyword=Keyword.query.get(keyword_id)
   file=File.query.get(file_id)
   if g.user.user_id != int(file.user_id):
-    return Response("Unauthorized",401,True).end()
+    return JSONResponse("Unauthorized",401,True).end()
 
   #playlist.files.remove(file)
   result = db.engine.execute("DELETE FROM files_keywords WHERE file_id = {} AND keyword_id = {}".format(file_id, keyword_id))
   #db.session.commit()
-  return Response("Keyword removed from file",200,False).end()
+  return JSONResponse("Keyword removed from file",200,False).end()
+
+@app.after_request
+def add_accept_ranges(response):
+  response.headers.add('Accept-Ranges','bytes')
+  return response
 
 cli.load_dotenv()
 configure_app()

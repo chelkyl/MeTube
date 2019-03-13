@@ -23,24 +23,33 @@ const styles = theme => ({
 
 class FileItemCard extends React.Component {
   render() {
-    const { classes, name, owner, file_id } = this.props;
+    const { classes, variant, name, owner, file_id } = this.props;
 
-    return (
-      <Card className={classes.card}>
-        <CardActionArea component={Link} to={`/file/${file_id}`}>
-          <CardMedia className={classes.media}
-            title={name}/>
-          <CardContent>
-            <Typography gutterBottom variant="subtitle1">
-              {name}
-            </Typography>
-            <Typography gutterBottom variant="subtitle2">
-              {owner}
-            </Typography>
-          </CardContent>
-        </CardActionArea>
-      </Card>
-    );
+    //TODO: add thumbnail
+    //TODO: add variant for small and wide card
+    let card = null;
+    if (variant === 'small') {
+      card = (
+        <Card className={classes.card}>
+          <CardActionArea component={Link} to={`/file/${file_id}`}>
+            <CardMedia className={classes.media}
+              title={name}/>
+            <CardContent>
+              <Typography gutterBottom variant="subtitle1">
+                {name}
+              </Typography>
+              <Typography gutterBottom variant="subtitle2">
+                {owner}
+              </Typography>
+            </CardContent>
+          </CardActionArea>
+        </Card>
+      );
+    }
+    else if (variant === 'large') {
+      card = <h1>Not implemented</h1>
+    }
+    return card;
   }
 }
 

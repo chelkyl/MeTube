@@ -15,7 +15,10 @@ import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import { withStyles } from '@material-ui/core/styles';
-import { Link } from 'react-router-dom';
+import { 
+  Link,
+  Redirect
+} from 'react-router-dom';
 
 const styles = theme => ({
   root: {
@@ -85,9 +88,11 @@ const styles = theme => ({
 class Masthead extends React.Component {
   constructor(props) {
     super(props);
-    this.toggleDrawer = this.toggleDrawer.bind(this);
+    // this.toggleDrawer = this.toggleDrawer.bind(this);
     this.state = {
-      anchorEl: null
+      anchorEl: null,
+      searchQuery: '',
+      searchRedirect: false
     };
   }
 
@@ -95,23 +100,52 @@ class Masthead extends React.Component {
     this.props.onToggleDrawer(open);
   };
 
-  handleProfileMenuOpen = evt => {
+  handleProfileMenuOpen = (evt) => {
     this.setState({anchorEl: evt.currentTarget});
   };
   handleProfileMenuClose = () => {
     this.setState({anchorEl: null});
   };
 
-  handleNav = (selectedNav) => () => {
+  handleNav = () => {
     this.handleProfileMenuClose();
   }
 
-  shouldComponentUpdate(nextProps,nextState) {
-    return this.props.isLoggedIn !== nextProps.isLoggedIn;
+  submitSearch = () => {
+    console.log('before',this.state.searchRedirect,this.state.searchQuery);
+    this.setState({searchRedirect:true},() => {
+      console.log('after',this.state.searchRedirect);
+    });
   }
 
+  handleSearchChange = (e) => {
+    this.setState({searchQuery:e.currentTarget.value});
+  }
+
+  catchSearchEnter = (e) => {
+    if(e.key === 'Enter') {
+      e.preventDefault();
+      this.submitSearch();
+    }
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    console.log(props);
+    // if (this.state.searchQuery || this.state.searchRedirect) {
+    //   this.setState({
+    //     anchorEl: null,
+    //     searchRedirect: false
+    //   });
+    // }
+    return null;
+  }
+
+  // shouldComponentUpdate(nextProps/*,nextState*/) {
+  //   return this.props.isLoggedIn !== nextProps.isLoggedIn || this.props.searchRedirect !== nextProps.searchRedirect;
+  // }
+
   render() {
-    const { anchorEl } = this.state;
+    const { anchorEl, searchQuery, searchRedirect } = this.state;
     const { 
       classes,
       isLoggedIn
@@ -137,13 +171,16 @@ class Masthead extends React.Component {
               MeTube
             </Typography>
             <div className={classes.search}>
-              <div className={classes.searchIcon}>
+              <IconButton className={classes.searchIcon} color="inherit" aria-label="Search" onClick={this.submitSearch}>
                 <SearchIcon />
-              </div>
+              </IconButton>
               <InputBase placeholder="Search..." classes={{
                   root: classes.inputRoot,
                   input: classes.inputInput
-                }}/>
+                }}
+                value={this.searchQuery}
+                onChange={this.handleSearchChange}
+                onKeyPress={this.catchSearchEnter}/>
             </div>
             <div className={classes.grow} />
             <div>
@@ -163,6 +200,10 @@ class Masthead extends React.Component {
           </Toolbar>
         </AppBar>
         {renderProfileMenu}
+        {searchRedirect ? (
+            <Redirect to={{pathname:'/browse',search:'?q='+searchQuery,state:{searchQuery}}}/>
+          ) : null
+        }
       </div>
     );
   }
