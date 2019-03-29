@@ -16,6 +16,7 @@ import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import { withStyles } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom';
+import PreviousMessagesList from './previousMessagesList';
 
 const styles = theme => ({
   root: {
@@ -112,7 +113,7 @@ class Masthead extends React.Component {
 
   render() {
     const { anchorEl } = this.state;
-    const { 
+    const {
       classes,
       isLoggedIn
     } = this.props;
@@ -146,6 +147,9 @@ class Masthead extends React.Component {
                 }}/>
             </div>
             <div className={classes.grow} />
+            <div>
+              <PreviousMessagesList/>
+            </div>
             <div>
               {
                 isLoggedIn ? (
