@@ -245,16 +245,18 @@ def filter_sort_paginate(data,opts):
 
   if filters:
     for entry in data:
+      values = [str(val).lower() for val in entry.values()]
       for f in filters:
         keep = False
         if f.get('any', False):
+          fval = str(f['value']).lower()
           # tests if value appears in entry
-          if f['cmp'] == 'exact' and f['value'] in entry.values():
+          if f['cmp'] == 'exact' and fval in values:
             keep = True
           else:
             # if f['cmp'] == 'contains' or other value
-            for value in entry.values():
-              if f['value'] in str(value):
+            for value in values:
+              if fval in value:
                 keep = True
                 break
         else:

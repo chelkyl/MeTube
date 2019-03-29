@@ -55,7 +55,8 @@ const styles = theme => ({
 
 class Sidebar extends React.Component {
   toggleDrawer = (open) => () => {
-    this.props.onToggleDrawer(open);
+    console.log('sidebar toggle',open);
+    // this.props.onToggleDrawer(open);
   };
 
   shouldComponentUpdate(nextProps, nextState) {

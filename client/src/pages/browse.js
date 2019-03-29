@@ -1,9 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import { ApiClient } from '../apiclient';
+import React, {useState, useEffect} from 'react';
+import { makeStyles } from '@material-ui/styles';
+import axios from 'axios';
+import Api from '../apiclient';
 
-const styles = theme => ({
+const useStyles = makeStyles(() => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
@@ -16,130 +16,136 @@ const styles = theme => ({
     justifyContent: 'center',
     textAlign: 'left'
   }
-});
+}));
 
-class BrowsePage extends React.Component {
-  state = {
-    results_files: [],
-    results_users: [],
-    results_playlists: []
+const trendingFileSorts = [
+  {
+    'column': 'views',
+    'descending': 'true'
+  }
+];
+const trendingUserSorts = [
+  {
+    'column': 'subscribers',
+    'descending': 'true'
+  }
+];
+const trendingListSorts = [
+  {
+    'column': 'views',
+    'descending': 'true'
+  }
+];
+
+let getSearchType = (s) => {
+  switch(s) {
+    case 'channels':
+      return 'users';
+    case 'files':
+    case 'playlists':
+      return s;
+    default:
+      return '';
+  }
+};
+let getFormFilters = () => {
+  return false;
+};
+let getFormSorters = () => {
+  return {
+    'files': trendingFileSorts,
+    'users': trendingUserSorts,
+    'playlists': trendingListSorts
   };
+};
 
-  getData(tag, route, filters=[], sorters=[], start=0, count=10) {
-    ApiClient.get(`/${route}?b=${start}&l=${count}`, {filters, sorters})
-      .then(res => {
-        let data = res.data.response;
-        console.log('browse data:',data);
-        data.forEach((item) => {
-          if(route === 'files') {
-            item['id'] = item.file_id;
-            item['display_name'] = item.title;
-          }
-          else if (route === 'users') {
-            item['id'] = item.user_id;
-            item['display_name'] = item.channel_name;
-          }
-          else if (route === 'playlists') {
-            item['id'] = item.playlist_id;
-            item['display_name'] = item.playlist_name;
-          }
-        })
-        this.setState({[tag]:data});
+export default function BrowsePage(props) {
+  const classes = useStyles();
+  const params = new URLSearchParams(props.location.search);
+  const [query, setQuery] = useState(params.get('q') || '');
+  const [searchType, setSearchType] = useState(getSearchType(params.get('just')));
+  const [filters, setFilters] = useState(getFormFilters());
+  const [sorters, setSorters] = useState(getFormSorters());
+  const [results, setResults] = useState([]);
+  let cancelSearch = false;
+
+  useEffect(() => {
+    console.log('setting query');
+    const newParams = new URLSearchParams(props.location.search);
+    setQuery(newParams.get('q') || '');
+  }, [props]);
+
+  useEffect(() => {
+    console.log('submitting for query:',query);
+    let requests = [];
+    let reqTypes = [];
+    if (searchType) {
+      requests.push(Api.getData(searchType, query, filters[searchType], sorters[searchType]));
+      reqTypes.push(searchType);
+    }
+    else {
+      ['files','users','playlists'].forEach((sType) => {
+        requests.push(Api.getData(sType, query, filters[sType], sorters[sType]));
+        reqTypes.push(sType);
+      });
+    }
+    axios.all(requests)
+      .then(responses => {
+        console.log('all res',responses);
+        if(!cancelSearch) {
+          let reqResults = responses.map((res,i) => {
+            let resType = reqTypes[i];
+            let data = res.data.response;
+            data.forEach((item) => {
+              switch(resType) {
+                case 'files':
+                  item['id'] = item.file_id;
+                  item['display_name'] = item.title;
+                  break;
+                case 'users':
+                  item['id'] = item.user_id;
+                  item['display_name'] = item.channel_name;
+                  break;
+                case 'playlists':
+                  item['id'] = item.playlist_id;
+                  item['display_name'] = item.playlist_name;
+                  break;
+                default:
+                  break;
+              }
+            });
+            return data;
+          });
+          setResults(reqResults); //FIXME: response processed?
+        }
       })
       .catch(err => {
-        let msg = '';
+        console.log(err);
         // got response from server
         if(err.response) {
           console.log(err.response);
-          const { status } = err.response;
-          if (status >= 500 && status < 600) {
-            msg = `Server error ${status}, please contact the admins`;
-          }
-          else {
-            msg = `Sorry, unknown error ${status}`;
-          }
         }
         // request sent but no response
         else if(err.request) {
           console.log(err.request);
-          msg = err.message;
         }
         // catch all
         else {
           console.log(err);
-          msg = 'Sorry, unknown error';
         }
-        this.setState({
-          alertMessage: msg
-        });
       });
-  }
 
-  request_search(query) {
-    //TODO: if category is files, channels, playlists or video/audio/image
-    const searchFilts = [{
-      'column': 'any',
-      'value': query,
-      'cmp': 'contains'
-    }];
-    //TODO: get sort opts from form or state
-    const searchSorts = [];
-    this.getData('result_files','files',searchFilts,searchSorts);
-  }
-
-  // componentDidUpdate(prevProps/*, prevState, snapshot*/) {
-  //   if (this.props.location.search !== prevProps.location.search) {
-  //     this.props.index(this.props.access_token, this.props.location.search);
-  //   }
-  // }
-
-  componentDidMount() {
-    // const topChannelFilts = [];
-    // const topChannelSorts = [
-    //   {
-    //     'column': 'subscribers',
-    //     'descending': 'true'
-    //   }
-    // ];
-    const trendingFilts = [
-      {
-        'column': 'upload_date',
-        'value': '01-01-0001',
-        'cmp': 'max'
-      }
-    ];
-    const trendingSorts = [
-      {
-        'column': 'views',
-        'descending': 'true'
-      }
-    ];
-    console.log('browse:',this.props);
-    if(!this.props.query) {
-      this.getData('results', 'files', trendingFilts, trendingSorts);
+    return () => {
+      cancelSearch = true;
     }
-    else {
-      this.request_search(this.props.query);
-    }
-  }
+  }, [query]);
 
-  render() {
-    const { classes } = this.props;
-    const { results_files, results_users, results_playlists } = this.state;
-    let results = [...results_files, ...results_users, ...results_playlists];
-
-    return (
-      <div className={classes.container}>
-        {results.map(result => {
-          return <fileItemCard key={`result-${result.id}`} name={result.display_name} owner={result.owner} id={result.id}/>
-        })}
-      </div>
-    );
-  }
+  return (
+    <div className={classes.container}>
+      <h1>Results</h1>
+      {results.map(result => {
+        return <fileItemCard key={`result-${result.id}`} name={result.display_name} owner={result.owner} id={result.id}/>
+      })}
+    </div>
+  );
 }
-
-BrowsePage.propTypes = {
-  classes: PropTypes.object.isRequired
-};
-
-export default withStyles(styles)(BrowsePage);

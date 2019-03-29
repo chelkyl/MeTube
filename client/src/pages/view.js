@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Player from '../components/player';
 import { withStyles } from '@material-ui/core/styles';
-import { ApiClient } from '../apiclient';
+import Api from '../apiclient';
 
 const styles = theme => ({
   container: {
@@ -24,38 +24,38 @@ class ViewPage extends React.Component {
   };
 
   getData(tag, route, id) {
-    ApiClient.get(`/${route}/${id}`)
-      .then(res => {
-        this.setState({[tag]:res.data.response});
-      })
-      .catch(err => {
-        let msg = '';
-        // got response from server
-        if(err.response) {
-          console.log(err.response);
-          const { status } = err.response;
-          if (status >= 500 && status < 600) {
-            msg = `Server error ${status}, please contact the admins`;
-          }
-          else {
-            msg = `Sorry, unknown error ${status}`;
-          }
-        }
-        // request sent but no response
-        else if(err.request) {
-          console.log(err.request);
-          msg = err.message;
-        }
-        // catch all
-        else {
-          console.log(err);
-          msg = 'Sorry, unknown error';
-        }
-        console.log(msg, err);
-        this.setState({
-          [tag]: null
-        });
-      });
+    // ApiClient.get(`/${route}/${id}`)
+    //   .then(res => {
+    //     this.setState({[tag]:res.data.response});
+    //   })
+    //   .catch(err => {
+    //     let msg = '';
+    //     // got response from server
+    //     if(err.response) {
+    //       console.log(err.response);
+    //       const { status } = err.response;
+    //       if (status >= 500 && status < 600) {
+    //         msg = `Server error ${status}, please contact the admins`;
+    //       }
+    //       else {
+    //         msg = `Sorry, unknown error ${status}`;
+    //       }
+    //     }
+    //     // request sent but no response
+    //     else if(err.request) {
+    //       console.log(err.request);
+    //       msg = err.message;
+    //     }
+    //     // catch all
+    //     else {
+    //       console.log(err);
+    //       msg = 'Sorry, unknown error';
+    //     }
+    //     console.log(msg, err);
+    //     this.setState({
+    //       [tag]: null
+    //     });
+    //   });
   }
 
   componentDidMount() {
