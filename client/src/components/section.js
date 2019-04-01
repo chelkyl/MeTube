@@ -5,7 +5,7 @@ import {
   Typography,
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
-import { ApiClient } from '../apiclient';
+import Api from '../apiclient';
 
 const styles = theme => ({
   section: {
@@ -30,43 +30,43 @@ class Section extends React.Component {
   };
 
   getFiles(route, filters=[], sorters=[], start=0, count=10) {
-    ApiClient.get(`/${route}?b=${start}&l=${count}`, {filters, sorters})
-      .then(res => {
-        console.log(res);
-        this.setState({files:res.response});
-      })
-      .catch(err => {
-        let msg = '';
-        // got response from server
-        if(err.response) {
-          console.log(err.response);
-          const { status } = err.response;
-          if (status >= 500 && status < 600) {
-            msg = `Server error ${status}, please contact the admins`;
-          }
-          else {
-            msg = `Sorry, unknown error ${status}`;
-          }
-        }
-        // request sent but no response
-        else if(err.request) {
-          console.log(err.request);
-          msg = err.message;
-        }
-        // catch all
-        else {
-          console.log(err);
-          msg = 'Sorry, unknown error';
-        }
-        this.setState({
-          alertMessage: msg
-        });
-      });
+    // ApiClient.get(`/${route}?b=${start}&l=${count}`, {filters, sorters})
+    //   .then(res => {
+    //     console.log(res);
+    //     this.setState({files:res.data.response});
+    //   })
+    //   .catch(err => {
+    //     let msg = '';
+    //     // got response from server
+    //     if(err.response) {
+    //       console.log(err.response);
+    //       const { status } = err.response;
+    //       if (status >= 500 && status < 600) {
+    //         msg = `Server error ${status}, please contact the admins`;
+    //       }
+    //       else {
+    //         msg = `Sorry, unknown error ${status}`;
+    //       }
+    //     }
+    //     // request sent but no response
+    //     else if(err.request) {
+    //       console.log(err.request);
+    //       msg = err.message;
+    //     }
+    //     // catch all
+    //     else {
+    //       console.log(err);
+    //       msg = 'Sorry, unknown error';
+    //     }
+    //     this.setState({
+    //       alertMessage: msg
+    //     });
+    //   });
   }
 
   componentDidMount() {
     const { route, filters, sorters } = this.props;
-    // this.getFiles(route, filters, sorters);
+    this.getFiles(route, filters, sorters);
   }
 
   render() {

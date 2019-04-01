@@ -1,115 +1,26 @@
-import React, { Component } from 'react';
-import classNames from 'classnames';
-// import logo from './logo.svg';
-import Masthead from './components/masthead';
-import Sidebar from './components/sidebar';
-import HomePage from './pages/home';
-import LoginPage from './pages/login';
-import RegisterPage from './pages/register';
-import Error404Page from './pages/pageNotFound';
-import {
-  Route,
-  Switch
-} from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
+import React, { useReducer } from 'react';
+import { ThemeProvider } from '@material-ui/styles';
+import Layout from './pages/layout';
+import { getTheme, ThemeMode } from './theming';
 
-const drawerWidth = 240;
-
-const styles = theme => ({
-  root: {
-    display: 'block'
-  },
-  drawer: {
-    [theme.breakpoints.up('sm')]: {
-      width: drawerWidth,
-      flexShrink: 0
+export default function App() {
+  const themeModeReducer = (state, action) => {
+    switch (action) {
+      case 'light':
+      case 'dark':
+        return action;
+      case 'toggle':
+        return state === 'light' ? 'dark' : 'light';
+      default:
+        return state;
     }
-  },
-  content: {
-    flexGrow: 1,
-    flexShrink: 0,
-    padding: theme.spacing.unit * 3,
-    transition: theme.transitions.create('margin', {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen
-    }),
-    marginLeft: 0,
-    textAlign: 'center'
-  },
-  contentShift: {
-    [theme.breakpoints.up('sm')]: {
-      transition: theme.transitions.create('margin', {
-        easing: theme.transitions.easing.easeOut,
-        duration: theme.transitions.duration.enteringScreen
-      }),
-      marginLeft: drawerWidth
-    }
-  },
-  toolbar: theme.mixins.toolbar
-});
-
-// TODO: better authentication, see https://stackoverflow.com/questions/49819183/react-what-is-the-best-way-to-handle-authenticated-logged-in-state
-class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      sidebarOpen: false,
-      loggedIn: false
-    }
-  }
-
-  toggleDrawer = (open) => {
-    if (open === true || open === false) {
-      this.setState({sidebarOpen: open});
-    }
-    else {
-      this.setState({sidebarOpen: !this.state.sidebarOpen});
-    }
-  }
-
-  render() {
-    const {sidebarOpen, loggedIn} = this.state;
-    const { classes } = this.props;
-
-    return (
-      <div className={classes.root}>
-        {/* <AppBar position="fixed" className={classes.appBar}>
-          <Toolbar>
-            <Typography variant="h6" color="inherit" noWrap>
-              Title
-            </Typography>
-          </Toolbar>
-        </AppBar> */}
-        <Masthead isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
-        <Sidebar className={classes.drawer} isOpen={sidebarOpen}
-          isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
-        <main className={classNames(classes.content, {
-              [classes.contentShift]: sidebarOpen
-            })}>
-          <Switch>
-            <Route path='/' exact component={HomePage}/>
-            <Route path='/login' component={LoginPage}/>
-            <Route path='/register' component={RegisterPage}/>
-            <Route component={Error404Page}/>
-          </Switch>
-        </main>
-
-        {/*
-        <Masthead className={classes.appBar}
-          isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
-        <Sidebar className={classes.drawer} open={sidebarOpen}
-          isLoggedIn={loggedIn} onToggleDrawer={this.toggleDrawer}/>
-        <main className={classes.content}>
-          <Switch>
-            <Route path='/' exact component={Home}/>
-            <Route path='/login' component={Login}/>
-            <Route path='/register' component={Register}/>
-            <Route component={PageNotFound}/>
-          </Switch>
-        </main> */}
-      </div>
-    );
-  }
+  };
+  const [themeMode, themeModeDispatch] = useReducer(themeModeReducer, 'light');
+  return (
+    <ThemeProvider theme={getTheme(themeMode)}>
+      <ThemeMode.Provider value={[themeMode, themeModeDispatch]}>
+        <Layout/>
+      </ThemeMode.Provider>
+    </ThemeProvider>
+  );
 }
-
-export default withStyles(styles)(App);

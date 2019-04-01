@@ -13,7 +13,7 @@ import {
   green
 } from '@material-ui/core/colors';
 import { withStyles } from '@material-ui/core/styles';
-import { ApiClient } from '../apiclient';
+import Api from '../apiclient';
 import { Redirect } from 'react-router-dom';
 
 const styles = theme => ({
@@ -76,59 +76,59 @@ class RegisterPage extends React.Component {
   }
 
   validateRegister = (inputs) => {
-    ApiClient.post('/users', inputs)
-      .then(res => {
-        console.log(res);
-        this.setState(
-          {
-            loading: false,
-            success: true
-          },
-          () => {
-            this.timer = setTimeout(() => {
-              this.setState({redirect: true})
-            }, 1500);
-          }
-        );
-      })
-      .catch(err => {
-        let msg = '';
-        // got response from server
-        if(err.response) {
-          console.log(err.response);
-          const { status } = err.response;
-          if (status === 400) {
-            let {error} = err.response.data;
-            if(error['not unique']) {
-              error['not unique'].forEach((tag, i, arr) => {
-                this.setState({[tag+'Error']:true});
-                this.setState({[tag+'ErrorMsg']:'Must be unique'});
-              });
-            }
-            else msg = err.error;
-          }
-          else if (status >= 500 && status < 600) {
-            msg = `Server error ${status}, please contact the admins`;
-          }
-          else {
-            msg = `Sorry, unknown error ${status}`;
-          }
-        }
-        // request sent but no response
-        else if(err.request) {
-          console.log(err.request);
-          msg = err.message;
-        }
-        // catch all
-        else {
-          console.log(err);
-          msg = 'Sorry, unknown error';
-        }
-        this.setState({
-          statusMessage: msg,
-          loading: false
-        });
-      });
+    // ApiClient.post('/users', inputs)
+    //   .then(res => {
+    //     console.log(res);
+    //     this.setState(
+    //       {
+    //         loading: false,
+    //         success: true
+    //       },
+    //       () => {
+    //         this.timer = setTimeout(() => {
+    //           this.setState({redirect: true})
+    //         }, 1500);
+    //       }
+    //     );
+    //   })
+    //   .catch(err => {
+    //     let msg = '';
+    //     // got response from server
+    //     if(err.response) {
+    //       console.log(err.response);
+    //       const { status } = err.response;
+    //       if (status === 400) {
+    //         let {error} = err.response.data;
+    //         if(error['not unique']) {
+    //           error['not unique'].forEach((tag, i, arr) => {
+    //             this.setState({[tag+'Error']:true});
+    //             this.setState({[tag+'ErrorMsg']:'Must be unique'});
+    //           });
+    //         }
+    //         else msg = err.error;
+    //       }
+    //       else if (status >= 500 && status < 600) {
+    //         msg = `Server error ${status}, please contact the admins`;
+    //       }
+    //       else {
+    //         msg = `Sorry, unknown error ${status}`;
+    //       }
+    //     }
+    //     // request sent but no response
+    //     else if(err.request) {
+    //       console.log(err.request);
+    //       msg = err.message;
+    //     }
+    //     // catch all
+    //     else {
+    //       console.log(err);
+    //       msg = 'Sorry, unknown error';
+    //     }
+    //     this.setState({
+    //       statusMessage: msg,
+    //       loading: false
+    //     });
+    //   });
   }
 
   handleSubmit = (e) => {

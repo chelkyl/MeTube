@@ -34,6 +34,83 @@ replaceMap = [
             }
           }
         ]
+      },
+      {
+        "tag": "name",
+        "tagIs": "POST file video logged in user_id 2 (joe)",
+        "path": ["request","body","formdata"],
+        "fix": [
+          {
+            "tag":"key",
+            "tagIs":"file",
+            "replace": {
+              "src": "{{path}}/MeTube/server/tests/Joe'sVideo1.mp4"
+            }
+          }
+        ]
+      },
+      {
+        "tag": "name",
+        "tagIs": "POST file audio logged in user_id 1 (bob)",
+        "path": ["request","body","formdata"],
+        "fix": [
+          {
+            "tag":"key",
+            "tagIs":"file",
+            "replace": {
+              "src": "{{path}}/MeTube/server/tests/Catas & Kasger - Blueshift.mp3"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "tag": "name",
+    "tagIs": "files_no_delete",
+    "path": ["item"],
+    "fix": [
+      {
+        "tag": "name",
+        "tagIs": "POST file doc logged in user_id 1 (bob)",
+        "path": ["request","body","formdata"],
+        "fix": [
+          {
+            "tag":"key",
+            "tagIs":"file",
+            "replace": {
+              "src": "{{path}}/MeTube/server/tests/BobFile1.txt"
+            }
+          }
+        ]
+      },
+      {
+        "tag": "name",
+        "tagIs": "POST file video logged in user_id 2 (joe)",
+        "path": ["request","body","formdata"],
+        "fix": [
+          {
+            "tag":"key",
+            "tagIs":"file",
+            "replace": {
+              "src": "{{path}}/MeTube/server/tests/Joe'sVideo1.mp4"
+            }
+          }
+        ]
+      },
+      {
+        "tag": "name",
+        "tagIs": "POST file audio logged in user_id 1 (bob)",
+        "path": ["request","body","formdata"],
+        "fix": [
+          {
+            "tag":"key",
+            "tagIs":"file",
+            "replace": {
+              "src": "{{path}}/MeTube/server/tests/Catas & Kasger - Blueshift.mp3"
+            }
+          }
+        ]
       }
     ]
   },

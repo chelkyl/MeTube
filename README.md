@@ -160,7 +160,11 @@ The webapp server should allow .htaccess files and have mod_rewrite enabled.
    ```
    npm run build
    ```
-5. Push the new static pages and .htaccess file to the web app server
+5. Edit .htaccess on the line with `<username>` substituting your Clemson username
+   ```
+   RewriteBase /~<username>
+   ```
+6. Push the new static pages and .htaccess file to the web app server
    - WARNING: npm run push will overwrite files in your public_html folder
    - Use the alternate command to specify your own path
    ```
@@ -170,7 +174,7 @@ The webapp server should allow .htaccess files and have mod_rewrite enabled.
    ```
    cp .htaccess build/ && rsync -av build/ webapp.cs.clemson.edu:~/<your_path>
    ```
-6. Navigate to `http://webapp.cs.clemson.edu/~<your_Clemson_username>/` to see the app
+7. Navigate to `http://webapp.cs.clemson.edu/~<your_Clemson_username>/` to see the app
    - This is a static website
    - Does not use server-side rendering, so node is not needed to keep it running
    - The .htaccess file should enable page refresh and direct navigation to sub-pages
