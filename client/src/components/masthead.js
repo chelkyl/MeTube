@@ -6,12 +6,10 @@ import {
   AppBar,
   Toolbar,
   Typography,
-  Button,
   IconButton,
   InputBase,
   Divider,
   Menu,
-  MenuList,
   MenuItem,
   Switch
 } from '@material-ui/core';
@@ -27,9 +25,10 @@ import {
   Link,
   withRouter
 } from 'react-router-dom';
+import {useAuthCtx} from '../authentication';
 
 const useStyles = makeStyles(theme => ({
-  root: {
+  masthead: {
     display: 'flex'
   },
   appBar: {
@@ -44,61 +43,67 @@ const useStyles = makeStyles(theme => ({
     marginLeft: 12,
     marginRight: 12
   },
-  title: {
-    display: 'block',
+  titleWrap: {
     width: '7em',
+    [theme.breakpoints.down('xs')]: {
+      display: 'none'
+    }
+  },
+  title: {
     textDecoration: 'none'
   },
   search: {
+    display: 'flex',
+    alignItems: 'center',
     position: 'relative',
     borderRadius: theme.shape.borderRadius,
     backgroundColor: fade(theme.palette.common.white, 0.15),
     '&:hover': {
       backgroundColor: fade(theme.palette.common.white, 0.25)
     },
-    marginLeft: 0,
-    marginRight: theme.spacing.unit * 2,
-    width: '100%',
+    marginRight: theme.spacing.unit,
+    maxWidth: '50%',
     [theme.breakpoints.up('sm')]: {
       marginLeft: theme.spacing.unit,
       width: 'auto',
     },
   },
-  searchIcon: {
-    width: theme.spacing.unit * 6,
+  searchIconWrap: {
+    width: theme.spacing.unit * 5,
     height: '100%',
-    position: 'absolute',
-    pointerEvents: 'none',
     display: 'flex',
-    alignItems: 'center',
     justifyContent: 'center'
+  },
+  searchIcon: {
+    width: theme.spacing.unit * 4,
+    height: theme.spacing.unit * 4
   },
   inputRoot: {
     color: 'inherit',
     width: '100%'
   },
   inputInput: {
-    paddingTop: theme.spacing.unit,
-    paddingRight: theme.spacing.unit,
-    paddinBottom: theme.spacing.unit,
-    paddingLeft: theme.spacing.unit * 6,
+    padding: theme.spacing.unit,
+    paddingRight: 0,
     transition: theme.transitions.create('width'),
-    width: '100%',
+    maxWidth: '100%',
     [theme.breakpoints.up('sm')]: {
-      width: 120,
+      width: 160,
       '&:focus': {
-        width: 200,
+        width: 260,
       },
     }
   }
 }));
 
-function Masthead({isLoggedIn,...props}) {
+function Masthead(props) {
   const classes = useStyles();
   const [themeMode, setThemeMode] = useThemeMode();
-  const setDrawerState = useContext(DrawerOpenDispatch);
+  const [,setDrawerState] = useContext(DrawerOpenDispatch);
 
   const [menuAnchor, setMenuAnchor] = useState(null);
+
+  const [isLoggedIn,authActionDispatch] = useAuthCtx();
 
   const params = new URLSearchParams(props.location.search);
   const [searchQuery, setSearchQuery] = useState(params.get('q') || '');
@@ -116,6 +121,14 @@ function Masthead({isLoggedIn,...props}) {
         closeMenu();
         break;
       case 'options':
+        closeMenu();
+        break;
+      case 'login':
+        props.history.push('/login');
+        closeMenu();
+        break;
+      case 'logout':
+        authActionDispatch({type:'logout'});
         closeMenu();
         break;
       case 'toggle theme':
@@ -141,54 +154,50 @@ function Masthead({isLoggedIn,...props}) {
 
   const isMenuOpen = Boolean(menuAnchor);
 
-  const miscMenuItems = (
-    <MenuList>
-      <MenuItem>Dark Mode
-        <Switch checked={themeMode==='dark'} onChange={() => setThemeMode('toggle')} aria-label="Toggle dark mode"/>
-      </MenuItem>
-    </MenuList>
-  );
+  const miscMenuItems = [
+    <MenuItem key='toggledarkmode'>Dark Mode
+      <Switch checked={themeMode==='dark'} onChange={() => setThemeMode('toggle')} aria-label="Toggle dark mode"/>
+    </MenuItem>
+  ];
 
-  const profileMenuItems = (
-    <MenuList>
-      <MenuItem onClick={handleMenu('account')}>
-        <ListItemIcon>
-          <AccountCircle/>
-        </ListItemIcon>
-        <ListItemText inset primary="Account" />
-      </MenuItem>
-      <MenuItem onClick={handleMenu('options')}>Options</MenuItem>
-    </MenuList>
-  );
+  const profileMenuItems = [
+    <MenuItem key='account' onClick={handleMenu('account')}>Account</MenuItem>,
+    <MenuItem key='options' onClick={handleMenu('options')}>Options</MenuItem>,
+    <MenuItem key='logout' onClick={handleMenu('logout')}>Log Out</MenuItem>
+  ];
 
   const menu = (
     <Menu anchorEl={menuAnchor} open={isMenuOpen} onClose={closeMenu}>
       {
-        isLoggedIn ? (
-          <>
-            {profileMenuItems}
-            <Divider/>
-          </>
-        ) : null
+        isLoggedIn ? [
+          ...profileMenuItems,
+        ] : (
+          <MenuItem key='login' onClick={handleMenu('login')}>Login</MenuItem>
+        )
       }
+      <Divider key='divider'/>
       {miscMenuItems}
     </Menu>
   );
 
   return (
-    <div className={classes.root}>
-      <AppBar className={classes.appBar} position="static">
+    <div className={classes.masthead}>
+      <AppBar className={classes.appBar} position="fixed">
         <Toolbar>
           <IconButton className={classes.menuButton} color="inherit" aria-label="Menu" onClick={() => setDrawerState('toggle')}>
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" component={Link} to="/" color="inherit" className={classes.title} noWrap>
-            MeTube
-          </Typography>
+          <div className={classes.titleWrap}>
+            <Typography variant="h6" component={Link} to="/" color="inherit" className={classes.title} noWrap>
+              MeTube
+            </Typography>
+          </div>
           <div className={classes.search}>
-            <IconButton className={classes.searchIcon} color="inherit" aria-label="Search" onClick={submitSearch}>
-              <SearchIcon />
-            </IconButton>
+            <div className={classes.searchIconWrap}>
+              <IconButton className={classes.searchIcon} color="inherit" aria-label="Search" onClick={submitSearch}>
+                <SearchIcon />
+              </IconButton>
+            </div>
             <InputBase placeholder="Search..." classes={{
                 root: classes.inputRoot,
                 input: classes.inputInput
@@ -200,20 +209,9 @@ function Masthead({isLoggedIn,...props}) {
           <div className={classes.grow} />
           <Messages isLoggedIn={isLoggedIn}/>
           <div>
-            {
-              isLoggedIn ? (
-                <IconButton color="inherit" aria-haspopup="true" onClick={openMenu}>
-                  <AccountCircle />
-                </IconButton>
-              ) : (
-                <>
-                  <IconButton color="inherit" aria-haspopup="true" onClick={openMenu}>
-                    <MoreVert />
-                  </IconButton>
-                  <Button component={Link} to='/login' color="inherit">Login</Button>
-                </>
-              )
-            }
+            <IconButton color="inherit" aria-haspopup="true" onClick={openMenu}>
+              <AccountCircle />
+            </IconButton>
           </div>
         </Toolbar>
       </AppBar>
@@ -223,18 +221,3 @@ function Masthead({isLoggedIn,...props}) {
 }
 
 export default withRouter(Masthead);
-
-// export default withStyles(styles)(withRouter(Masthead));
-
-/**
- * extending a pure component
- * componentDidMount
- *    setting the input value and state to the query string
- *
- * input handler
- *    update state with search query
- *
- * form handle
- *    submit search
- *    aka conditionally render redirect or this.history.push()
- */

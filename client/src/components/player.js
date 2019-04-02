@@ -1,112 +1,178 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import React, { useState, useEffect } from 'react';
+import { makeStyles } from '@material-ui/styles';
+import {
+  Typography
+} from '@material-ui/core';
 import Api from '../apiclient';
 
-const styles = theme => ({
-  container: {
+const useStyles = makeStyles(theme => ({
+  player: {
     display: 'flex',
     flexDirection: 'column',
+    alignItems: 'center'
+  },
+  videoContainer: {
+    width: '100%',
     backgroundColor: 'black'
-  }
-});
+  },
+  video: {
+    width: '100%',
+    maxHeight: '80vh'
+  },
+  audioContainer: {
+    width: '100%',
+    backgroundColor: 'black'
+  },
+  audio: {
+    width: '100%'
+  },
+  imageContainer: {
+    width: '100%',
+    backgroundColor: 'black'
+  },
+  image: {
+    width: '100%'
+  },
+  errorContainer: {
+    display: 'flex',
+    width: '68vw',
+    height: '20vw',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'black'
+  },
+}));
 
-class Player extends React.Component {
-  state = {
-    files: []
-  };
-
-  getFile(tag, file_id) {
-    // ApiClient.get(`/files/${file_id}/g`,{responseType: 'blob'})
-    //   .then(res => {
-    //     console.log('Got file',res);
-    //     let blob_url = URL.createObjectURL(res.data);
-    //     console.log('blob_url is',blob_url);
-    //     this.setState({[tag]:blob_url});
-    //   })
-    //   .catch(err => {
-    //     let msg = '';
-    //     // got response from server
-    //     if(err.response) {
-    //       console.log(err.response);
-    //       const { status } = err.response;
-    //       if (status >= 500 && status < 600) {
-    //         msg = `Server error ${status}, please contact the admins`;
-    //       }
-    //       else {
-    //         msg = `Sorry, unknown error ${status}`;
-    //       }
-    //     }
-    //     // request sent but no response
-    //     else if(err.request) {
-    //       console.log(err.request);
-    //       msg = err.message;
-    //     }
-    //     // catch all
-    //     else {
-    //       console.log(err);
-    //       msg = 'Sorry, unknown error';
-    //     }
-    //     this.setState({
-    //       alertMessage: msg
-    //     });
-    //   });
-  }
-
-  componentDidMount() {
-    if (this.props.file_info) {
-      this.getFile('blob_url', this.props.file_info.file_id);
-    }
-  }
-
-  render() {
-    const { classes, file_info } = this.props;
-    const { blob_url } = this.state;
-
-    let viewer = null;
-    if (file_info) {
-      let {mimetype:mime} = file_info;
-      console.log('player mime', mime);
-      if (mime.includes('video')) {
-        viewer = (
-          <video src={blob_url} controls/>
-        );
-      }
-      else if (mime.includes('audio')) {
-        viewer = (
-          <audio src={blob_url} controls/>
-        )
-      }
-      /*else if (mime.includes('text')) {
-
-      }*/
-      else if (mime.includes('image')) {
-        viewer = (
-          <image src={blob_url}/>
-        )
-      }
-      else {
-        viewer = (
-          <p>Viewer unavailable, unsupported format</p>
-        );
-      }
-    }
-    else {
-      viewer = (
-        <p>File not found</p>
-      );
-    }
-
-    return (
-      <div className={classes.container}>
-        {viewer}
-      </div>
-    )
-  }
-}
-
-Player.propTypes = {
-  classes: PropTypes.object.isRequired
+const initialErrorState = {
+  show: false,
+  primary: '',
+  secondary: ''
 };
 
-export default withStyles(styles)(Player);
+export default function Player(props) {
+  const classes = useStyles();
+  const [fileID, setFileID] = useState(props.file_id);
+  const [blobURL, setBlobURL] = useState(null);
+  const [errorMessage,setErrorMessage] = useState(initialErrorState);
+  let {mimetype=''} = props;
+  let cancel = false;
+
+  useEffect(() => {
+    setFileID(props.file_id);
+  }, [props]);
+
+  useEffect(() => {
+    console.log(fileID);
+    if(fileID) {
+      Api.request('get',`/files/${fileID}/g`,{},{responseType: 'blob'})
+        .then(res => {
+          if(mimetype.includes('video') || mimetype.includes('audio') || mimetype.includes('image')) {
+            console.log('player', mimetype, res);
+            let blob_url = URL.createObjectURL(res.data);
+            console.log('file blob url is',blob_url);
+            if(cancel) return;
+            setBlobURL(blob_url);
+            if(errorMessage.show) setErrorMessage(initialErrorState);
+          }
+          else {
+            if(cancel) return;
+            setErrorMessage({
+              show: true,
+              primary: 'Viewer unavailable',
+              secondary: `Unsupported mimetype ${mimetype}`
+            });
+          }
+        })
+        .catch(err => {
+          let msg = '';
+          // got response from server
+          if(err.response) {
+            console.log(err.response);
+            const { status } = err.response;
+            if (status >= 500 && status < 600) {
+              msg = `Server error ${status}, please contact the admins`;
+            }
+            else if (status === 404) {
+              msg = "File not found";
+            }
+            else if (status === 403) {
+              msg = "File permission blocked";
+            }
+            else {
+              msg = `Sorry, unknown error ${status}`;
+            }
+          }
+          // request sent but no response
+          else if(err.request) {
+            console.log(err.request);
+            msg = err.message;
+          }
+          // catch all
+          else {
+            console.log(err);
+            msg = 'Sorry, unknown error';
+          }
+          if(cancel) return;
+          setErrorMessage({
+            show: true,
+            primary: msg,
+            secondary: JSON.stringify(err)
+          });
+        })
+    }
+    else {
+      setErrorMessage({
+        show: true,
+        primary: "Viewer unavailable",
+        secondary: "File not found"
+      });
+    }
+
+    return () => {
+      cancel = true;
+    }
+  }, [fileID]);
+
+  let viewer = null;
+  if(errorMessage.show) {
+    viewer = (
+      <div className={classes.errorContainer}>
+        <Typography variant="h6">{errorMessage.primary}</Typography>
+        <Typography variant="h6">{errorMessage.secondary}</Typography>
+      </div>
+    );
+  }
+  else if (blobURL) {
+    if (mimetype.includes('video')) {
+      viewer = (
+        <div className={classes.videoContainer}>
+          <video className={classes.video} src={blobURL} controls/>
+        </div>
+      );
+    }
+    else if (mimetype.includes('audio')) {
+      viewer = (
+        <div className={classes.audioContainer}>
+          <audio className={classes.audio} src={blobURL} controls/>
+        </div>
+      )
+    }
+    /*else if (mimetype.includes('text')) {
+
+    }*/
+    else if (mimetype.includes('image')) {
+      viewer = (
+        <div className={classes.imageContainer}>
+          <img className={classes.image} src={blobURL}/>
+        </div>
+      )
+    }
+  }
+
+  return (
+    <div className={classes.player}>
+      {viewer}
+    </div>
+  )
+}

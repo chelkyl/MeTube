@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "b8d1deca-a4ee-4df5-b951-cb77fef197cb",
+		"_postman_id": "6cd7a1a3-8391-4b15-a878-0c744d196c2f",
 		"name": "MeTube-API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -1220,6 +1220,256 @@
 					"response": []
 				},
 				{
+					"name": "POST login as bob",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1459cfab-cd1a-48de-abf6-b92d0d09ae75",
+								"exec": [
+									"",
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"username\": \"bob\",\n\t\"password\": \"test\"\n}"
+						},
+						"url": {
+							"raw": "{{host}}/login",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST login as joe",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1459cfab-cd1a-48de-abf6-b92d0d09ae75",
+								"exec": [
+									"",
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"username\": \"joe\",\n\t\"password\": \"test\"\n}"
+						},
+						"url": {
+							"raw": "{{host}}/login",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST login as bob with token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1459cfab-cd1a-48de-abf6-b92d0d09ae75",
+								"exec": [
+									"",
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "e4ea83ca-9923-4c41-a028-861c8a2f5605",
+								"exec": [
+									"pm.sendRequest({",
+									"   url: pm.variables.get('host')+'/login',",
+									"   method: 'POST',",
+									"   header: {",
+									"     \"Content-Type\": \"application/json\"  ",
+									"   },",
+									"   body: {",
+									"       mode: 'raw',",
+									"       raw: JSON.stringify({",
+									"           'username': 'bob',",
+									"           'password': 'test'",
+									"       })",
+									"   }",
+									"}, function (err, response) {",
+									"    let res = response.json();",
+									"    console.log(res);",
+									"    if(res.response) {",
+									"        if(res.response.token) {",
+									"            console.log('access_token',res.response.token);",
+									"            pm.environment.set('access_token',res.response.token);",
+									"            return;",
+									"        }",
+									"    }",
+									"    throw 'Error: response did not have token';",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"username\": \"bob\",\n\t\"token\": \"{{access_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{host}}/login",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST login as joe with token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1459cfab-cd1a-48de-abf6-b92d0d09ae75",
+								"exec": [
+									"",
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "e4ea83ca-9923-4c41-a028-861c8a2f5605",
+								"exec": [
+									"pm.sendRequest({",
+									"   url: pm.variables.get('host')+'/login',",
+									"   method: 'POST',",
+									"   header: {",
+									"     \"Content-Type\": \"application/json\"  ",
+									"   },",
+									"   body: {",
+									"       mode: 'raw',",
+									"       raw: JSON.stringify({",
+									"           'username': 'joe',",
+									"           'password': 'test'",
+									"       })",
+									"   }",
+									"}, function (err, response) {",
+									"    let res = response.json();",
+									"    console.log(res);",
+									"    if(res.response) {",
+									"        if(res.response.token) {",
+									"            console.log('access_token',res.response.token);",
+									"            pm.environment.set('access_token',res.response.token);",
+									"            return;",
+									"        }",
+									"    }",
+									"    throw 'Error: response did not have token';",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"username\": \"joe\",\n\t\"token\": \"{{access_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{host}}/login",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "LINK bob subscribes to joe",
 					"event": [
 						{
@@ -1933,6 +2183,99 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "DELETE user id 2 (joe) using token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "522476eb-4e04-4aca-816b-aaf488972468",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned user_id:2, username:joe\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.have.property('user_id',2);",
+									"    pm.expect(jsonData.response).to.have.property('username','joe');",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "7b6df138-5bd5-49c1-beca-6bb3c7d4329c",
+								"exec": [
+									"pm.sendRequest({",
+									"   url: pm.variables.get('host')+'/login',",
+									"   method: 'POST',",
+									"   header: {",
+									"     \"Content-Type\": \"application/json\"  ",
+									"   },",
+									"   body: {",
+									"       mode: 'raw',",
+									"       raw: JSON.stringify({",
+									"           'username': 'joe',",
+									"           'password': 'test'",
+									"       })",
+									"   }",
+									"}, function (err, response) {",
+									"    let res = response.json();",
+									"    console.log(res);",
+									"    if(res.response) {",
+									"        if(res.response.token) {",
+									"            console.log('access_token',res.response.token);",
+									"            pm.environment.set('access_token',res.response.token);",
+									"            return;",
+									"        }",
+									"    }",
+									"    throw 'Error: response did not have token';",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{access_token}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/users/2",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"2"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -2493,6 +2836,359 @@
 					"response": []
 				},
 				{
+					"name": "POST file image logged in user_id 1 (bob)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "51d3d6bc-bcf8-4d3f-a02d-bf4a795e10a8",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned file_id:4, user_id:1\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.have.property('file_id',4);",
+									"    pm.expect(jsonData.response).to.have.property('user_id',1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "bob",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "test",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "{{path}}/MeTube/server/tests/BusyCat.jpg"
+								},
+								{
+									"key": "user_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "title",
+									"value": "Bob's Image File 1",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "A test description of Bob's file.",
+									"type": "text"
+								},
+								{
+									"key": "permissions",
+									"value": "private",
+									"type": "text"
+								},
+								{
+									"key": "file_type",
+									"value": "image",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/files/upload",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"files",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST file video logged in user_id 1 token (bob)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "51d3d6bc-bcf8-4d3f-a02d-bf4a795e10a8",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned file_id:5, user_id:1\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.have.property('file_id',5);",
+									"    pm.expect(jsonData.response).to.have.property('user_id',1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a9647ea3-d780-432f-8c7f-6ea4dcd7001a",
+								"exec": [
+									"pm.sendRequest({",
+									"   url: pm.variables.get('host')+'/login',",
+									"   method: 'POST',",
+									"   header: {",
+									"     \"Content-Type\": \"application/json\"  ",
+									"   },",
+									"   body: {",
+									"       mode: 'raw',",
+									"       raw: JSON.stringify({",
+									"           'username': 'bob',",
+									"           'password': 'test'",
+									"       })",
+									"   }",
+									"}, function (err, response) {",
+									"    let res = response.json();",
+									"    console.log(res);",
+									"    if(res.response) {",
+									"        if(res.response.token) {",
+									"            console.log('access_token',res.response.token);",
+									"            pm.environment.set('access_token',res.response.token);",
+									"            return;",
+									"        }",
+									"    }",
+									"    throw 'Error: response did not have token';",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{access_token}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "{{path}}/MeTube/server/tests/wat - Gary Bernhardt CodeMash 2012 Lightning Talk.mp4"
+								},
+								{
+									"key": "user_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "title",
+									"value": "Bob's Video File 1",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "A test description of Bob's file.",
+									"type": "text"
+								},
+								{
+									"key": "permissions",
+									"value": "private",
+									"type": "text"
+								},
+								{
+									"key": "file_type",
+									"value": "video",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/files/upload",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"files",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST file large video logged in user_id 1 (bob)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "51d3d6bc-bcf8-4d3f-a02d-bf4a795e10a8",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned file_id:6, user_id:1\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.have.property('file_id',6);",
+									"    pm.expect(jsonData.response).to.have.property('user_id',1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "bob",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "test",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "{{path}}/MeTube/server/tests/The Birth & Death of JavaScript - Gary Bernhardt PyCon 2014.mp4"
+								},
+								{
+									"key": "user_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "title",
+									"value": "Bob's Large Video File 1",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "A test description of Bob's file.",
+									"type": "text"
+								},
+								{
+									"key": "permissions",
+									"value": "private",
+									"type": "text"
+								},
+								{
+									"key": "file_type",
+									"value": "video",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/files/upload",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"files",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET files",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1459cfab-cd1a-48de-abf6-b92d0d09ae75",
+								"exec": [
+									"",
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned list of 6\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.length).to.eql(6);",
+									"    pm.expect(jsonData.response[0]).to.have.property('file_id',1);",
+									"    pm.expect(jsonData.response[0]).to.have.property('user_id',1);",
+									"    pm.expect(jsonData.response[1]).to.have.property('file_id',2);",
+									"    pm.expect(jsonData.response[1]).to.have.property('user_id',2);",
+									"    pm.expect(jsonData.response[2]).to.have.property('file_id',3);",
+									"    pm.expect(jsonData.response[2]).to.have.property('user_id',1);",
+									"    pm.expect(jsonData.response[3]).to.have.property('file_id',4);",
+									"    pm.expect(jsonData.response[3]).to.have.property('user_id',1);",
+									"    pm.expect(jsonData.response[4]).to.have.property('file_id',5);",
+									"    pm.expect(jsonData.response[4]).to.have.property('user_id',1);",
+									"    pm.expect(jsonData.response[5]).to.have.property('file_id',6);",
+									"    pm.expect(jsonData.response[5]).to.have.property('user_id',1);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/files",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"files"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "GET file_id 1 (Bob's file)",
 					"event": [
 						{
@@ -2530,6 +3226,50 @@
 							"path": [
 								"files",
 								"1"
+							]
+						},
+						"description": "GET file"
+					},
+					"response": []
+				},
+				{
+					"name": "GET file_id 2 (Joe's file)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "98b015d7-d8b1-4d71-84bd-10e3f917f603",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned file_id:2, user_id:2\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.have.property('file_id',2);",
+									"    pm.expect(jsonData.response).to.have.property('user_id',2);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/files/2",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"files",
+								"2"
 							]
 						},
 						"description": "GET file"
@@ -3322,7 +4062,7 @@
 								},
 								{
 									"key": "file_type",
-									"value": "text",
+									"value": "video",
 									"type": "text"
 								}
 							]
@@ -3410,7 +4150,7 @@
 								},
 								{
 									"key": "file_type",
-									"value": "text",
+									"value": "audio",
 									"type": "text"
 								}
 							]
@@ -3429,21 +4169,332 @@
 					"response": []
 				},
 				{
-					"name": "GET file_id 1 (Bob's file)",
+					"name": "POST file image logged in user_id 1 (bob)",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "98b015d7-d8b1-4d71-84bd-10e3f917f603",
+								"id": "51d3d6bc-bcf8-4d3f-a02d-bf4a795e10a8",
 								"exec": [
 									"pm.test(\"Status code should be 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"should have returned file_id:1, user_id:1\", function () {",
+									"pm.test(\"should have returned file_id:4, user_id:1\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.response).to.have.property('file_id',1);",
+									"    pm.expect(jsonData.response).to.have.property('file_id',4);",
 									"    pm.expect(jsonData.response).to.have.property('user_id',1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "bob",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "test",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "{{path}}/MeTube/server/tests/BusyCat.jpg"
+								},
+								{
+									"key": "user_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "title",
+									"value": "Bob's Image File 1",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "A test description of Bob's file.",
+									"type": "text"
+								},
+								{
+									"key": "permissions",
+									"value": "private",
+									"type": "text"
+								},
+								{
+									"key": "file_type",
+									"value": "image",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/files/upload",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"files",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST file video logged in user_id 1 token (bob)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "51d3d6bc-bcf8-4d3f-a02d-bf4a795e10a8",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned file_id:5, user_id:1\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.have.property('file_id',5);",
+									"    pm.expect(jsonData.response).to.have.property('user_id',1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a9647ea3-d780-432f-8c7f-6ea4dcd7001a",
+								"exec": [
+									"pm.sendRequest({",
+									"   url: pm.variables.get('host')+'/login',",
+									"   method: 'POST',",
+									"   header: {",
+									"     \"Content-Type\": \"application/json\"  ",
+									"   },",
+									"   body: {",
+									"       mode: 'raw',",
+									"       raw: JSON.stringify({",
+									"           'username': 'bob',",
+									"           'password': 'test'",
+									"       })",
+									"   }",
+									"}, function (err, response) {",
+									"    let res = response.json();",
+									"    console.log(res);",
+									"    if(res.response) {",
+									"        if(res.response.token) {",
+									"            console.log('access_token',res.response.token);",
+									"            pm.environment.set('access_token',res.response.token);",
+									"            return;",
+									"        }",
+									"    }",
+									"    throw 'Error: response did not have token';",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{access_token}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "{{path}}/MeTube/server/tests/wat - Gary Bernhardt CodeMash 2012 Lightning Talk.mp4"
+								},
+								{
+									"key": "user_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "title",
+									"value": "Bob's Video File 1",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "A test description of Bob's file.",
+									"type": "text"
+								},
+								{
+									"key": "permissions",
+									"value": "private",
+									"type": "text"
+								},
+								{
+									"key": "file_type",
+									"value": "video",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/files/upload",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"files",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST file large video logged in user_id 1 (bob)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "51d3d6bc-bcf8-4d3f-a02d-bf4a795e10a8",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned file_id:6, user_id:1\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.have.property('file_id',6);",
+									"    pm.expect(jsonData.response).to.have.property('user_id',1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "bob",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "test",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "{{path}}/MeTube/server/tests/The Birth & Death of JavaScript - Gary Bernhardt PyCon 2014.mp4"
+								},
+								{
+									"key": "user_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "title",
+									"value": "Bob's Large Video File 1",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "A test description of Bob's file.",
+									"type": "text"
+								},
+								{
+									"key": "permissions",
+									"value": "private",
+									"type": "text"
+								},
+								{
+									"key": "file_type",
+									"value": "video",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/files/upload",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"files",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET files",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1459cfab-cd1a-48de-abf6-b92d0d09ae75",
+								"exec": [
+									"",
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned list of 6\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.length).to.eql(6);",
+									"    pm.expect(jsonData.response[0]).to.have.property('file_id',1);",
+									"    pm.expect(jsonData.response[0]).to.have.property('user_id',1);",
+									"    pm.expect(jsonData.response[1]).to.have.property('file_id',2);",
+									"    pm.expect(jsonData.response[1]).to.have.property('user_id',2);",
+									"    pm.expect(jsonData.response[2]).to.have.property('file_id',3);",
+									"    pm.expect(jsonData.response[2]).to.have.property('user_id',1);",
+									"    pm.expect(jsonData.response[3]).to.have.property('file_id',4);",
+									"    pm.expect(jsonData.response[3]).to.have.property('user_id',1);",
+									"    pm.expect(jsonData.response[4]).to.have.property('file_id',5);",
+									"    pm.expect(jsonData.response[4]).to.have.property('user_id',1);",
+									"    pm.expect(jsonData.response[5]).to.have.property('file_id',6);",
+									"    pm.expect(jsonData.response[5]).to.have.property('user_id',1);",
 									"});",
 									""
 								],
@@ -3459,16 +4510,14 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{host}}/files/1",
+							"raw": "{{host}}/files",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
-								"files",
-								"1"
+								"files"
 							]
-						},
-						"description": "GET file"
+						}
 					},
 					"response": []
 				}
@@ -6876,6 +7925,28 @@
 					"response": []
 				}
 			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "15fde72f-1d11-482c-8723-8ad9efc160bb",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "dbb0832f-2278-4a4b-bda7-176dd407b4a6",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
 		}
 	]
 }

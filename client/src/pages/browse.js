@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import { makeStyles } from '@material-ui/styles';
 import axios from 'axios';
 import Api from '../apiclient';
+import { Typography } from '@material-ui/core';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -92,32 +93,31 @@ export default function BrowsePage(props) {
     axios.all(requests)
       .then(responses => {
         console.log('all res',responses);
-        if(!cancelSearch) {
-          let reqResults = responses.map((res,i) => {
-            let resType = reqTypes[i];
-            let data = res.data.response;
-            data.forEach((item) => {
-              switch(resType) {
-                case 'files':
-                  item['id'] = item.file_id;
-                  item['display_name'] = item.title;
-                  break;
-                case 'users':
-                  item['id'] = item.user_id;
-                  item['display_name'] = item.channel_name;
-                  break;
-                case 'playlists':
-                  item['id'] = item.playlist_id;
-                  item['display_name'] = item.playlist_name;
-                  break;
-                default:
-                  break;
-              }
-            });
-            return data;
+        if(cancelSearch) return;
+        let reqResults = responses.map((res,i) => {
+          let resType = reqTypes[i];
+          let data = res.data.response;
+          data.forEach((item) => {
+            switch(resType) {
+              case 'files':
+                item['id'] = item.file_id;
+                item['display_name'] = item.title;
+                break;
+              case 'users':
+                item['id'] = item.user_id;
+                item['display_name'] = item.username;
+                break;
+              case 'playlists':
+                item['id'] = item.playlist_id;
+                item['display_name'] = item.title;
+                break;
+              default:
+                break;
+            }
           });
-          setResults(reqResults); //FIXME: response processed?
-        }
+          return data;
+        });
+        setResults(reqResults); //FIXME: response processed?
       })
       .catch(err => {
         console.log(err);
@@ -142,7 +142,7 @@ export default function BrowsePage(props) {
 
   return (
     <div className={classes.container}>
-      <h1>Results</h1>
+      <Typography variant="h5">Results</Typography>
       {results.map(result => {
         return <fileItemCard key={`result-${result.id}`} name={result.display_name} owner={result.owner} id={result.id}/>
       })}

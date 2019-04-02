@@ -2,15 +2,52 @@ from os import path
 from json import JSONEncoder
 from flask_sqlalchemy import SQLAlchemy
 from passlib.hash import pbkdf2_sha256
+from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer,
+                          BadSignature, SignatureExpired)
 
 db = SQLAlchemy()
+
+# NOTE: unordered dict
+def get_query_data(resultProxy):
+  ret = []
+  for rowProxy in resultProxy:
+    ret.append(dict(rowProxy.items()))
+  return ret
 
 def hash_password(password):
   pw_hash = pbkdf2_sha256.hash(password)
   return pw_hash
 
-def verify_password(password, hash_password):
+def is_match_password(password, hash_password):
   return pbkdf2_sha256.verify(password, hash_password)
+
+class AuthTokens():
+  def __init__(self, access, expiration_secs):
+    self.access_token = access
+    self.expires_in_secs = expiration_secs
+
+def make_auth_token(secret, id, expiration_secs = 3600):
+  expire_ms = expiration_secs*1000
+  s = Serializer(secret, expires_in=expire_ms)
+  access_token = s.dumps({'id': id}).decode('ascii')
+  return AuthTokens(access_token, expiration_secs)
+
+def get_auth_token_data(secret, token):
+  # print('get_auth_token_data',secret,token)
+  s = Serializer(secret)
+  try:
+    data = s.loads(token)
+    # print('get_auth_token_data',data)
+    return data['id']
+  except SignatureExpired:
+    # print('get_auth_token_data SignatureExpired')
+    return None
+  except BadSignature:
+    # print('get_auth_token_data BadSignature')
+    return None
+  except KeyError:
+    # print('get_auth_token_data KeyError')
+    return None
 
 subscribers = db.Table('subscribers',
   db.Column('subscribing_id', db.Integer, db.ForeignKey('User.user_id')),

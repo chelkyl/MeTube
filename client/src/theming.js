@@ -1,5 +1,10 @@
-import { createContext, useContext } from 'react';
+import React, { createContext, useContext, useReducer } from 'react';
+import { ThemeProvider } from '@material-ui/styles';
 import { createMuiTheme } from '@material-ui/core/styles';
+
+const baseTheme = {
+  drawerWidth: 240
+};
 
 const lightTheme = {
   primary:    '#C4C3C4',
@@ -48,6 +53,7 @@ export let getTheme = (themeName,themeMode) => {
     typography: {
       useNextVariants: true
     },
+    ...baseTheme,
     ...themes[themeName]
   });
 };
@@ -55,3 +61,25 @@ export let getTheme = (themeName,themeMode) => {
 export const ThemeMode = createContext(null);
 
 export const useThemeMode = () => useContext(ThemeMode);
+
+export default function Theming({children, initialTheme}) {
+  const themeModeReducer = (state, action) => {
+    switch (action) {
+      case 'light':
+      case 'dark':
+        return action;
+      case 'toggle':
+        return state === 'light' ? 'dark' : 'light';
+      default:
+        return state;
+    }
+  };
+  const [themeMode, themeModeDispatch] = useReducer(themeModeReducer, initialTheme);
+  return (
+    <ThemeProvider theme={getTheme(themeMode)}>
+      <ThemeMode.Provider value={[themeMode, themeModeDispatch]}>
+        {children}
+      </ThemeMode.Provider>
+    </ThemeProvider>
+  );
+}

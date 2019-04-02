@@ -1,7 +1,6 @@
-import React, { useState, createContext, useReducer } from 'react';
+import React, { createContext, useReducer } from 'react';
 import classNames from 'classnames';
 import { makeStyles } from '@material-ui/styles';
-import { useThemeMode } from '../theming';
 import Masthead from '../components/masthead';
 import Sidebar from '../components/sidebar';
 import HomePage from './home';
@@ -15,32 +14,31 @@ import {
   Switch
 } from 'react-router-dom';
 
-const drawerWidth = 240;
-
 const useStyles = makeStyles(theme => ({
-  root: {
+  layoutRoot: {
     display: 'block',
     backgroundColor: theme.background,
-    color: theme.primary, //FIXME: temporary, remove
     height: '100%',
-    width: '100%'
-  },
-  drawer: {
-    [theme.breakpoints.up('sm')]: {
-      width: drawerWidth,
-      flexShrink: 0
-    }
+    width: '100%',
+    overflow: 'auto'
   },
   content: {
-    flexGrow: 1,
-    flexShrink: 0,
-    padding: theme.spacing.unit * 3,
+    display: 'flex',
+    flexDirection: 'column',
+    // padding: theme.spacing.unit * 3,
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen
     }),
-    marginLeft: 0,
-    textAlign: 'center'
+    textAlign: 'center',
+    marginTop: 56,
+    padding: theme.spacing.unit * 3,
+    [theme.breakpoints.up(0)+' and (orientation: landscape)']: {
+      marginTop: 48
+    },
+    [theme.breakpoints.up('sm')]: {
+      marginTop: 64
+    }
   },
   contentShift: {
     [theme.breakpoints.up('sm')]: {
@@ -48,19 +46,16 @@ const useStyles = makeStyles(theme => ({
         easing: theme.transitions.easing.easeOut,
         duration: theme.transitions.duration.enteringScreen
       }),
-      marginLeft: drawerWidth
+      marginLeft: theme.drawerWidth
     }
   },
   toolbar: theme.mixins.toolbar
 }));
 
-// TODO: better authentication, see https://stackoverflow.com/questions/49819183/react-what-is-the-best-way-to-handle-authenticated-logged-in-state
-
 export const DrawerOpenDispatch = createContext(null);
 
 export default function Layout({children}) {
   const classes = useStyles();
-  const [themeMode, setThemeMode] = useThemeMode();
 
   const drawerOpenReducer = (state, action) => {
     switch (action) {
@@ -68,29 +63,23 @@ export default function Layout({children}) {
       case false:
         return action;
       case 'toggle':
-        return state === true ? false : true;
+        return !state;
       default:
         return state;
     }
   };
   const [drawerOpen, drawerOpenDispatch] = useReducer(drawerOpenReducer, true);
-  
-  const [loggedIn, setLoggedIn] = useState(false);
 
   return (
-    <div className={classes.root}>
-      <DrawerOpenDispatch.Provider value={drawerOpenDispatch}>
-        <Masthead isLoggedIn={loggedIn}/>
-        <Sidebar className={classes.drawer} isOpen={drawerOpen}
-          isLoggedIn={loggedIn}/>
+    <div className={classes.layoutRoot}>
+      <DrawerOpenDispatch.Provider value={[drawerOpen, drawerOpenDispatch]}>
+        <Masthead/>
+        <Sidebar/>
       </DrawerOpenDispatch.Provider>
       <main className={classNames(classes.content, {
           [classes.contentShift]: drawerOpen
         })}>
         {children}
-        <h1>Hello</h1>
-        <button onClick={() => setThemeMode('toggle')}>Toggle {themeMode} theme</button>
-        <button onClick={() => setLoggedIn(!loggedIn)}>Log In</button>
         <Switch>
           <Route path='/' exact component={HomePage}/>
           <Route path='/login' component={LoginPage}/>
