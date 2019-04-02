@@ -19,8 +19,10 @@ import { fade } from '@material-ui/core/styles/colorManipulator';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
-import PreviousConversations from './previousConversations';
+import Messages from './messages';
 import MoreVert from '@material-ui/icons/MoreVert';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import {
   Link,
   withRouter
@@ -149,7 +151,12 @@ function Masthead({isLoggedIn,...props}) {
 
   const profileMenuItems = (
     <MenuList>
-      <MenuItem onClick={handleMenu('account')}>Account</MenuItem>
+      <MenuItem onClick={handleMenu('account')}>
+        <ListItemIcon>
+          <AccountCircle/>
+        </ListItemIcon>
+        <ListItemText inset primary="Account" />
+      </MenuItem>
       <MenuItem onClick={handleMenu('options')}>Options</MenuItem>
     </MenuList>
   );
@@ -191,7 +198,7 @@ function Masthead({isLoggedIn,...props}) {
               onKeyPress={catchSearchEnter}/>
           </div>
           <div className={classes.grow} />
-          <PreviousConversations/>
+          <Messages isLoggedIn={isLoggedIn}/>
           <div>
             {
               isLoggedIn ? (
