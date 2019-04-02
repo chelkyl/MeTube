@@ -1,26 +1,14 @@
-import React, { useReducer } from 'react';
-import { ThemeProvider } from '@material-ui/styles';
+import React from 'react';
 import Layout from './pages/layout';
-import { getTheme, ThemeMode } from './theming';
+import Theming from './theming';
+import Authenticator from './authentication';
 
 export default function App() {
-  const themeModeReducer = (state, action) => {
-    switch (action) {
-      case 'light':
-      case 'dark':
-        return action;
-      case 'toggle':
-        return state === 'light' ? 'dark' : 'light';
-      default:
-        return state;
-    }
-  };
-  const [themeMode, themeModeDispatch] = useReducer(themeModeReducer, 'light');
   return (
-    <ThemeProvider theme={getTheme(themeMode)}>
-      <ThemeMode.Provider value={[themeMode, themeModeDispatch]}>
+    <Theming initialTheme={'dark'}>
+      <Authenticator>
         <Layout/>
-      </ThemeMode.Provider>
-    </ThemeProvider>
+      </Authenticator>
+    </Theming>
   );
 }

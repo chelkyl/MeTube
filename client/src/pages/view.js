@@ -1,108 +1,184 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useEffect } from 'react';
+import { makeStyles } from '@material-ui/styles';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Slide,
+  Paper,
+  Typography
+} from '@material-ui/core';
 import Player from '../components/player';
-import { withStyles } from '@material-ui/core/styles';
 import Api from '../apiclient';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
     textAlign: 'left'
   },
-  infoSection: {
+  fileInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    textAlign: 'left',
+    padding: theme.spacing.unit * 2
+  },
+  header: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'center',
+    width: '100%',
+    alignItems: 'end',
+    justifyContent: 'space-between',
     textAlign: 'left'
+  },
+  details: {
+  },
+  metrics: {
+  },
+  description: {
+    textAlign: 'left',
+    marginTop: theme.spacing.unit * 2
   }
-});
+}));
 
-class ViewPage extends React.Component {
-  state = {
-  };
-
-  getData(tag, route, id) {
-    // ApiClient.get(`/${route}/${id}`)
-    //   .then(res => {
-    //     this.setState({[tag]:res.data.response});
-    //   })
-    //   .catch(err => {
-    //     let msg = '';
-    //     // got response from server
-    //     if(err.response) {
-    //       console.log(err.response);
-    //       const { status } = err.response;
-    //       if (status >= 500 && status < 600) {
-    //         msg = `Server error ${status}, please contact the admins`;
-    //       }
-    //       else {
-    //         msg = `Sorry, unknown error ${status}`;
-    //       }
-    //     }
-    //     // request sent but no response
-    //     else if(err.request) {
-    //       console.log(err.request);
-    //       msg = err.message;
-    //     }
-    //     // catch all
-    //     else {
-    //       console.log(err);
-    //       msg = 'Sorry, unknown error';
-    //     }
-    //     console.log(msg, err);
-    //     this.setState({
-    //       [tag]: null
-    //     });
-    //   });
-  }
-
-  componentDidMount() {
-    this.getData('file_info', 'files', this.props.match.params.id);
-  }
-
-  render() {
-    const { classes } = this.props;
-    const { file_info } = this.state;
-
-    console.log(file_info);
-    if (file_info == null) {
-      return (
-        <div className={classes.container}>
-          <p>File not Found</p>
-        </div>
-      );
-    }
-
-    const { title, description, upload_date, views, upvotes, downvotes } = file_info;
-
-    return (
-      <div className={classes.container}>
-        <Player file_info={file_info}/>
-        {file_info ? (
-            <>
-              <h1>{title}</h1>
-              <h4>{description}</h4>
-              <p>Date Uploaded: {upload_date}</p>
-              <p>Views: {views}</p>
-              <p>Upvotes: {upvotes}</p>
-              <p>Downvotes: {downvotes}</p>
-            </>
-            /* 
-            <Comments/>
-            <Playlist/>
-            <Recommended/>
-            */
-          ) : null
-        }
-      </div>
-    );
-  }
+function SlideTransition(props) {
+  return <Slide direction='down' {...props}/>;
 }
 
-ViewPage.propTypes = {
-  classes: PropTypes.object.isRequired
+const initialAlertState = {
+  open: false,
+  title: '',
+  message: ''
 };
 
-export default withStyles(styles)(ViewPage);
+export default function ViewPage(props) {
+  const classes = useStyles();
+  const [fileInfo,setFileInfo] = useState({});
+  const [alertState, setAlertState] = useState(initialAlertState);
+  let cancel = false;
+
+  useEffect(() => {
+    let id = props.match.params.id;
+    Api.request('get',`/files/${id}`)
+      .then(res => {
+        console.log('view',res.data.response);
+        if(!cancel) setFileInfo(res.data.response);
+      })
+      .catch(err => {
+        let msg = '';
+        let title = '';
+        // got response from server
+        if(err.response) {
+          console.log(err.response);
+          const { status } = err.response;
+          title = 'Send report?';
+          if (status >= 500 && status < 600) {
+            msg = `Server error ${status}, please contact the admins`;
+          }
+          else if (status === 404) {
+            msg = "File not found";
+          }
+          else if (status === 403) {
+            msg = "File permission blocked";
+          }
+          else {
+            msg = `Sorry, unknown error ${status}`;
+          }
+        }
+        // request sent but no response
+        else if(err.request) {
+          console.log(err.request);
+          title = 'Check connection';
+          msg = 'Could not connect to the server';
+        }
+        // catch all
+        else {
+          console.log(err);
+          title = 'Send report?';
+          msg = 'Sorry, unknown error';
+        }
+        console.log(msg, err);
+        if(cancel) return;
+        setAlertState({title: title, message: msg, open: true});
+        setFileInfo({});
+      });
+
+      return () => {
+        cancel = true;
+      }
+  }, [props]);
+
+  let handleDialogButton = (type) => (e) => {
+    switch(type) {
+      case 'close':
+        setAlertState(initialAlertState);
+        break;
+      case 'report':
+        // props.history.push(`mailto:${process.env.REACT_APP_DEV_EMAIL}`);
+        setAlertState(initialAlertState);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const { title, description, upload_date, views, upvotes, downvotes } = fileInfo;
+
+  return (
+    <div className={classes.container}>
+      <input type="number" onKeyPress={
+        (e) => {
+          if(e.key === 'Enter') {
+            e.preventDefault();
+            props.history.push(`/view/${e.currentTarget.value}`);
+          }}
+        }/>
+      <Dialog open={alertState.open}
+          TransitionComponent={SlideTransition}
+          keepMounted
+          onClose={() => setAlertState(initialAlertState)}
+          aria-labelledby="alert-title"
+          aria-describedby="alert-description">
+        <DialogTitle id="alert-title">{alertState.title}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-description">{alertState.message}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogButton('close')} color="primary">Close</Button>
+          <Button onClick={handleDialogButton('report')} color="primary" variant="contained" autoFocus>Send Report</Button>
+        </DialogActions>
+      </Dialog>
+      <Player {...fileInfo}/>
+      <Paper>
+        <div className={classes.fileInfo}>
+          <div className={classes.header}>
+            <div className={classes.details}>
+              <Typography variant="h6">{title}</Typography>
+              <Typography variant="body1">{upload_date}</Typography>
+            </div>
+            <div className={classes.metrics}>
+              <Typography variant="body1">{`${views === null || "?"} views`}</Typography>
+              <Typography variant="body1">{`${upvotes === null || "?"} upvotes`}</Typography>
+              <Typography variant="body1">{`${downvotes === null || "?"} downvotes`}</Typography>
+            </div>
+          </div>
+          <div className={classes.description}>
+            <Typography variant="body1">{description}</Typography>
+          </div>
+        </div>
+      </Paper>
+      {
+        /* 
+        <Comments/>
+        <Playlist/>
+        <Recommended/>
+        */
+      }
+    </div>
+  );
+}

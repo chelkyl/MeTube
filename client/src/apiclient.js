@@ -33,7 +33,7 @@ class Api {
       case 'delete':
       case 'head':
       case 'options':
-        return this.client[type](URN,{...config, data: data});
+        return this.client[type](URN,{...config, data});
       case 'post':
       case 'put':
       case 'patch':

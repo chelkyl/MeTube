@@ -62,6 +62,48 @@ replaceMap = [
             }
           }
         ]
+      },
+      {
+        "tag": "name",
+        "tagIs": "POST file image logged in user_id 1 (bob)",
+        "path": ["request","body","formdata"],
+        "fix": [
+          {
+            "tag":"key",
+            "tagIs":"file",
+            "replace": {
+              "src": "{{path}}/MeTube/server/tests/BusyCat.jpg"
+            }
+          }
+        ]
+      },
+      {
+        "tag": "name",
+        "tagIs": "POST file video logged in user_id 1 token (bob)",
+        "path": ["request","body","formdata"],
+        "fix": [
+          {
+            "tag":"key",
+            "tagIs":"file",
+            "replace": {
+              "src": "{{path}}/MeTube/server/tests/wat - Gary Bernhardt CodeMash 2012 Lightning Talk.mp4"
+            }
+          }
+        ]
+      },
+      {
+        "tag": "name",
+        "tagIs": "POST file large video logged in user_id 1 (bob)",
+        "path": ["request","body","formdata"],
+        "fix": [
+          {
+            "tag":"key",
+            "tagIs":"file",
+            "replace": {
+              "src": "{{path}}/MeTube/server/tests/The Birth & Death of JavaScript - Gary Bernhardt PyCon 2014.mp4"
+            }
+          }
+        ]
       }
     ]
   },
@@ -108,6 +150,48 @@ replaceMap = [
             "tagIs":"file",
             "replace": {
               "src": "{{path}}/MeTube/server/tests/Catas & Kasger - Blueshift.mp3"
+            }
+          }
+        ]
+      },
+      {
+        "tag": "name",
+        "tagIs": "POST file image logged in user_id 1 (bob)",
+        "path": ["request","body","formdata"],
+        "fix": [
+          {
+            "tag":"key",
+            "tagIs":"file",
+            "replace": {
+              "src": "{{path}}/MeTube/server/tests/BusyCat.jpg"
+            }
+          }
+        ]
+      },
+      {
+        "tag": "name",
+        "tagIs": "POST file video logged in user_id 1 token (bob)",
+        "path": ["request","body","formdata"],
+        "fix": [
+          {
+            "tag":"key",
+            "tagIs":"file",
+            "replace": {
+              "src": "{{path}}/MeTube/server/tests/wat - Gary Bernhardt CodeMash 2012 Lightning Talk.mp4"
+            }
+          }
+        ]
+      },
+      {
+        "tag": "name",
+        "tagIs": "POST file large video logged in user_id 1 (bob)",
+        "path": ["request","body","formdata"],
+        "fix": [
+          {
+            "tag":"key",
+            "tagIs":"file",
+            "replace": {
+              "src": "{{path}}/MeTube/server/tests/The Birth & Death of JavaScript - Gary Bernhardt PyCon 2014.mp4"
             }
           }
         ]

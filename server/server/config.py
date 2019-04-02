@@ -5,6 +5,8 @@ class Config(object):
   DEBUG = False
   TESTING = False
   SERVE_PUBLIC = False
+  SECRET_KEY = "SUCHENCRYPTSOPROTECT"
+  DEFAULT_SESSION_LENGTH_HRS = 24
 
   MAX_CONTENT_LENGTH = 1024 * 1024 * 512   # 512 megabytes
   UPLOAD_DIR = os.getenv('UPLOAD_DIR') or None
@@ -24,8 +26,8 @@ class Config(object):
   assert (DB_NAME != None),  'Missing DB_NAME env var, check your .env file'
   SQLALCHEMY_DATABASE_URI = '{L}+pymysql://{U}:{S}@{H}:{P}/{D}'.format(L=DIALECT,U=USERNAME,S=PASSWORD,H=HOST,P=PORT,D=DB_NAME)
   SQLALCHEMY_TRACK_MODIFICATIONS = False
-  SQLALCHEMY_POOL_TIMEOUT = 30   # 30 seconds
-  SQLALCHEMY_POOL_RECYCLE = 600  # 10 minutes
+  SQLALCHEMY_POOL_TIMEOUT = 5    # in seconds
+  SQLALCHEMY_POOL_RECYCLE = 600  # in seconds
 
 class ProductionCfg(Config):
   SERVE_PUBLIC = True
@@ -33,7 +35,7 @@ class ProductionCfg(Config):
 class DevCfg(Config):
   DEBUG = True
   # shows sqlalchemy engine statements
-  SQLALCHEMY_ECHO = True
+  # SQLALCHEMY_ECHO = True
 
 class TestCfg(Config):
   TESTING = True
