@@ -17,7 +17,8 @@ import { fade } from '@material-ui/core/styles/colorManipulator';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
-import { 
+import PreviousConversations from './previousConversations';
+import {
   Link,
   withRouter
 } from 'react-router-dom';
@@ -203,6 +204,7 @@ function Masthead(props) {
               onKeyPress={catchSearchEnter}/>
           </div>
           <div className={classes.grow} />
+          <PreviousConversations/>
           <div>
             <IconButton color="inherit" aria-haspopup="true" onClick={openMenu}>
               <AccountCircle />
