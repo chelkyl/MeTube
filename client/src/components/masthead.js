@@ -193,7 +193,7 @@ function Masthead(props) {
           <div className={classes.search}>
             <div className={classes.searchIconWrap}>
               <IconButton className={classes.searchIcon} color="inherit" aria-label="Search" onClick={submitSearch}>
-                <Search />
+                <SearchIcon />
               </IconButton>
             </div>
             <InputBase placeholder="Search..." classes={{

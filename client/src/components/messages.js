@@ -21,7 +21,7 @@ import {
   Link
 } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
-import {useAuthCtx} from '../authentication';
+import {useAuthCtx, getAuthenticatedUserID} from '../authentication';
 
 function TabContainer(props) {
   return (
@@ -72,7 +72,7 @@ function Messages(props) {
   function toggleMessages() {
     setOpen(!open);
     if(!open) {
-      Api.request('get',`/messages/${2}/g`,{},{responseType: 'blob'})
+      Api.request('get',`/messages/${getAuthenticatedUserID()}/g`,{},{responseType: 'blob'})
     }
   }
 
