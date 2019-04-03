@@ -72,7 +72,7 @@ function Messages(props) {
   function toggleMessages() {
     setOpen(!open);
     if(!open) {
-      Api.request('get',`/messages/${getAuthenticatedUserID()}/g`,{},{responseType: 'blob'})
+      Api.request('get',`/messages/${getAuthenticatedUserID()}`,{},{responseType: 'blob'})
     }
   }
 
