@@ -15,11 +15,13 @@ import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import Api from '../apiclient';
 import Typography from '@material-ui/core/Typography';
 import {
   Link
 } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
+import {useAuthCtx} from '../authentication';
 
 function TabContainer(props) {
   return (
@@ -42,11 +44,12 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function Messages({isLoggedIn,...props}) {
+function Messages(props) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState(0);
   const anchorEl = React.useRef(null);
+  const [isLoggedIn] = useAuthCtx();
 
   const options = [
     'Example Message',
@@ -58,21 +61,6 @@ function Messages({isLoggedIn,...props}) {
     bottom: false
   });
 
-  const chatBar = (
-    <div className={classes.chatBar}>
-      <AppBar position="static">
-        <Tabs value={value} onChange={messageChange}>
-          <Tab label="Message One" />
-          <Tab label="Message Two" />
-          <Tab label="Message Three" />
-        </Tabs>
-      </AppBar>
-      {value === 0 && <TabContainer>Message One</TabContainer>}
-      {value === 1 && <TabContainer>Message Two</TabContainer>}
-      {value === 2 && <TabContainer>Message Three</TabContainer>}
-    </div>
-  );
-
   const toggleChatBar = (side, open) => () => {
     setState({ ...state, [side]: open });
   };
@@ -83,6 +71,9 @@ function Messages({isLoggedIn,...props}) {
 
   function toggleMessages() {
     setOpen(!open);
+    if(!open) {
+      Api.request('get',`/messages/${2}/g`,{},{responseType: 'blob'})
+    }
   }
 
   function handleMessagesClose(event) {
@@ -143,7 +134,18 @@ function Messages({isLoggedIn,...props}) {
         onClose={toggleChatBar('bottom', false)}
         onOpen={toggleChatBar('bottom', true)}
       >
-        {chatBar}
+        <div className={classes.chatBar}>
+          <AppBar position="static">
+            <Tabs value={value} onChange={messageChange}>
+              <Tab label="Message One" />
+              <Tab label="Message Two" />
+              <Tab label="Message Three" />
+            </Tabs>
+          </AppBar>
+          {value === 0 && <TabContainer>Message One</TabContainer>}
+          {value === 1 && <TabContainer>Message Two</TabContainer>}
+          {value === 2 && <TabContainer>Message Three</TabContainer>}
+        </div>
       </SwipeableDrawer>
     </div>
   );

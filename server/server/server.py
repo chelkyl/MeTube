@@ -437,7 +437,7 @@ def auth_user():
   # trivial check
   if username is None or password is None:
     return JSONResponse("Unauthorized",401,True).end()
-  
+
   result = db.engine.execute('SELECT * FROM User WHERE username="{UNAME}"'.format(UNAME=username))
   data = get_query_data(result)
   if data and is_match_password(password,data[0]['password_hash']):
@@ -546,11 +546,11 @@ def get_actual_file(file_id):
   data = get_query_data(result)
   if not data:
     return JSONResponse("file_id {ID} not found".format(ID=file_id),404,True).end()
-  
+
   file_path = path.join(app.config['UPLOAD_DIR'], str(file_id))
   if not path.isfile(file_path):
     return JSONResponse("file for {ID} not found".format(ID=file_id),404,True).end()
-  
+
   info = data[0]
   ranges = request.headers.get('Range',None)
   if ranges:
@@ -597,7 +597,7 @@ def remove_file(file_id):
   if data:
     if g.user['user_id'] != data[0]['user_id']:
       return JSONResponse("Unauthorized",401,True).end()
-    
+
     # Unlinks neccessary relationships
     result = db.engine.execute('SELECT comment_id FROM Comment WHERE file_id={ID}'.format(ID=file_id))
     # comments=Comment.query.filter_by(file_id=file_id).all()
@@ -682,7 +682,7 @@ def remove_playlist(playlist_id):
   if data:
     if g.user['user_id'] != data[0]['user_id']:
       return JSONResponse("Unauthorized",401,True).end()
-    
+
     # Unlinks neccessary relationships
     db.engine.execute('DELETE FROM playlist_files WHERE playlist_id={ID}'.format(ID=playlist_id))
     db.engine.execute('DELETE FROM Playlist WHERE playlist_id={ID}'.format(ID=playlist_id))
@@ -921,6 +921,13 @@ def add_message():
   if data:
     return JSONResponse(data[0]).end()
   return JSONResponse("Message creation failed",500,True).end()
+
+@app.route('/messages/<user_id>',methods=['GET'])
+def get_user_messages(user_id):
+  result = db.engine.execute('SELECT message_id,contacting_id,contacted_id,message,message_date FROM Message WHERE contacting_id={ID} OR contacted_id={ID}'.format(ID=user_id))
+  data = get_query_data(result)
+  opts = get_request_opts(request)
+  return JSONResponse(filter_sort_paginate(data,opts)).end()
 
 @app.route('/users/subscribe',methods=['LINK'])
 @auth.login_required
