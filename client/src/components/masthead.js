@@ -22,7 +22,7 @@ import {
   Link,
   withRouter
 } from 'react-router-dom';
-import {useAuthCtx} from '../authentication';
+import {useAuthCtx, getAuthenticatedUserID} from '../authentication';
 
 const useStyles = makeStyles(theme => ({
   masthead: {
@@ -100,7 +100,7 @@ function Masthead(props) {
 
   const [menuAnchor, setMenuAnchor] = useState(null);
 
-  const [isLoggedIn,authActionDispatch] = useAuthCtx();
+  const [isLoggedIn, authActionDispatch] = useAuthCtx();
 
   const params = new URLSearchParams(props.location.search);
   const [searchQuery, setSearchQuery] = useState(params.get('q') || '');
@@ -115,6 +115,7 @@ function Masthead(props) {
   let handleMenu = label => (e) => {
     switch(label) {
       case 'account':
+      props.history.push(`/channel/${getAuthenticatedUserID()}`)
         closeMenu();
         break;
       case 'options':
@@ -192,7 +193,7 @@ function Masthead(props) {
           <div className={classes.search}>
             <div className={classes.searchIconWrap}>
               <IconButton className={classes.searchIcon} color="inherit" aria-label="Search" onClick={submitSearch}>
-                <SearchIcon />
+                <Search />
               </IconButton>
             </div>
             <InputBase placeholder="Search..." classes={{

@@ -59,7 +59,7 @@ const useStyles = makeStyles(theme => ({
 
 export default function LoginPage() {
   const classes = useStyles();
-  const [isLoggedIn, authActionDispatch, errorState, authState ] = useAuthCtx();
+  const [isLoggedIn, authActionDispatch, errorState, authState] = useAuthCtx();
   const [redirect, setRedirect] = useState(false);
   const [inputs, setInputs] = useState({username:'', password:''});
   let timer = null;
