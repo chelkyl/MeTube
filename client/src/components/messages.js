@@ -146,7 +146,6 @@ function Messages({isLoggedIn,...props}) {
         {chatBar}
       </SwipeableDrawer>
     </div>
-
   );
 }
 

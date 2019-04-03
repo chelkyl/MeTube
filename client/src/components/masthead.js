@@ -18,9 +18,6 @@ import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import Messages from './messages';
-import MoreVert from '@material-ui/icons/MoreVert';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import {
   Link,
   withRouter
