@@ -1,15 +1,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import Grow from '@material-ui/core/Grow';
-import Paper from '@material-ui/core/Paper';
-import Popper from '@material-ui/core/Popper';
-import MenuItem from '@material-ui/core/MenuItem';
-import MenuList from '@material-ui/core/MenuList';
-import Message from '@material-ui/icons/Message';
-import Delete from '@material-ui/icons/Delete';
-import IconButton from '@material-ui/core/IconButton';
-import ListSubheader from '@material-ui/core/ListSubheader';
+import {
+  ClickAwayListener,
+  Grow,
+  Paper,
+  Popper,
+  MenuItem,
+  MenuList,
+  IconButton,
+  ListSubheader
+} from '@material-ui/core';
+import {
+  Message,
+  Delete
+} from '@material-ui/icons';
 import { withStyles } from '@material-ui/core/styles';
 
 const options = [

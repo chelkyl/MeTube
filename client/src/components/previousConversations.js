@@ -1,14 +1,18 @@
 import React from 'react';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import Grow from '@material-ui/core/Grow';
-import Paper from '@material-ui/core/Paper';
-import Popper from '@material-ui/core/Popper';
-import MenuItem from '@material-ui/core/MenuItem';
-import MenuList from '@material-ui/core/MenuList';
-import IconButton from '@material-ui/core/IconButton';
-import Message from '@material-ui/icons/Message';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import { makeStyles } from '@material-ui/styles';
+import {
+  ClickAwayListener,
+  Grow,
+  Paper,
+  Popper,
+  MenuItem,
+  MenuList,
+  IconButton,
+  ListSubheader
+} from '@material-ui/core';
+import {
+  Message
+} from '@material-ui/icons';
 
 const useStyles = makeStyles(theme => ({
   grow: {

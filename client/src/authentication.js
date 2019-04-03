@@ -10,6 +10,10 @@ export const isAuthenticated = () => {
   return getAccessToken() !== undefined;
 };
 
+export const getAuthenticatedUserID = () => {
+  return Cookies.get('user_id');
+};
+
 const ONE_HOUR_IN_MS = 60 * 60 * 1000;
 
 export const authenticate = async (creds) => {
@@ -21,6 +25,7 @@ export const authenticate = async (creds) => {
     const expiration = new Date(new Date().getTime() + expires_in);
     
     Cookies.set('access_token', tokens.access_token, {expires: expiration});
+    Cookies.set('user_id', res.response.user_id, {expires: expiration});
     return res;
   }
   catch(err) {
@@ -37,6 +42,7 @@ export const register = async (creds) => {
     const expiration = new Date(new Date().getTime() + expires_in);
     
     Cookies.set('access_token', tokens.access_token, {expires: expiration});
+    Cookies.set('user_id', res.response.user_id, {expires: expiration});
     return res;
   }
   catch(err) {

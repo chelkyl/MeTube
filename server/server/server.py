@@ -445,7 +445,8 @@ def auth_user():
     # print('auth_user new token',token.decode('ascii'))
     return JSONResponse({
       'token': token.access_token,
-      'expires_in_secs': token.expires_in_secs
+      'expires_in_secs': token.expires_in_secs,
+      'user_id': data[0]['user_id']
     }).end()
   return JSONResponse("Unauthorized",401,True).end()
     # return JSONResponse("OK").end()

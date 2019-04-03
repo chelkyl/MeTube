@@ -1,8 +1,21 @@
 import React, {useState, useEffect} from 'react';
 import { makeStyles } from '@material-ui/styles';
+import {
+  Typography,
+  ExpansionPanel,
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio
+} from '@material-ui/core';
+import {
+  Tune
+} from '@material-ui/icons';
 import axios from 'axios';
 import Api from '../apiclient';
-import { Typography, Divider } from '@material-ui/core';
 import ResultItemCard from '../components/resultItemCard';
 
 const useStyles = makeStyles(theme => ({
@@ -38,6 +51,16 @@ const trendingListSorts = [
     'descending': 'true'
   }
 ];
+const initialFilters = {
+  'files': [],
+  'users': [],
+  'playlists': []
+};
+const initialSorters = {
+  'files': trendingFileSorts,
+  'users': trendingUserSorts,
+  'playlists': trendingListSorts
+};
 
 let getSearchType = (s) => {
   switch(s) {
@@ -50,31 +73,38 @@ let getSearchType = (s) => {
       return '';
   }
 };
-let getFormFilters = () => {
-  return false;
-};
-let getFormSorters = () => {
-  return {
-    'files': trendingFileSorts,
-    'users': trendingUserSorts,
-    'playlists': trendingListSorts
-  };
-};
 
 export default function BrowsePage(props) {
   const classes = useStyles();
   const params = new URLSearchParams(props.location.search);
   const [query, setQuery] = useState(params.get('q') || '');
-  const [searchType, setSearchType] = useState(getSearchType(params.get('just')));
-  const [filters, setFilters] = useState(getFormFilters());
-  const [sorters, setSorters] = useState(getFormSorters());
+  const [searchType, setSearchType] = useState(''); //FIXME: searchType is files/playlists/users, get mixed up with audio/video/docs
+  const [filters, setFilters] = useState([]);
+  const [sorters, setSorters] = useState([]);
   const [results, setResults] = useState([]);
+  // const [inputs, setInputs]   = useState({});
+  let inputs = {};
   let cancelSearch = false;
+
+  let getFormFilters = () => {
+    let newFilters = [];
+    
+    return newFilters;
+  };
+  let getFormSorters = () => {
+    return initialSorters;
+  };
+  let handleInputs = (label) => (e) => {
+    // setInputs({...inputs, [label]:e.currentTarget.value});
+    console.log('browse',e.currentTarget, e.currentTarget.value);
+    inputs[label] = e.currentTarget.value;
+  };
 
   useEffect(() => {
     console.log('setting query');
     const newParams = new URLSearchParams(props.location.search);
     setQuery(newParams.get('q') || '');
+    setSearchType(newParams.get('type') || '');
   }, [props]);
 
   let getRankedResults = (results) => {
@@ -147,22 +177,52 @@ export default function BrowsePage(props) {
     }
   }, [query]);
 
+  let contents;
+  if(results === []) contents = <Typography variant="h5">No results</Typography>;
+  else {
+    contents = results.map(result => {
+      return (
+        <ResultItemCard key={`result-${result.resultType}-${result.id}`}
+          className={classes.resultItem}
+          name={result.display_name}
+          owner={result.owner}
+          result_type={result.resultType}
+          mimetype={result.mimetype}
+          id={result.id}
+          variant="wide"/>
+      )
+    });
+  }
+
   return (
     <div className={classes.container}>
-      <Typography variant="h5">Results</Typography>
+      <ExpansionPanel>
+        <ExpansionPanelSummary expandIcon={<Tune/>}>
+          <Typography className={classes.optionsTitle}>Search Options</Typography>
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails className={classes.options}>
+          <FormControl component="fieldset" className={classes.optionGroupWrap}>
+            <FormLabel component="legend">Category</FormLabel>
+            <RadioGroup name="category" className={classes.optionGroup}
+              value={inputs['category']} onChange={handleInputs('category')} aria-label="category">
+              <FormControlLabel control={<Radio/>} label="File"     value="files"/>
+              <FormControlLabel control={<Radio/>} label="Channel"  value="users"/>
+              <FormControlLabel control={<Radio/>} label="Playlist" value="playlists"/>
+            </RadioGroup>
+          </FormControl>
+          <FormControl component="fieldset" className={classes.optionGroupWrap}>
+            <FormLabel component="legend">Type</FormLabel>
+            <RadioGroup name="type" className={classes.optionGroup}
+              value={inputs['type']} onChange={handleInputs('type')} aria-label="type">
+              <FormControlLabel control={<Radio/>} label="Video" value="video"/>
+              <FormControlLabel control={<Radio/>} label="Audio" value="audio"/>
+              <FormControlLabel control={<Radio/>} label="Image" value="image"/>
+            </RadioGroup>
+          </FormControl>
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
       <div className={classes.results}>
-        {results.map(result => {
-          return (
-            <ResultItemCard key={`result-${result.resultType}-${result.id}`}
-              className={classes.resultItem}
-              name={result.display_name}
-              owner={result.owner}
-              result_type={result.resultType}
-              mimetype={result.mimetype}
-              id={result.id}
-              variant="wide"/>
-          )
-        })}
+        {contents}
       </div>
     </div>
   );

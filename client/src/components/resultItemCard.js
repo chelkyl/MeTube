@@ -111,7 +111,6 @@ export default function ResultItemCard(props) {
     mimetype,
     thumbnail
   } = props;
-  console.log(props);
 
   let card = null;
   let getRouteFromResultType = (type) => {
