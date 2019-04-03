@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import FileItemCard from '../components/fileItemCard';
+import ResultItemCard from '../components/resultItemCard';
 import {
   Typography,
 } from '@material-ui/core';
@@ -78,11 +78,11 @@ class Section extends React.Component {
         <Typography variant="h5" className={classes.sectionTitle}>
           {name}
         </Typography>
-        <div className={classes.videosGrid}>
+        {/* <div className={classes.videosGrid}>
           {files.map(file => {
-            return <FileItemCard key={`file-${file.file_id}`} name={file.title} owner={file.owner} file_id={file.file_id}/>
+            return <ResultItemCard key={`file-${file.}-${file.file_id}`} name={file.title} owner={file.owner} file_id={file.file_id}/>
           })}
-        </div>
+        </div> */}
       </div>
     )
   }

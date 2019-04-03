@@ -346,8 +346,8 @@ def filter_sort_paginate(data,opts):
 #
 def get_request_opts(req):
   opts = {
-    'filters': [],
-    'sorters': [],
+    'filters': req.args.get('filters',[]),
+    'sorters': req.args.get('sorters',[]),
     'bounds': {
       'start': req.args.get('b',0),
       'limit': req.args.get('l',None)
@@ -662,6 +662,13 @@ def get_playlist(playlist_id):
   if data:
     return JSONResponse(data[0]).end()
   return JSONResponse("playlist_id {ID} not found".format(ID=playlist_id),404,True).end()
+
+@app.route('/playlists',methods=['GET'])
+def get_playlists():
+  result = db.engine.execute('SELECT * FROM Playlist')
+  data = get_query_data(result)
+  opts = get_request_opts(request)
+  return JSONResponse(filter_sort_paginate(data,opts)).end()
 
 @app.route('/playlists/<playlist_id>',methods=['DELETE'])
 @auth.login_required

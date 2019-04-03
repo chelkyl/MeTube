@@ -55,7 +55,7 @@ export default function Player(props) {
   const [fileID, setFileID] = useState(props.file_id);
   const [blobURL, setBlobURL] = useState(null);
   const [errorMessage,setErrorMessage] = useState(initialErrorState);
-  let {mimetype=''} = props;
+  let {mimetype='', name=''} = props;
   let cancel = false;
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function Player(props) {
   }, [props]);
 
   useEffect(() => {
-    console.log(fileID);
+    console.log('player init',fileID);
     if(fileID) {
       Api.request('get',`/files/${fileID}/g`,{},{responseType: 'blob'})
         .then(res => {
@@ -164,7 +164,7 @@ export default function Player(props) {
     else if (mimetype.includes('image')) {
       viewer = (
         <div className={classes.imageContainer}>
-          <img className={classes.image} src={blobURL}/>
+          <img className={classes.image} src={blobURL} alt={name}/>
         </div>
       )
     }

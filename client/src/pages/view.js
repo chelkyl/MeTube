@@ -58,7 +58,7 @@ const initialAlertState = {
 
 export default function ViewPage(props) {
   const classes = useStyles();
-  const [fileInfo,setFileInfo] = useState({});
+  const [fileInfo,setFileInfo] = useState({file_id:props.match.params.id});
   const [alertState, setAlertState] = useState(initialAlertState);
   let cancel = false;
 
@@ -105,7 +105,7 @@ export default function ViewPage(props) {
         console.log(msg, err);
         if(cancel) return;
         setAlertState({title: title, message: msg, open: true});
-        setFileInfo({});
+        setFileInfo({file_id:id});
       });
 
       return () => {

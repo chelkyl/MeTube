@@ -14,9 +14,9 @@ const lightTheme = {
 };
 
 const darkTheme = {
-  primary:    '#241C2B',
+  primary:    '#949C9B',
   secondary:  '#A1A4AD',
-  error:      '#AA2121',
+  error:      '#ff4181',
   background: '#241C2B'
 };
 

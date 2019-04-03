@@ -2,20 +2,21 @@ import React, {useState, useEffect} from 'react';
 import { makeStyles } from '@material-ui/styles';
 import axios from 'axios';
 import Api from '../apiclient';
-import { Typography } from '@material-ui/core';
+import { Typography, Divider } from '@material-ui/core';
+import ResultItemCard from '../components/resultItemCard';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(theme => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
     textAlign: 'left'
   },
-  infoSection: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    textAlign: 'left'
+  results: {
+    marginTop: theme.spacing.unit
+  },
+  resultItem: {
+    marginBottom: theme.spacing.unit
   }
 }));
 
@@ -76,6 +77,10 @@ export default function BrowsePage(props) {
     setQuery(newParams.get('q') || '');
   }, [props]);
 
+  let getRankedResults = (results) => {
+    return results.flat(1);
+  };
+
   useEffect(() => {
     console.log('submitting for query:',query);
     let requests = [];
@@ -98,6 +103,7 @@ export default function BrowsePage(props) {
           let resType = reqTypes[i];
           let data = res.data.response;
           data.forEach((item) => {
+            item['resultType'] = resType;
             switch(resType) {
               case 'files':
                 item['id'] = item.file_id;
@@ -117,7 +123,8 @@ export default function BrowsePage(props) {
           });
           return data;
         });
-        setResults(reqResults); //FIXME: response processed?
+        let rankedResults = getRankedResults(reqResults);
+        setResults(rankedResults);
       })
       .catch(err => {
         console.log(err);
@@ -143,9 +150,20 @@ export default function BrowsePage(props) {
   return (
     <div className={classes.container}>
       <Typography variant="h5">Results</Typography>
-      {results.map(result => {
-        return <fileItemCard key={`result-${result.id}`} name={result.display_name} owner={result.owner} id={result.id}/>
-      })}
+      <div className={classes.results}>
+        {results.map(result => {
+          return (
+            <ResultItemCard key={`result-${result.resultType}-${result.id}`}
+              className={classes.resultItem}
+              name={result.display_name}
+              owner={result.owner}
+              result_type={result.resultType}
+              mimetype={result.mimetype}
+              id={result.id}
+              variant="wide"/>
+          )
+        })}
+      </div>
     </div>
   );
 }
