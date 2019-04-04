@@ -58,35 +58,6 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const trendingFileSorts = [
-  {
-    'column': 'views',
-    'descending': 'true'
-  }
-];
-const trendingUserSorts = [
-  {
-    'column': 'subscribers',
-    'descending': 'true'
-  }
-];
-const trendingListSorts = [
-  {
-    'column': 'views',
-    'descending': 'true'
-  }
-];
-const initialFilters = {
-  'files': [],
-  'users': [],
-  'playlists': []
-};
-const initialSorters = {
-  'files': trendingFileSorts,
-  'playlists': trendingListSorts,
-  'users': trendingUserSorts
-};
-
 let getSearchType = (s) => {
   switch(s) {
     case 'video':
@@ -113,14 +84,47 @@ export default function BrowsePage(props) {
   const [inputs, setInputs]   = useState({...initialInputs, 'type': getSearchType(params.get('type'))});
   let cancelSearch = false;
 
-  let makeFilters = (type) => {
+  let makeFilters = (category) => {
     let queryFilters = [];
-    
+    if(category === 'files') {
+      if(inputs.type !== 'all') {
+        queryFilters.push({
+          'column': 'mimetype',
+          'value': inputs.type,
+          'cmp': 'contains'
+        });
+      }
+    }
     return queryFilters;
   };
-  let makeSorters = (type) => {
+  let makeSorters = (category) => {
     let querySorters = [];
-
+    if(category === 'files') {
+      switch(inputs.sort) {
+        case 'likes':
+          querySorters.push({
+            'column': 'upvotes',
+            'descending': inputs.sortDsc
+          });
+          break;
+        case 'downloads':
+          //TODO: need column or table in db
+          break;
+        case 'subscribers':
+          querySorters.push({
+            'column': 'subscribed',
+            'descending': inputs.sortDsc
+          });
+          break;
+        case 'views':
+        default:
+          querySorters.push({
+            'column': 'views',
+            'descending': inputs.sortDsc
+          });
+          break;
+      }
+    }
     return querySorters;
   };
   let deepCopyObject = (obj) => {
@@ -184,15 +188,15 @@ export default function BrowsePage(props) {
     let requests = [];
     let reqTypes = [];
     console.log('browse',inputs);
-    if (inputs.type) {
-      requests.push(Api.getData(inputs.type, query, makeFilters(inputs.type), makeSorters(inputs.type)));
-      reqTypes.push(inputs.type);
+    if (inputs.category == 'all') {
+      ['files','playlists','users'].forEach((cat) => {
+        requests.push(Api.getData(cat, query, makeFilters(cat), makeSorters(cat)));
+        reqTypes.push(cat);
+      });
     }
     else {
-      ['files','playlists','users'].forEach((sType) => {
-        requests.push(Api.getData(sType, query, makeFilters(sType), makeSorters(sType)));
-        reqTypes.push(sType);
-      });
+      requests.push(Api.getData(inputs.category, query, makeFilters(inputs.category), makeSorters(inputs.category)));
+      reqTypes.push(inputs.category);
     }
     axios.all(requests)
       .then(responses => {
@@ -244,7 +248,7 @@ export default function BrowsePage(props) {
     return () => {
       cancelSearch = true;
     }
-  }, [query]);
+  }, [query,inputs]);
 
   let contents;
   if(results === []) contents = <Typography variant="h5">No results</Typography>;

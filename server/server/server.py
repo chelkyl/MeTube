@@ -9,6 +9,7 @@ import sqlalchemy
 from sqlalchemy.sql import text
 import datetime
 import shutil
+import json
 from operator import itemgetter
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -257,6 +258,36 @@ def remove_user(user_id):
 #     limit: num,
 #   }
 # }
+def passes_filters(filters, entry):
+  values = [str(val).lower() for val in entry.values()]
+  keep = True
+  for f in filters:
+    if f.get('any', False):
+      fval = str(f['value']).lower()
+      # tests if value appears in entry
+      if f['cmp'] == 'exact' and fval in values:
+        keep = True
+      else:
+        # if f['cmp'] == 'contains' or other value
+        for value in values:
+          if fval in value:
+            keep = True
+            break
+    else:
+      # specific filters
+      if f['column'] in entry.keys():
+        if f['cmp'] == 'exact' and f['value'] == entry[f['column']]:
+          keep = True
+        elif f['cmp'] == 'contains' and f['value'] in str(entry[f['column']]):
+          keep = True
+        elif f['cmp'] == 'min' and f.value >= entry[f['column']]:
+          keep = True
+        elif f['cmp'] == 'max' and f['value'] <= entry[f['column']]:
+          keep = True
+    # print(f['cmp'],entry[f['column']],f['value'])
+  # print(keep)
+  return keep
+
 def filter_sort_paginate(data,opts):
   if len(data) == 0:
     return []
@@ -268,35 +299,9 @@ def filter_sort_paginate(data,opts):
 
   if filters:
     for entry in data:
-      values = [str(val).lower() for val in entry.values()]
-      for f in filters:
-        keep = False
-        if f.get('any', False):
-          fval = str(f['value']).lower()
-          # tests if value appears in entry
-          if f['cmp'] == 'exact' and fval in values:
-            keep = True
-          else:
-            # if f['cmp'] == 'contains' or other value
-            for value in values:
-              if fval in value:
-                keep = True
-                break
-        else:
-          # specific filters
-          if f['column'] in entry.keys():
-            if f['cmp'] == 'exact' and f['value'] == entry[f['column']]:
-              keep = True
-            elif f['cmp'] == 'contains' and f['value'] in str(entry[f['column']]):
-              keep = True
-            elif f['cmp'] == 'min' and f.value >= entry[f['column']]:
-              keep = True
-            elif f['cmp'] == 'max' and f['value'] <= entry[f['column']]:
-              keep = True
-        # this entry matched a filter, stop checking other filters
-        if keep:
-          ret.append(entry)
-          break
+      if passes_filters(filters, entry):
+        ret.append(entry)
+        break
   else:
     ret = data
 
@@ -346,19 +351,25 @@ def filter_sort_paginate(data,opts):
 #
 def get_request_opts(req):
   opts = {
-    'filters': req.args.get('filters',[]),
-    'sorters': req.args.get('sorters',[]),
+    'filters': req.args.get('filters[]',[]),
+    'sorters': req.args.get('sorters[]',[]),
     'bounds': {
       'start': req.args.get('b',0),
       'limit': req.args.get('l',None)
     }
   }
+  # print(opts['filters'],type(opts['filters']))
+  if(isinstance(opts['filters'],str)):
+    opts['filters'] = [json.loads(opts['filters'])]
+  if(isinstance(opts['sorters'],str)):
+    opts['sorters'] = [json.loads(opts['sorters'])]
 
   if req.is_json:
     if 'filters' in req.json:
       opts['filters'] = req.json['filters']
     if 'sorters' in req.json:
       opts['sorters'] = req.json['sorters']
+  # print(opts)
 
   if 'q' in req.args:
     opts['filters'].append({
