@@ -60,44 +60,6 @@ function Messages(props) {
     setState({ ...state, [side]: open });
   };
 
-  function getUserName(userId){
-    Api.request('get',`/users/${userId}`)
-      .then(res => {
-        console.log('username: ',res.data.response.username);
-      })
-      .catch(err => {
-        let msg = '';
-        // got response from server
-        if(err.response) {
-          console.log(err.response);
-          const { status } = err.response;
-          if (status >= 500 && status < 600) {
-            msg = `Server error ${status}, please contact the admins`;
-          }
-          else if (status === 404) {
-            msg = "User not found";
-          }
-          else if (status === 403) {
-            msg = "User permission blocked";
-          }
-          else {
-            msg = `Sorry, unknown error ${status}`;
-          }
-        }
-        // request sent but no response
-        else if(err.request) {
-          console.log(err.request);
-          msg = 'Could not connect to the server';
-        }
-        // catch all
-        else {
-          console.log(err);
-          msg = 'Sorry, unknown error';
-        }
-        console.log(msg, err);
-      });
-  }
-
   function getNewPreviousConversations(messageInfo){
     let newPreviousConversations = [];
     var newestMessagesMap = new Map();
@@ -110,7 +72,6 @@ function Messages(props) {
       }
     }
     for (var [key, value] of newestMessagesMap) {
-      getUserName(key)
       newPreviousConversations.push(key + ": " + value);
     }
     return newPreviousConversations;
