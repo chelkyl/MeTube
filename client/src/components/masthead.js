@@ -14,12 +14,10 @@ import {
   Switch
 } from '@material-ui/core';
 import { fade } from '@material-ui/core/styles/colorManipulator';
-import {
-  Menu as MenuIcon,
-  Search,
-  AccountCircle
-} from '@material-ui/icons';
-import PreviousConversations from './previousConversations';
+import MenuIcon from '@material-ui/icons/Menu';
+import SearchIcon from '@material-ui/icons/Search';
+import AccountCircle from '@material-ui/icons/AccountCircle';
+import Messages from './messages';
 import {
   Link,
   withRouter
@@ -196,7 +194,7 @@ function Masthead(props) {
           <div className={classes.search}>
             <div className={classes.searchIconWrap}>
               <IconButton className={classes.searchIcon} color="inherit" aria-label="Search" onClick={submitSearch}>
-                <Search />
+                <SearchIcon />
               </IconButton>
             </div>
             <InputBase placeholder="Search..." classes={{
@@ -208,7 +206,7 @@ function Masthead(props) {
               onKeyPress={catchSearchEnter}/>
           </div>
           <div className={classes.grow} />
-          <PreviousConversations/>
+          <Messages isLoggedIn={isLoggedIn}/>
           <div>
             <IconButton color="inherit" aria-haspopup="true" onClick={openMenu}>
               <AccountCircle />
