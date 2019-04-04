@@ -526,14 +526,15 @@ def upload_file():
 
 @app.route('/files',methods=['GET'])
 def get_files():
-  result = db.engine.execute('SELECT file_id,user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type FROM File')
+  result = db.engine.execute('SELECT file_id,File.user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type,username FROM File INNER JOIN User ON File.user_id = User.user_id')
   data = get_query_data(result)
   opts = get_request_opts(request)
   return JSONResponse(filter_sort_paginate(data,opts)).end()
 
 @app.route('/files/<file_id>',methods=['GET'])
 def get_file(file_id):
-  result = db.engine.execute('SELECT file_id,user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type FROM File WHERE file_id={ID}'.format(ID=file_id))
+  # result = db.engine.execute('SELECT file_id,user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type FROM File WHERE file_id={ID}'.format(ID=file_id))
+  result = db.engine.execute('SELECT file_id,File.user_id,title,description,permissions,upload_date,views,upvotes,downvotes,mimetype,file_type,username FROM File INNER JOIN User ON File.user_id = User.user_id WHERE file_id={ID}'.format(ID=file_id))
   data = get_query_data(result)
   if data:
     return JSONResponse(data[0]).end()

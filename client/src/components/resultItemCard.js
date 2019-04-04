@@ -54,7 +54,8 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '4em'
+    fontSize: '4em',
+    color: theme.accentAlt
   }
 }));
 

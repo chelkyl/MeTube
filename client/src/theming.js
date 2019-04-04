@@ -10,14 +10,18 @@ const lightTheme = {
   primary:    '#C4C3C4',
   secondary:  '#656774',
   error:      '#AA2121',
-  background: '#F4F3F4'
+  background: '#F4F3F4',
+  accent:     '#000',
+  accentAlt:  '#fff'
 };
 
 const darkTheme = {
   primary:    '#949C9B',
   secondary:  '#A1A4AD',
   error:      '#ff4181',
-  background: '#241C2B'
+  background: '#241C2B',
+  accent:     '#fff',
+  accentAlt:  '#000'
 };
 
 const themes = {

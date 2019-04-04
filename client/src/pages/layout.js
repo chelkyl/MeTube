@@ -48,8 +48,7 @@ const useStyles = makeStyles(theme => ({
       }),
       marginLeft: theme.drawerWidth
     }
-  },
-  toolbar: theme.mixins.toolbar
+  }
 }));
 
 export const DrawerOpenDispatch = createContext(null);

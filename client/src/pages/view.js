@@ -9,10 +9,15 @@ import {
   DialogTitle,
   Slide,
   Paper,
-  Typography
+  Typography,
+  IconButton
 } from '@material-ui/core';
+import {
+  CloudDownload
+} from '@material-ui/icons';
 import Player from '../components/player';
 import Api from '../apiclient';
+import { saveAs } from 'file-saver';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -37,6 +42,12 @@ const useStyles = makeStyles(theme => ({
     textAlign: 'left'
   },
   details: {
+  },
+  extras: {
+    display: 'grid',
+    gridAutoRows: '1fr',
+    gridAutoFlow: 'column',
+    gridGap: theme.spacing.unit
   },
   metrics: {
   },
@@ -113,6 +124,10 @@ export default function ViewPage(props) {
       }
   }, [props]);
 
+  let downloadFile = () => {
+    saveAs(`${Api.baseURL}/files/${fileInfo.file_id}/g`,fileInfo.title);
+  };
+
   let handleDialogButton = (type) => (e) => {
     switch(type) {
       case 'close':
@@ -127,17 +142,10 @@ export default function ViewPage(props) {
     }
   };
 
-  const { title, description, upload_date, views, upvotes, downvotes } = fileInfo;
+  const { title, username, description, upload_date, views, upvotes, downvotes } = fileInfo;
 
   return (
     <div className={classes.container}>
-      <input type="number" onKeyPress={
-        (e) => {
-          if(e.key === 'Enter') {
-            e.preventDefault();
-            props.history.push(`/view/${e.currentTarget.value}`);
-          }}
-        }/>
       <Dialog open={alertState.open}
           TransitionComponent={SlideTransition}
           keepMounted
@@ -159,12 +167,20 @@ export default function ViewPage(props) {
           <div className={classes.header}>
             <div className={classes.details}>
               <Typography variant="h6">{title}</Typography>
+              <Typography variant="body1">{username}</Typography>
               <Typography variant="body1">{upload_date}</Typography>
             </div>
-            <div className={classes.metrics}>
-              <Typography variant="body1">{`${views === null || "?"} views`}</Typography>
-              <Typography variant="body1">{`${upvotes === null || "?"} upvotes`}</Typography>
-              <Typography variant="body1">{`${downvotes === null || "?"} downvotes`}</Typography>
+            <div className={classes.extras}>
+              <div className={classes.toolbar}>
+                <IconButton aria-label="Download" onClick={downloadFile}>
+                  <CloudDownload />
+                </IconButton>
+              </div>
+              <div className={classes.metrics}>
+                <Typography variant="body1">{`${views !== null ? views : "?"} views`}</Typography>
+                <Typography variant="body1">{`${upvotes !== null ? upvotes : "?"} upvotes`}</Typography>
+                <Typography variant="body1">{`${downvotes !== null ? downvotes : "?"} downvotes`}</Typography>
+              </div>
             </div>
           </div>
           <div className={classes.description}>
