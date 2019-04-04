@@ -67,6 +67,7 @@ export default function Player(props) {
     if(fileID) {
       Api.request('get',`/files/${fileID}/g`,{},{responseType: 'blob'})
         .then(res => {
+          mimetype = res.data.type;
           if(mimetype.includes('video') || mimetype.includes('audio') || mimetype.includes('image')) {
             console.log('player', mimetype, res);
             let blob_url = URL.createObjectURL(res.data);
@@ -116,8 +117,7 @@ export default function Player(props) {
           if(cancel) return;
           setErrorMessage({
             show: true,
-            primary: msg,
-            secondary: JSON.stringify(err)
+            primary: msg
           });
         })
     }

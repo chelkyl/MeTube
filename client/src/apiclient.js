@@ -10,13 +10,16 @@ class Api {
   constructor(
       server_ip = process.env.REACT_APP_SERVER_IP,
       secure = false,
-      timeout = process.env.REACT_APP_SERVER_TIMEOUT || 10000
+      timeout = process.env.REACT_APP_SERVER_TIMEOUT || 10000,
+      headers = {}
     ) {
     let schema = secure ? 'https://' : 'http://';
+    let baseURL = `${schema}${server_ip}`;
+    this.baseURL = baseURL;
     this.client = axios.create({
-      baseURL: `${schema}${server_ip}`,
-      timeout: timeout,
-      headers: {}
+      baseURL,
+      timeout,
+      headers
     });
   }
 

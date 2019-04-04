@@ -75,7 +75,8 @@ const useStyles = makeStyles(theme => ({
   },
   searchIcon: {
     width: theme.spacing.unit * 4,
-    height: theme.spacing.unit * 4
+    height: theme.spacing.unit * 4,
+    padding: 0
   },
   inputRoot: {
     color: 'inherit',
