@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import Grow from '@material-ui/core/Grow';
 import Paper from '@material-ui/core/Paper';
@@ -46,18 +46,13 @@ const useStyles = makeStyles(theme => ({
 
 function Messages(props) {
   const classes = useStyles();
-  const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState(0);
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(0);
   const anchorEl = React.useRef(null);
   const [isLoggedIn] = useAuthCtx();
+  let [previousConversations, setPreviousConversations] = useState([]);
 
-  const options = [
-    'Example Message',
-    'Another Example Message',
-    'Last Example Message'
-  ];
-
-  const [state, setState] = React.useState({
+  const [state, setState] = useState({
     bottom: false
   });
 
@@ -65,15 +60,114 @@ function Messages(props) {
     setState({ ...state, [side]: open });
   };
 
+  function getUserName(userId){
+    Api.request('get',`/users/${userId}`)
+      .then(res => {
+        console.log('username: ',res.data.response.username);
+      })
+      .catch(err => {
+        let msg = '';
+        // got response from server
+        if(err.response) {
+          console.log(err.response);
+          const { status } = err.response;
+          if (status >= 500 && status < 600) {
+            msg = `Server error ${status}, please contact the admins`;
+          }
+          else if (status === 404) {
+            msg = "User not found";
+          }
+          else if (status === 403) {
+            msg = "User permission blocked";
+          }
+          else {
+            msg = `Sorry, unknown error ${status}`;
+          }
+        }
+        // request sent but no response
+        else if(err.request) {
+          console.log(err.request);
+          msg = 'Could not connect to the server';
+        }
+        // catch all
+        else {
+          console.log(err);
+          msg = 'Sorry, unknown error';
+        }
+        console.log(msg, err);
+      });
+  }
+
+  function getNewPreviousConversations(messageInfo){
+    let newPreviousConversations = [];
+    var newestMessagesMap = new Map();
+    for(let i = 0; i < messageInfo.length; i++){
+      if(messageInfo[i].contacting_id !== parseInt(getAuthenticatedUserID())) {
+        newestMessagesMap.set(messageInfo[i].contacting_id, messageInfo[i].message);
+      }
+      if(messageInfo[i].contacted_id !== parseInt(getAuthenticatedUserID())) {
+        newestMessagesMap.set(messageInfo[i].contacted_id, messageInfo[i].message);
+      }
+    }
+    for (var [key, value] of newestMessagesMap) {
+      getUserName(key)
+      newPreviousConversations.push(key + ": " + value);
+    }
+    return newPreviousConversations;
+  }
+
+  let cancel = false;
+
+  useEffect(() => {
+    Api.request('get',`/messages/${getAuthenticatedUserID()}`)
+      .then(res => {
+        console.log('messages: ',res.data.response);
+        if(!cancel) setPreviousConversations(getNewPreviousConversations(res.data.response));
+      })
+      .catch(err => {
+        let msg = '';
+        // got response from server
+        if(err.response) {
+          console.log(err.response);
+          const { status } = err.response;
+          if (status >= 500 && status < 600) {
+            msg = `Server error ${status}, please contact the admins`;
+          }
+          else if (status === 404) {
+            msg = "Messages not found";
+          }
+          else if (status === 403) {
+            msg = "Messages permission blocked";
+          }
+          else {
+            msg = `Sorry, unknown error ${status}`;
+          }
+        }
+        // request sent but no response
+        else if(err.request) {
+          console.log(err.request);
+          msg = 'Could not connect to the server';
+        }
+        // catch all
+        else {
+          console.log(err);
+          msg = 'Sorry, unknown error';
+        }
+        console.log(msg, err);
+        if(cancel) return;
+      });
+
+      return () => {
+        cancel = true;
+      }
+  }, [props]);
+
   function messageChange(event, newValue) {
     setValue(newValue);
   }
 
   function toggleMessages() {
     setOpen(!open);
-    if(!open) {
-      Api.request('get',`/messages/${getAuthenticatedUserID()}`,{},{responseType: 'blob'})
-    }
   }
 
   function handleMessagesClose(event) {
@@ -106,9 +200,9 @@ function Messages(props) {
                 {
                   isLoggedIn ? (
                     <MenuList subheader={<ListSubheader component="li">Messages</ListSubheader>}>
-                      {options.map(option => (
-                        <MenuItem key={option} onClick={toggleChatBar('bottom', true)} >
-                          {option}
+                      {previousConversations.map(previousConversation => (
+                        <MenuItem key={previousConversation} onClick={toggleChatBar('bottom', true)} >
+                          {previousConversation}
                           </MenuItem>
                         ))}
                     </MenuList>
