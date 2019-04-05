@@ -5,6 +5,7 @@ import Masthead from '../components/masthead';
 import Sidebar from '../components/sidebar';
 import HomePage from './home';
 import LoginPage from './login';
+import UserPage from './channel';
 import RegisterPage from './register';
 import BrowsePage from './browse';
 import ViewPage from './view';
@@ -84,6 +85,7 @@ export default function Layout({children}) {
           <Route path='/login' component={LoginPage}/>
           <Route path='/register' component={RegisterPage}/>
           <Route path='/browse' component={BrowsePage}/>
+          <Route path='/channel/:id' component={UserPage}/>
           <Route path='/view/:id' component={ViewPage}/>
           <Route component={Error404Page}/>
         </Switch>
