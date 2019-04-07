@@ -188,7 +188,7 @@ export default function BrowsePage(props) {
     let requests = [];
     let reqTypes = [];
     console.log('browse',inputs);
-    if (inputs.category == 'all') {
+    if (inputs.category === 'all') {
       ['files','playlists','users'].forEach((cat) => {
         requests.push(Api.getData(cat, query, makeFilters(cat), makeSorters(cat)));
         reqTypes.push(cat);
