@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { useThemeMode } from '../theming';
 import { DrawerOpenDispatch } from '../pages/layout';
@@ -14,9 +14,12 @@ import {
   Switch
 } from '@material-ui/core';
 import { fade } from '@material-ui/core/styles/colorManipulator';
-import MenuIcon from '@material-ui/icons/Menu';
-import SearchIcon from '@material-ui/icons/Search';
-import AccountCircle from '@material-ui/icons/AccountCircle';
+import {
+  Menu as MenuIcon,
+  Search as SearchIcon,
+  AccountCircle,
+  CloudUpload
+} from '@material-ui/icons';
 import Messages from './messages';
 import {
   Link,
@@ -106,6 +109,15 @@ function Masthead(props) {
   const params = new URLSearchParams(props.location.search);
   const [searchQuery, setSearchQuery] = useState(params.get('q') || '');
 
+  useEffect(() => {
+    setSearchQuery(params.get('q') || '');
+  }, [props]);
+
+  let onUploadClicked = () => {
+    if(isLoggedIn) props.history.push(`/channel/${getAuthenticatedUserID()}/upload`);
+    else props.history.push('/login');
+  };
+
   let openMenu = (e) => {
     setMenuAnchor(e.currentTarget);
   };
@@ -116,7 +128,7 @@ function Masthead(props) {
   let handleMenu = label => (e) => {
     switch(label) {
       case 'account':
-      props.history.push(`/channel/${getAuthenticatedUserID()}`)
+        props.history.push(`/channel/${getAuthenticatedUserID()}`);
         closeMenu();
         break;
       case 'options':
@@ -206,12 +218,13 @@ function Masthead(props) {
               onKeyPress={catchSearchEnter}/>
           </div>
           <div className={classes.grow} />
+          <IconButton color="inherit" aria-label="File Upload" onClick={onUploadClicked}>
+            <CloudUpload />
+          </IconButton>
           <Messages isLoggedIn={isLoggedIn}/>
-          <div>
-            <IconButton color="inherit" aria-haspopup="true" onClick={openMenu}>
-              <AccountCircle />
-            </IconButton>
-          </div>
+          <IconButton color="inherit" aria-haspopup="true" onClick={openMenu}>
+            <AccountCircle />
+          </IconButton>
         </Toolbar>
       </AppBar>
       {menu}

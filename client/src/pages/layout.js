@@ -67,7 +67,7 @@ export default function Layout({children}) {
         return state;
     }
   };
-  const [drawerOpen, drawerOpenDispatch] = useReducer(drawerOpenReducer, true);
+  const [drawerOpen, drawerOpenDispatch] = useReducer(drawerOpenReducer, document.body.clientWidth < 600 ? false : true);
 
   return (
     <div className={classes.layoutRoot}>
@@ -91,3 +91,7 @@ export default function Layout({children}) {
     </div>
   );
 }
+
+// Layout.whyDidYouRender = {
+//   logOnDifferentValues: true
+// };

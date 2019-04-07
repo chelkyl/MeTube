@@ -131,6 +131,7 @@ class User(db.Model):
   email = db.Column(db.String(320), unique=True, nullable=False)
   password_hash = db.Column(db.String(128), unique=True, nullable=False)
   channel_description = db.Column(db.String(400), nullable=False)
+
   playlists = db.relationship('Playlist', backref='user', lazy=True)
   files = db.relationship('File', backref='user', lazy=True)
   comments = db.relationship('Comment', backref='user', lazy=True)
@@ -191,6 +192,7 @@ class Playlist(db.Model):
   user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
   title = db.Column(db.String(100), nullable=False)
   description = db.Column(db.String(400), nullable=False)
+
   files = db.relationship('File', secondary=playlist_files, lazy='dynamic', backref=db.backref('playlists', lazy=True))
 
   def to_json(self):
@@ -229,12 +231,13 @@ class File(db.Model):
   title = db.Column(db.String(100), unique=False, nullable=False)
   description = db.Column(db.String(400), nullable=False)
   permissions = db.Column(db.String(40), nullable=False)
-  upload_date = db.Column(db.Date(), nullable=False)
+  upload_date = db.Column(db.DateTime, nullable=False)
   views = db.Column(db.Integer, nullable=False)
   upvotes = db.Column(db.Integer, nullable=False)
   downvotes = db.Column(db.Integer, nullable=False)
   mimetype = db.Column(db.String(40), nullable=False)
   file_type = db.Column(db.String(40), nullable=False)
+  
   comments = db.relationship('Comment', backref='file', lazy=True)
 
   def to_json(self):
@@ -306,7 +309,7 @@ class Comment(db.Model):
   user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
   file_id = db.Column(db.Integer, db.ForeignKey('File.file_id'), nullable=False)
   comment = db.Column(db.String(40), nullable=False)
-  comment_date = db.Column(db.Date(), nullable=False)
+  comment_date = db.Column(db.DateTime, nullable=False)
 
   def to_json(self):
     return {
@@ -333,7 +336,7 @@ class Message(db.Model):
   contacting_id = db.Column(db.Integer, db.ForeignKey('contacts.contacting_id'), nullable=False)
   contacted_id = db.Column(db.Integer, db.ForeignKey('contacts.contacted_id'), nullable=False)
   message = db.Column(db.String(100), nullable=False)
-  message_date = db.Column(db.Date(), nullable=False)
+  message_date = db.Column(db.DateTime, nullable=False)
 
   def to_json(self):
     return {

@@ -76,7 +76,6 @@ export default function LoginPage() {
 
   useEffect(() => {
     if(authState.success) {
-      console.log('login page',isLoggedIn);
       timer = setTimeout(() => {
         setRedirect(true);
       }, 800);
@@ -108,7 +107,7 @@ export default function LoginPage() {
         <Typography variant="body1" color="error">
           {errorState.message}
         </Typography>
-        <form className={classes.form} onSubmit={e => handleSubmit(e)}>
+        <form className={classes.form} onSubmit={handleSubmit}>
           <TextField id='username' label='Username' type='text' required={true}
             className={classes.textField} margin='normal' variant='outlined'
             onChange={handleChange('username')}

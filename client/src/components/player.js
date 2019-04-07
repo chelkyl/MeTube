@@ -63,15 +63,12 @@ export default function Player(props) {
   }, [props]);
 
   useEffect(() => {
-    console.log('player init',fileID);
     if(fileID) {
       Api.request('get',`/files/${fileID}/g`,{},{responseType: 'blob'})
         .then(res => {
           mimetype = res.data.type;
           if(mimetype.includes('video') || mimetype.includes('audio') || mimetype.includes('image')) {
-            console.log('player', mimetype, res);
             let blob_url = URL.createObjectURL(res.data);
-            console.log('file blob url is',blob_url);
             if(cancel) return;
             setBlobURL(blob_url);
             if(errorMessage.show) setErrorMessage(initialErrorState);
@@ -89,7 +86,6 @@ export default function Player(props) {
           let msg = '';
           // got response from server
           if(err.response) {
-            console.log(err.response);
             const { status } = err.response;
             if (status >= 500 && status < 600) {
               msg = `Server error ${status}, please contact the admins`;
@@ -106,14 +102,13 @@ export default function Player(props) {
           }
           // request sent but no response
           else if(err.request) {
-            console.log(err.request);
             msg = err.message;
           }
           // catch all
           else {
-            console.log(err);
             msg = 'Sorry, unknown error';
           }
+          console.log('player',err);
           if(cancel) return;
           setErrorMessage({
             show: true,

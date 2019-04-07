@@ -1,5 +1,5 @@
-import React, { useContext } from 'react';
-import { makeStyles } from '@material-ui/styles';
+import React, { useContext, useEffect } from 'react';
+import { makeStyles, useTheme } from '@material-ui/styles';
 import { DrawerOpenDispatch } from '../pages/layout';
 import {
   Drawer,
@@ -13,8 +13,11 @@ import {
   ListItemText
 } from '@material-ui/core';
 import {
+  unstable_useMediaQuery as useMediaQuery
+} from '@material-ui/core/useMediaQuery';
+import {
   Home,
-  History,
+  // History,
   PhotoLibrary,
   VideoLibrary,
   LibraryMusic,
@@ -23,7 +26,7 @@ import {
 } from '@material-ui/icons';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Link } from 'react-router-dom';
-import { useAuthCtx } from '../authentication';
+import { useAuthCtx, getAuthenticatedUserID } from '../authentication';
 
 const useStyles = makeStyles(theme => ({
   drawer: {
@@ -56,10 +59,21 @@ export default function Sidebar() {
   const classes = useStyles();
   const [isOpen, setDrawerState] = useContext(DrawerOpenDispatch);
   const [isLoggedIn] = useAuthCtx();
-  // console.log('sidebar logged in', isLoggedIn);
+  const theme = useTheme();
+  const isMobileWidth = useMediaQuery(theme.breakpoints.down('xs')) || document.body.clientWidth < 600;
+
+  useEffect(() => {
+    if(isMobileWidth) {
+      setDrawerState(false);
+    }
+    else {
+      setTimeout(() => {
+        if(document.body.clientWidth >= 600) setDrawerState(true)
+      }, 330);
+    }
+  }, [isMobileWidth]);
 
   let toggleDrawer = (open) => () => {
-    // console.log('sidebar toggle',open);
     setDrawerState(open);
   };
 
@@ -80,11 +94,11 @@ export default function Sidebar() {
         </ListItem>
         {isLoggedIn ? (
           <>
-            <ListItem button component={Link} to='/history' key='History'>
+            {/* <ListItem button component={Link} to='/history' key='History'>
               <ListItemIcon><History/></ListItemIcon>
               <ListItemText primary='History'/>
-            </ListItem>
-            <ListItem button component={Link} to='/subscriptions' key='Subscriptions'>
+            </ListItem> */}
+            <ListItem button component={Link} to={`/channel/${getAuthenticatedUserID()}/subscriptions`} key='Subscriptions'>
               <ListItemIcon><Subscriptions/></ListItemIcon>
               <ListItemText primary='Subscriptions'/>
             </ListItem>
@@ -92,15 +106,15 @@ export default function Sidebar() {
           ) : null
         }
         <Divider/>
-        <ListItem button component={Link} to={{pathname:'/browse',search:'?type=images'}} key='Images'>
+        <ListItem button component={Link} to={{pathname:'/browse',search:'?type=image'}} key='Images'>
           <ListItemIcon><PhotoLibrary/></ListItemIcon>
           <ListItemText primary='Images'/>
         </ListItem>
-        <ListItem button component={Link} to={{pathname:'/browse',search:'?type=videos'}} key='Videos'>
+        <ListItem button component={Link} to={{pathname:'/browse',search:'?type=video'}} key='Videos'>
           <ListItemIcon><VideoLibrary/></ListItemIcon>
           <ListItemText primary='Videos'/>
         </ListItem>
-        <ListItem button component={Link} to={{pathname:'/browse',search:'?type=music'}} key='Music'>
+        <ListItem button component={Link} to={{pathname:'/browse',search:'?type=audio'}} key='Music'>
           <ListItemIcon><LibraryMusic/></ListItemIcon>
           <ListItemText primary='Music'/>
         </ListItem>

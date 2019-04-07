@@ -30,6 +30,9 @@ const useStyles = makeStyles(theme => ({
   results: {
     marginTop: theme.spacing.unit
   },
+  resultError: {
+    textAlign: 'center'
+  },
   resultItem: {
     marginBottom: theme.spacing.unit
   },
@@ -135,16 +138,18 @@ export default function BrowsePage(props) {
     }
     return cpy;
   };
-  let handleInputs = (key) => (e) => {
-    let value = e.currentTarget.value;
+  let updateInputs = (key,value) => {
     let newInputs = deepCopyObject(inputs);
     newInputs[key] = value;
     switch(key) {
       case 'category':
         switch(value) {
           case 'all':
-          case 'files':
           case 'playlists':
+            if(newInputs['sort'] === 'subscribers') newInputs['sort'] = initialInputs['sort'];
+            newInputs['type'] = '';
+            break;
+          case 'files':
             if(newInputs['sort'] === 'subscribers') newInputs['sort'] = initialInputs['sort'];
             break;
           case 'users':
@@ -156,7 +161,7 @@ export default function BrowsePage(props) {
         }
         break;
       case 'type':
-        if(newInputs['category'] === 'users') newInputs['category'] = initialInputs['category'];
+        newInputs['category'] = 'files';
         if(newInputs['sort'] === 'subscribers') newInputs['sort'] = initialInputs['sort'];
         break;
       case 'sort':
@@ -171,24 +176,25 @@ export default function BrowsePage(props) {
     }
     setInputs(newInputs);
   };
-
-  useEffect(() => {
-    console.log('setting query');
-    const newParams = new URLSearchParams(props.location.search);
-    setQuery(newParams.get('q') || '');
-    setInputs({...inputs, 'type': newParams.get('type') || ''});
-  }, [props]);
-
-  let getRankedResults = (results) => {
-    return results.flat(1);
+  let handleInputs = (key) => (e) => {
+    let value = e.currentTarget.value;
+    updateInputs(key,value);
   };
 
   useEffect(() => {
-    console.log('submitting for query:',query);
+    const newParams = new URLSearchParams(props.location.search);
+    setQuery(newParams.get('q') || '');
+    updateInputs('type',newParams.get('type') || '');
+  }, [props]);
+
+  let getRankedResults = (results) => {
+    return results.reduce((acc, val) => acc.concat(val),[]);
+  };
+
+  useEffect(() => {
     let requests = [];
     let reqTypes = [];
-    console.log('browse',inputs);
-    if (inputs.category == 'all') {
+    if (inputs.category === 'all') {
       ['files','playlists','users'].forEach((cat) => {
         requests.push(Api.getData(cat, query, makeFilters(cat), makeSorters(cat)));
         reqTypes.push(cat);
@@ -200,11 +206,11 @@ export default function BrowsePage(props) {
     }
     axios.all(requests)
       .then(responses => {
-        console.log('all res',responses);
         if(cancelSearch) return;
         let reqResults = responses.map((res,i) => {
           let resType = reqTypes[i];
           let data = res.data.response;
+          if(data.length === 0) return null;
           data.forEach((item) => {
             item['resultType'] = resType;
             switch(resType) {
@@ -226,23 +232,14 @@ export default function BrowsePage(props) {
           });
           return data;
         });
+        reqResults = reqResults.filter((i) => {
+          return i !== null;
+        });
         let rankedResults = getRankedResults(reqResults);
-        setResults(rankedResults);
+        if(!cancelSearch) setResults(rankedResults);
       })
       .catch(err => {
-        console.log(err);
-        // got response from server
-        if(err.response) {
-          console.log(err.response);
-        }
-        // request sent but no response
-        else if(err.request) {
-          console.log(err.request);
-        }
-        // catch all
-        else {
-          console.log(err);
-        }
+        console.log('browse',err);
       });
 
     return () => {
@@ -251,21 +248,22 @@ export default function BrowsePage(props) {
   }, [query,inputs]);
 
   let contents;
-  if(results === []) contents = <Typography variant="h5">No results</Typography>;
-  else {
+  if(results.length > 0) {
     contents = results.map(result => {
+      let {resultType, id, display_name, username, mimetype} = result;
       return (
-        <ResultItemCard key={`result-${result.resultType}-${result.id}`}
+        <ResultItemCard key={`result-${resultType}-${id}`}
           className={classes.resultItem}
-          name={result.display_name}
-          owner={result.owner}
-          result_type={result.resultType}
-          mimetype={result.mimetype}
-          id={result.id}
+          name={display_name}
+          owner={username}
+          result_type={resultType}
+          mimetype={mimetype}
+          id={id}
           variant="wide"/>
       )
     });
   }
+  else contents = <Typography variant="h5" className={classes.resultError}>No results</Typography>;
 
   return (
     <div className={classes.container}>

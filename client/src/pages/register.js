@@ -72,7 +72,6 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if(regState.success) {
-      // console.log('register page',isLoggedIn);
       timer = setTimeout(() => {
         setRedirect(true);
       }, 800);
@@ -104,7 +103,7 @@ export default function RegisterPage() {
         <Typography variant="body1" color="error">
           {errorState.message}
         </Typography>
-        <form className={classes.form} onSubmit={e => handleSubmit(e)}>
+        <form className={classes.form} onSubmit={handleSubmit}>
           <TextField id='email' label='Email' type='email' required={true}
             className={classes.textField} margin='normal' variant='outlined'
             onChange={handleChange('email')}

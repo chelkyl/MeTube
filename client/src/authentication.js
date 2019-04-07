@@ -76,7 +76,7 @@ const regStateReducer = (state, action) => {
     default:
       return state;
   }
-}
+};
 const initialAuthState = {
   loading: false,
   success: false
@@ -130,7 +130,6 @@ export default function Authenticator({children}) {
   const [authState, authStateDispatch] = useReducer(authStateReducer,initialAuthState);
   const [authAction, authActionDispatch] = useReducer(authActionReducer,initialAuthAction);
   const [isLoggedIn, setIsLoggedIn] = useState(isAuthenticated());
-  // console.log('auth ctx logged in',isLoggedIn);
   const [errorState, setErrorState] = useState({});
 
   let doAction = async () => {
@@ -154,7 +153,6 @@ export default function Authenticator({children}) {
           let msg = '';
           // got response from server
           if(err.response) {
-            console.log(err.response);
             const { status } = err.response;
             if (status === 400) {
               let {error} = err.response.data;
@@ -175,14 +173,13 @@ export default function Authenticator({children}) {
           }
           // request sent but no response
           else if(err.request) {
-            console.log(err.request);
             msg = err.message;
           }
           // catch all
           else {
-            console.log(err);
             msg = 'Sorry, unknown error';
           }
+          console.log('auth',err);
           regStateDispatch('error');
           setErrorState({...err,message:msg});
         }
@@ -205,7 +202,6 @@ export default function Authenticator({children}) {
           let msg = '';
           // got response from server
           if(err.response) {
-            console.log(err.response);
             const { status } = err.response;
             if(status === 401) {
               msg = 'Invalid login';
@@ -219,14 +215,13 @@ export default function Authenticator({children}) {
           }
           // request sent but no response
           else if(err.request) {
-            console.log(err.request);
             msg = err.message;
           }
           // catch all
           else {
-            console.log(err);
             msg = 'Sorry, unknown error';
           }
+          console.log('auth',err);
           authStateDispatch('error');
           setErrorState({...err,message:msg});
         }
