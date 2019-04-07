@@ -152,7 +152,7 @@ export default function Messages(props) {
     newMessage.contacted_id = dialogContactUserId;
     console.log('messages sending',newMessage,getAccessToken());
     try {
-      const response = await Api.request('post','/messages/upload',newMessage,{auth:{username:getAccessToken()}});
+      const response = await Api.request('post','/messages/upload',newMessage,{},true);
       console.log('messages send',response);
       const res = response.data;
       return res;
