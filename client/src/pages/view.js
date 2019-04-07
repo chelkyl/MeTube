@@ -33,7 +33,8 @@ import {
 import Player from '../components/player';
 import Api from '../apiclient';
 import { saveAs } from 'file-saver';
-import { useAuthCtx, getAuthenticatedUserID } from '../authentication';
+import {useAuthCtx} from '../authentication';
+import {getAuthenticatedUserID} from '../authutils';
 
 const useStyles = makeStyles(theme => ({
   container: {

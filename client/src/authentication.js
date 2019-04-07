@@ -1,18 +1,9 @@
 import React, { createContext, useContext, useReducer, useState, useEffect } from 'react';
 import Api from './apiclient';
 import Cookies from 'js-cookie';
-
-export const getAccessToken = () => {
-  return Cookies.get('access_token');
-};
-// export const getRefreshToken = () => Cookies.get('refresh_token');
-export const isAuthenticated = () => {
-  return getAccessToken() !== undefined;
-};
-
-export const getAuthenticatedUserID = () => {
-  return Cookies.get('user_id');
-};
+import {
+  isAuthenticated
+} from './authutils';
 
 const ONE_HOUR_IN_MS = 60 * 60 * 1000;
 
@@ -24,7 +15,7 @@ export const authenticate = async (creds) => {
     const expires_in = tokens.expires_in_secs * 1000 - ONE_HOUR_IN_MS;
     const expiration = new Date(new Date().getTime() + expires_in);
     
-    Cookies.set('access_token', tokens.access_token, {expires: expiration});
+    Cookies.set('access_token', tokens.token, {expires: expiration});
     Cookies.set('user_id', res.response.user_id, {expires: expiration});
     return res;
   }
@@ -41,7 +32,7 @@ export const register = async (creds) => {
     const expires_in = tokens.expires_in_secs * 1000 - ONE_HOUR_IN_MS;
     const expiration = new Date(new Date().getTime() + expires_in);
     
-    Cookies.set('access_token', tokens.access_token, {expires: expiration});
+    Cookies.set('access_token', tokens.token, {expires: expiration});
     Cookies.set('user_id', res.response.user_id, {expires: expiration});
     return res;
   }

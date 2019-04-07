@@ -54,8 +54,8 @@ def add_comment():
   #newComment = Comment(user_id=user_id,file_id=file_id,comment=comment,comment_date=comment_date)
   #db.session.add(newComment)
   #db.session.commit()
-  sql = text("""INSERT INTO Comment(user_id, file_id, comment) VALUES(:user_id, :file_id, :comment)""")
-  result = db.engine.execute(sql, user_id=user_id, file_id=file_id, comment=comment)
+  sql = text("""INSERT INTO Comment(user_id, file_id, comment, comment_date) VALUES(:user_id, :file_id, :comment, :comment_date)""")
+  result = db.engine.execute(sql, user_id=user_id, file_id=file_id, comment=comment, comment_date=comment_date)
   result = db.engine.execute('SELECT comment_id,user_id,file_id,comment,comment_date FROM Comment WHERE comment_id={ID}'.format(ID=result.lastrowid))
   data = get_query_data(result)
   if data:

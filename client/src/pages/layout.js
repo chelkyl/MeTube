@@ -8,6 +8,7 @@ import LoginPage from './login';
 import RegisterPage from './register';
 import BrowsePage from './browse';
 import ViewPage from './view';
+import UserPage from './channel';
 import Error404Page from './pageNotFound';
 import {
   Route,
@@ -85,6 +86,7 @@ export default function Layout({children}) {
           <Route path='/register' component={RegisterPage}/>
           <Route path='/browse' component={BrowsePage}/>
           <Route path='/view/:id' component={ViewPage}/>
+          <Route path='/channel/:id' component={UserPage}/>
           <Route component={Error404Page}/>
         </Switch>
       </main>

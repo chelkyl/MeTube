@@ -25,7 +25,8 @@ import {
   Link,
   withRouter
 } from 'react-router-dom';
-import {useAuthCtx, getAuthenticatedUserID} from '../authentication';
+import {useAuthCtx} from '../authentication';
+import {getAuthenticatedUserID} from '../authutils';
 
 const useStyles = makeStyles(theme => ({
   masthead: {

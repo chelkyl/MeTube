@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getAccessToken } from './authutils';
 
 // export const ApiClient = axios.create({
 //   baseURL: 'http://'+process.env.REACT_APP_SERVER_IP,
@@ -27,7 +28,11 @@ class Api {
     return (URN, data, config) => this.request(type, URN, data, config);
   }
 
-  request(type, URN, data, config) {
+  request(type, URN, data = {}, config = {}, useAuth = false) {
+    if(useAuth) {
+      let auth = {username: getAccessToken()};
+      config['auth'] = auth;
+    }
     switch(type) {
       case 'request':
       case 'getUri':
@@ -58,8 +63,8 @@ class Api {
     };*/
   }
 
-  async getData(route, query, filters, sorters, start=0, limit=10) {
-    return this.request('get',`/${route}?q=${query}&b=${start}&l=${limit}`, {filters, sorters});
+  async getData(route, query, filters, sorters, start=0, limit=10, useAuth = false) {
+    return this.request('get',`/${route}?q=${query}&b=${start}&l=${limit}`, {filters, sorters}, {}, useAuth);
   }
 }
 

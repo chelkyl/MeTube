@@ -26,7 +26,8 @@ import {
 } from '@material-ui/icons';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Link } from 'react-router-dom';
-import { useAuthCtx, getAuthenticatedUserID } from '../authentication';
+import {useAuthCtx} from '../authentication';
+import {getAuthenticatedUserID} from '../authutils';
 
 const useStyles = makeStyles(theme => ({
   drawer: {
