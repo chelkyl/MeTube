@@ -5,31 +5,29 @@ import Paper from '@material-ui/core/Paper';
 import Popper from '@material-ui/core/Popper';
 import MenuItem from '@material-ui/core/MenuItem';
 import MenuList from '@material-ui/core/MenuList';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
-import Message from '@material-ui/icons/Message';
+import Reply from '@material-ui/icons/Reply';
+import ForumOutlined from '@material-ui/icons/ForumOutlined';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import AccountCircle from '@material-ui/icons/AccountCircle';
-import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 import Api from '../apiclient';
-import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import Divider from '@material-ui/core/Divider';
+import Send from '@material-ui/icons/Send';
 import {
   Link
 } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
 import {useAuthCtx, getAuthenticatedUserID} from '../authentication';
-
-function TabContainer(props) {
-  return (
-    <Typography component="div" style={{ padding: 8 * 3 }}>
-      {props.children}
-    </Typography>
-  );
-}
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -38,52 +36,71 @@ const useStyles = makeStyles(theme => ({
   paper: {
     marginRight: theme.spacing.unit * 2,
   },
-  chatBar: {
-    flexGrow: 1,
-    backgroundColor: theme.palette.background.paper,
+  rightIcon: {
+    marginLeft: theme.spacing.unit,
+  },
+  button: {
+    margin: theme.spacing.unit,
   }
 }));
 
 function Messages(props) {
   const classes = useStyles();
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(0);
+  const [openMessagesMenu, setOpenMessagesMenu] = useState(false);
+  const [openMessageDialog, setOpenMessageDialog] = React.useState(false);
   const anchorEl = React.useRef(null);
   const [isLoggedIn] = useAuthCtx();
-  let [previousConversations, setPreviousConversations] = useState([]);
+  let [menuConversations, setMenuConversations] = useState([]);
+  let [dialogConversations, setDialogConversations] = useState(new Map());
+  let [currentDialog, setCurrentDialog] = React.useState([]);
+  let [dialogContactUsername, setDialogContactUserName] = React.useState("");
+  let [dialogContactUserId, setDialogContactUserId] = React.useState();
 
-  const [state, setState] = useState({
-    bottom: false
-  });
+  const [newMessage, setNewMessage] = React.useState({
+    message: '',
+  })
 
-  const toggleChatBar = (side, open) => () => {
-    setState({ ...state, [side]: open });
+  const handleChange = prop => event => {
+    setNewMessage({ ...newMessage, [prop]: event.target.value });
   };
 
-  function getNewPreviousConversations(messageInfo){
-    let newPreviousConversations = [];
-    var newestMessagesMap = new Map();
-    for(let i = 0; i < messageInfo.length; i++){
-      if(messageInfo[i].contacting_id !== parseInt(getAuthenticatedUserID())) {
-        newestMessagesMap.set(messageInfo[i].contacting_id, messageInfo[i].message);
+  function getConversations(messageInfo){
+    let newMenuConversations = [];
+    var newMenuConversationsMap = new Map();
+    var newDialogConversationsMap = new Map();
+    for(let i = messageInfo.length-1; i >= 1; i-=2){
+      if(messageInfo[i].contacted_id === parseInt(getAuthenticatedUserID())){
+        newMenuConversationsMap.set(messageInfo[i].contact_username, [messageInfo[i].message, messageInfo[i].contacting_id.toString()]);
       }
-      if(messageInfo[i].contacted_id !== parseInt(getAuthenticatedUserID())) {
-        newestMessagesMap.set(messageInfo[i].contacted_id, messageInfo[i].message);
+      else {
+        newMenuConversationsMap.set(messageInfo[i].contact_username, [messageInfo[i].message, messageInfo[i].contacted_id.toString()]);
+      }
+      if(newDialogConversationsMap.has(messageInfo[i].contact_username)){
+        newDialogConversationsMap.set(messageInfo[i].contact_username, newDialogConversationsMap.get(messageInfo[i].contact_username).concat([messageInfo[i]]));
+      }
+      else {
+        newDialogConversationsMap.set(messageInfo[i].contact_username, [messageInfo[i]]);
       }
     }
-    for (var [key, value] of newestMessagesMap) {
-      newPreviousConversations.push(key + ": " + value);
+    setDialogConversations(newDialogConversationsMap);
+    for (var [key, value] of newMenuConversationsMap) {
+      newMenuConversations.push([key, value]);
     }
-    return newPreviousConversations;
+    return newMenuConversations;
   }
 
   let cancel = false;
 
   useEffect(() => {
+    if(! isLoggedIn){
+      return () => {
+        cancel = true;
+      }
+    }
     Api.request('get',`/messages/${getAuthenticatedUserID()}`)
       .then(res => {
         console.log('messages: ',res.data.response);
-        if(!cancel) setPreviousConversations(getNewPreviousConversations(res.data.response));
+        if(!cancel) setMenuConversations(getConversations(res.data.response));
       })
       .catch(err => {
         let msg = '';
@@ -121,21 +138,41 @@ function Messages(props) {
       return () => {
         cancel = true;
       }
-  }, [props]);
+  }, [openMessagesMenu]);
 
-  function messageChange(event, newValue) {
-    setValue(newValue);
+  function toggleMessagesMenu() {
+    setOpenMessagesMenu(!openMessagesMenu);
   }
 
-  function toggleMessages() {
-    setOpen(!open);
+  async function sendMessage() {
+    newMessage.contacting_id = parseInt(getAuthenticatedUserID());
+    newMessage.contacted_id = dialogContactUserId;
+    try {
+      const response = await Api.request('post','/messages/upload',newMessage);
+      const res = response.data;
+      return res;
+    }
+    catch(err) {
+      throw err;
+    }
   }
 
-  function handleMessagesClose(event) {
+  function handleMessagesMenuClose(event) {
     if (anchorEl.current.contains(event.target)) {
       return;
     }
-    setOpen(false);
+    setOpenMessagesMenu(false);
+  }
+
+  function handleMessageDialogOpen(menuConversation) {
+    setOpenMessageDialog(true);
+    setCurrentDialog(dialogConversations.get(menuConversation[0]).reverse());
+    setDialogContactUserId(menuConversation[1][1]);
+    setDialogContactUserName(menuConversation[0]);
+  }
+
+  function handleCloseMessageDialog() {
+    setOpenMessageDialog(false);
   }
 
   return (
@@ -143,13 +180,13 @@ function Messages(props) {
       <div>
         <IconButton
           buttonRef={anchorEl}
-          aria-owns={open ? 'menu-list-grow' : undefined}
+          aria-owns={openMessagesMenu ? 'menu-list-grow' : undefined}
           aria-haspopup="true"
-          onClick={toggleMessages}
+          onClick={toggleMessagesMenu}
         >
-          <Message/>
+          <ForumOutlined/>
         </IconButton>
-        <Popper open={open} anchorEl={anchorEl.current} transition disablePortal>
+        <Popper open={openMessagesMenu} anchorEl={anchorEl.current} transition disablePortal>
           {({ TransitionProps, placement }) => (
             <Grow
               {...TransitionProps}
@@ -157,16 +194,31 @@ function Messages(props) {
               style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}
             >
               <Paper>
-                <ClickAwayListener onClickAway={handleMessagesClose}>
+                <ClickAwayListener onClickAway={handleMessagesMenuClose}>
                 {
                   isLoggedIn ? (
-                    <MenuList subheader={<ListSubheader component="li">Messages</ListSubheader>}>
-                      {previousConversations.map(previousConversation => (
-                        <MenuItem key={previousConversation} onClick={toggleChatBar('bottom', true)} >
-                          {previousConversation}
-                          </MenuItem>
+                    <div className={classes.root}>
+                      <List subheader={<ListSubheader component="div">Messages</ListSubheader>}>
+                        <Divider />
+                        {menuConversations.map(menuConversation => (
+                          <ListItem key={menuConversation}>
+                            <ListItemText
+                              primary={menuConversation[0]}
+                              secondary={
+                                <React.Fragment>
+                                  {menuConversation[1][0]}
+                                </React.Fragment>
+                              }
+                            />
+                            <ListItemSecondaryAction>
+                              <IconButton onClick={() => handleMessageDialogOpen(menuConversation)}>
+                                <Reply/>
+                              </IconButton>
+                            </ListItemSecondaryAction>
+                          </ListItem>
                         ))}
-                    </MenuList>
+                      </List>
+                    </div>
                   ) :
                   <MenuList subheader={<ListSubheader component="li">Messages</ListSubheader>}>
                     <MenuItem component={Link} to='/login'>
@@ -183,25 +235,44 @@ function Messages(props) {
           )}
         </Popper>
       </div>
-      <SwipeableDrawer
-        anchor="bottom"
-        open={state.bottom}
-        onClose={toggleChatBar('bottom', false)}
-        onOpen={toggleChatBar('bottom', true)}
-      >
-        <div className={classes.chatBar}>
-          <AppBar position="static">
-            <Tabs value={value} onChange={messageChange}>
-              <Tab label="Message One" />
-              <Tab label="Message Two" />
-              <Tab label="Message Three" />
-            </Tabs>
-          </AppBar>
-          {value === 0 && <TabContainer>Message One</TabContainer>}
-          {value === 1 && <TabContainer>Message Two</TabContainer>}
-          {value === 2 && <TabContainer>Message Three</TabContainer>}
-        </div>
-      </SwipeableDrawer>
+      <Dialog open={openMessageDialog} onClose={handleCloseMessageDialog} aria-labelledby="form-dialog-title" >
+        <DialogContent>
+          <IconButton className={classes.button} aria-label="Contact">
+            <AccountCircle />
+            {dialogContactUsername}
+          </IconButton>
+          <Divider />
+          <List>
+            {currentDialog.map((dialogConversation) => (
+              <ListItem key={dialogConversation.message_id}>
+                <ListItemText
+                  style={dialogConversation.contacting_id === parseInt(getAuthenticatedUserID()) ? {textAlign: "right"} : {textAlign: "left"}}
+                  primary={dialogConversation.contacting_id === parseInt(getAuthenticatedUserID()) ? dialogConversation.message + " -"  :  "- " + dialogConversation.message}
+                />
+              </ListItem>
+            ))}
+          </List>
+          <TextField
+            id="standard-multiline-flexible"
+            label="Your message. . ."
+            value={newMessage.message}
+            onChange={handleChange('message')}
+            multiline
+            rowsMax="4"
+            className={classes.textField}
+            variant="outlined"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseMessageDialog} color="primary">
+            Cancel
+          </Button>
+          <Button variant="contained" color="primary" className={classes.button} onClick={sendMessage}>
+            Send
+            <Send className={classes.rightIcon}>send</Send>
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

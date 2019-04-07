@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "6cd7a1a3-8391-4b15-a878-0c744d196c2f",
+		"_postman_id": "75fa7cce-cf26-4145-b06f-272a2c744682",
 		"name": "MeTube-API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -2549,7 +2549,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": null
 								},
 								{
 									"key": "user_id",
@@ -2617,7 +2617,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": null
 								},
 								{
 									"key": "user_id",
@@ -2705,7 +2705,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": null
 								},
 								{
 									"key": "user_id",
@@ -2793,7 +2793,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": null
 								},
 								{
 									"key": "user_id",
@@ -2881,7 +2881,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": null
 								},
 								{
 									"key": "user_id",
@@ -3004,7 +3004,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": null
 								},
 								{
 									"key": "user_id",
@@ -3092,7 +3092,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": null
 								},
 								{
 									"key": "user_id",
@@ -4008,7 +4008,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": null
 								},
 								{
 									"key": "user_id",
@@ -6532,7 +6532,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": null
 								},
 								{
 									"key": "user_id",
@@ -7250,6 +7250,56 @@
 					"response": []
 				},
 				{
+					"name": "POST users create henry",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "26ce2526-2d94-4404-bca6-e71dbff03ff5",
+								"exec": [
+									"",
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned user_id:3, username:henry\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.have.property('user_id',3);",
+									"    pm.expect(jsonData.response).to.have.property('username','henry');",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"email\":\"henry@domain.com\",\"username\":\"henry\",\"password\":\"test\"}"
+						},
+						"url": {
+							"raw": "{{host}}/users",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "GET users",
 					"event": [
 						{
@@ -7262,13 +7312,15 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"should have returned list of 2\", function () {",
+									"pm.test(\"should have returned list of 3\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.response.length).to.eql(2);",
+									"    pm.expect(jsonData.response.length).to.eql(3);",
 									"    pm.expect(jsonData.response[0]).to.have.property('user_id',1);",
 									"    pm.expect(jsonData.response[0]).to.have.property('username','bob');",
 									"    pm.expect(jsonData.response[1]).to.have.property('user_id',2);",
 									"    pm.expect(jsonData.response[1]).to.have.property('username','joe');",
+									"    pm.expect(jsonData.response[2]).to.have.property('user_id',3);",
+									"    pm.expect(jsonData.response[2]).to.have.property('username','henry');",
 									"});",
 									""
 								],
@@ -7341,7 +7393,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": null
 								},
 								{
 									"key": "user_id",
@@ -7429,7 +7481,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": null
 								},
 								{
 									"key": "user_id",
@@ -7517,7 +7569,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": null
 								},
 								{
 									"key": "user_id",
@@ -7605,7 +7657,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": null
 								},
 								{
 									"key": "user_id",
@@ -7728,7 +7780,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": null
 								},
 								{
 									"key": "user_id",
@@ -7816,7 +7868,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": ""
+									"src": null
 								},
 								{
 									"key": "user_id",
@@ -7895,6 +7947,502 @@
 							],
 							"path": [
 								"files"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LINK bob add joe as contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "559e736b-dc7f-481c-9c7b-55133a3227ee",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "bob",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "test",
+									"type": "string"
+								}
+							]
+						},
+						"method": "LINK",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"contacting_id\":\"1\",\"contacted_id\":\"2\"}"
+						},
+						"url": {
+							"raw": "{{host}}/users/add_contact",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"add_contact"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LINK joe add bob as contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "559e736b-dc7f-481c-9c7b-55133a3227ee",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "joe",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "test",
+									"type": "string"
+								}
+							]
+						},
+						"method": "LINK",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"contacting_id\":\"2\",\"contacted_id\":\"1\"}"
+						},
+						"url": {
+							"raw": "{{host}}/users/add_contact",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"add_contact"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LINK bob add henry as contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "559e736b-dc7f-481c-9c7b-55133a3227ee",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "bob",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "test",
+									"type": "string"
+								}
+							]
+						},
+						"method": "LINK",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"contacting_id\":\"1\",\"contacted_id\":\"3\"}"
+						},
+						"url": {
+							"raw": "{{host}}/users/add_contact",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"add_contact"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LINK henry add bob as contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "559e736b-dc7f-481c-9c7b-55133a3227ee",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "henry",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "test",
+									"type": "string"
+								}
+							]
+						},
+						"method": "LINK",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"contacting_id\":\"3\",\"contacted_id\":\"1\"}"
+						},
+						"url": {
+							"raw": "{{host}}/users/add_contact",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"add_contact"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST bob(1) message joe(2)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "559e736b-dc7f-481c-9c7b-55133a3227ee",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned message:hey\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.have.property('message_id',1);",
+									"    pm.expect(jsonData.response).to.have.property('message',\"hey\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "bob",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "test",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"contacting_id\": \"1\", \"contacted_id\": \"2\", \"message\":\"hey\"}"
+						},
+						"url": {
+							"raw": "{{host}}/messages/upload",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"messages",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST bob(1) message joe(2) again",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "559e736b-dc7f-481c-9c7b-55133a3227ee",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned message:hey\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.have.property('message_id',2);",
+									"    pm.expect(jsonData.response).to.have.property('message',\"hey again\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "bob",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "test",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"contacting_id\": \"1\", \"contacted_id\": \"2\", \"message\":\"hey again\"}"
+						},
+						"url": {
+							"raw": "{{host}}/messages/upload",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"messages",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST joe(2) message bob(1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "559e736b-dc7f-481c-9c7b-55133a3227ee",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned message:hey\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.have.property('message_id',3);",
+									"    pm.expect(jsonData.response).to.have.property('message',\"whats up dude?\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "bob",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "test",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"contacting_id\": \"2\", \"contacted_id\": \"1\", \"message\":\"whats up dude?\"}"
+						},
+						"url": {
+							"raw": "{{host}}/messages/upload",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"messages",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST bob(1) message henry(3)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "559e736b-dc7f-481c-9c7b-55133a3227ee",
+								"exec": [
+									"pm.test(\"Status code should be 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"should have returned message:hey\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.have.property('message_id',4);",
+									"    pm.expect(jsonData.response).to.have.property('message',\"yo dude\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "bob",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "test",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"contacting_id\": \"1\", \"contacted_id\": \"3\", \"message\":\"yo dude\"}"
+						},
+						"url": {
+							"raw": "{{host}}/messages/upload",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"messages",
+								"upload"
 							]
 						}
 					},

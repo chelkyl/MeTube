@@ -229,7 +229,7 @@ class File(db.Model):
   title = db.Column(db.String(100), unique=False, nullable=False)
   description = db.Column(db.String(400), nullable=False)
   permissions = db.Column(db.String(40), nullable=False)
-  upload_date = db.Column(db.Date(), nullable=False)
+  upload_date = db.Column(db.DateTime(), nullable=False)
   views = db.Column(db.Integer, nullable=False)
   upvotes = db.Column(db.Integer, nullable=False)
   downvotes = db.Column(db.Integer, nullable=False)
@@ -306,7 +306,7 @@ class Comment(db.Model):
   user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
   file_id = db.Column(db.Integer, db.ForeignKey('File.file_id'), nullable=False)
   comment = db.Column(db.String(40), nullable=False)
-  comment_date = db.Column(db.Date(), nullable=False)
+  comment_date = db.Column(db.DateTime(), nullable=False)
 
   def to_json(self):
     return {
@@ -333,7 +333,7 @@ class Message(db.Model):
   contacting_id = db.Column(db.Integer, db.ForeignKey('contacts.contacting_id'), nullable=False)
   contacted_id = db.Column(db.Integer, db.ForeignKey('contacts.contacted_id'), nullable=False)
   message = db.Column(db.String(100), nullable=False)
-  message_date = db.Column(db.Date(), nullable=False)
+  message_date = db.Column(db.DateTime(), nullable=False)
 
   def to_json(self):
     return {

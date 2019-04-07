@@ -927,8 +927,8 @@ def add_message():
   #newMessage=Message(contacting_id=contacting_id, contacted_id=contacted_id, message=message, message_date=message_date)
   #db.session.add(newMessage)
   #db.session.commit()
-  sql = text("""INSERT INTO Message(contacting_id, contacted_id, message) VALUES(:contacting_id, :contacted_id, :message)""")
-  result = db.engine.execute(sql, contacting_id=contacting_id, contacted_id=contacted_id, message=message)
+  sql = text("""INSERT INTO Message(contacting_id, contacted_id, message, message_date) VALUES(:contacting_id, :contacted_id, :message, :message_date)""")
+  result = db.engine.execute(sql, contacting_id=contacting_id, contacted_id=contacted_id, message=message, message_date=message_date)
   result = db.engine.execute('SELECT message_id,contacting_id,contacted_id,message,message_date FROM Message WHERE message_id={ID}'.format(ID=result.lastrowid))
   data = get_query_data(result)
   if data:
@@ -937,7 +937,7 @@ def add_message():
 
 @app.route('/messages/<user_id>',methods=['GET'])
 def get_user_messages(user_id):
-  result = db.engine.execute('SELECT contacting_id,message,message_date,User.username as contacting_username FROM Message INNER JOIN User on User.user_id = Message.contacting_id WHERE contacting_id={ID} UNION SELECT contacted_id,message,message_date,User.username as contacted_username FROM Message INNER JOIN User on User.user_id = Message.contacted_id WHERE contacted_id={ID}'.format(ID=user_id))
+  result = db.engine.execute('SELECT message_id,contacting_id,contacted_id,message,message_date,User.username as contact_username FROM Message INNER JOIN User on User.user_id = Message.contacting_id or User.user_id = Message.contacted_id WHERE (contacting_id={ID} OR contacted_id={ID})'.format(ID=user_id))
   data = get_query_data(result)
   opts = get_request_opts(request)
   return JSONResponse(filter_sort_paginate(data,opts)).end()
@@ -1287,8 +1287,8 @@ def add_comment():
   #newComment = Comment(user_id=user_id,file_id=file_id,comment=comment,comment_date=comment_date)
   #db.session.add(newComment)
   #db.session.commit()
-  sql = text("""INSERT INTO Comment(user_id, file_id, comment) VALUES(:user_id, :file_id, :comment)""")
-  result = db.engine.execute(sql, user_id=user_id, file_id=file_id, comment=comment)
+  sql = text("""INSERT INTO Comment(user_id, file_id, comment, comment_date) VALUES(:user_id, :file_id, :comment, :comment_date)""")
+  result = db.engine.execute(sql, user_id=user_id, file_id=file_id, comment=comment, comment_date=comment_date)
   result = db.engine.execute('SELECT comment_id,user_id,file_id,comment,comment_date FROM Comment WHERE comment_id={ID}'.format(ID=result.lastrowid))
   data = get_query_data(result)
   if data:
