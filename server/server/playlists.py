@@ -23,7 +23,14 @@ def get_playlist(playlist_id):
     return JSONResponse(data[0]).end()
   return JSONResponse("playlist_id {ID} not found".format(ID=playlist_id),404,True).end()
 
-@bp.route('/upload',methods=['POST'])
+@bp.route('/<playlist_id>/files',methods=['GET'])
+def get_playlist_files(playlist_id):
+  result = db.engine.execute('SELECT * FROM playlist_files WHERE playlist_id={ID}'.format(ID=playlist_id))
+  data = get_query_data(result)
+  opts = get_request_opts(request)
+  return JSONResponse(filter_sort_paginate(data,opts)).end()
+
+@bp.route('/create',methods=['POST'])
 @auth.login_required
 def add_playlist():
   # shorten name for easier access
@@ -36,7 +43,7 @@ def add_playlist():
   missing = []
   if user_id is None:
     missing.append('user_id')
-  if title is None:
+  if title is None:             #FIXME: should check if not empty
     missing.append('title')
   if description is None:
     missing.append('description')
@@ -83,20 +90,17 @@ def remove_playlist(playlist_id):
   #   return JSONResponse(playlist.to_json()).end()
   # return JSONResponse("playlist_id {ID} not found".format(ID=playlist_id),404,True).end()
 
-@bp.route('/add_file',methods=['LINK'])
+@bp.route('/<playlist_id>/file',methods=['LINK'])
 @auth.login_required
-def add_file_to_playlist():
+def add_file_to_playlist(playlist_id):
   # shorten name for easier access
   req = request.json
   # get json data
   file_id     = None if req is None else req.get('file_id',None)
-  playlist_id = None if req is None else req.get('playlist_id',None)
   # trivial validate not empty
   missing = []
   if file_id is None:
     missing.append('file_id')
-  if playlist_id is None:
-    missing.append('playlist_id')
 
   # return error if missing any
   if missing:
@@ -113,20 +117,17 @@ def add_file_to_playlist():
   #db.session.commit()
   return JSONResponse("File added to playlist",200,False).end()
 
-@bp.route('/remove_file',methods=['UNLINK'])
+@bp.route('/<playlist_id>/file',methods=['UNLINK'])
 @auth.login_required
-def remove_file_from_playlist():
+def remove_file_from_playlist(playlist_id):
   # shorten name for easier access
   req = request.json
   # get json data
   file_id     = None if req is None else req.get('file_id',None)
-  playlist_id = None if req is None else req.get('playlist_id',None)
   # trivial validate not empty
   missing = []
   if file_id is None:
     missing.append('file_id')
-  if playlist_id is None:
-    missing.append('playlist_id')
 
   # return error if missing any
   if missing:

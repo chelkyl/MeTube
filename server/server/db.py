@@ -210,7 +210,7 @@ class Playlist(db.Model):
   def __repr__(self):
     return '<Playlist {id} [{owner}]>'.format(id=self.playlist_id,owner=self.user_id)
 
-#TODO: test File upload with invalid user_id
+#TODO: need way to track which user upvoted
 class File(db.Model):
   __tablename__ = 'File'
 

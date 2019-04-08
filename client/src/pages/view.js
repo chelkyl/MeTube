@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useReducer } from 'react';
-import classNames from 'classnames';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import {
   Button,
@@ -11,30 +10,19 @@ import {
   Slide,
   Paper,
   Typography,
-  IconButton,
-  Divider,
-  Menu,
-  MenuItem,
-  Popper,
-  ListItemIcon,
-  ListItemText,
-  InputLabel,
-  Collapse,
-  TextField,
-  FormControl,
-  Select,
-  CircularProgress
+  IconButton
 } from '@material-ui/core';
 import {
   CloudDownload,
   PlaylistAdd,
-  Add as AddIcon
+  ThumbUp,
+  ThumbDown
 } from '@material-ui/icons';
 import Player from '../components/player';
+import PlaylistMenu from '../components/playlistmenu';
 import Api from '../apiclient';
 import { saveAs } from 'file-saver';
 import {useAuthCtx} from '../authentication';
-import {getAuthenticatedUserID} from '../authutils';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -64,7 +52,7 @@ const useStyles = makeStyles(theme => ({
     display: 'grid',
     gridAutoRows: '1fr',
     gridAutoFlow: 'column',
-    gridGap: theme.spacing.unit
+    gridGap: theme.spacing.unit * 2
   },
   metrics: {
   },
@@ -72,186 +60,16 @@ const useStyles = makeStyles(theme => ({
     textAlign: 'left',
     marginTop: theme.spacing.unit * 2
   },
-  playlistMenu: {
-    padding: theme.spacing.unit
+  rating: {
+    marginTop: theme.spacing.unit
   },
-  form: {
-    display: 'flex',
-    flexDirection: 'column'
+  rateIcon: {
+    marginRight: theme.spacing.unit * 2
   }
 }));
 
 function SlideTransition(props) {
   return <Slide direction='down' {...props}/>;
-}
-
-const initialCreatePlaylistState = {
-  loading: false,
-  success: false
-};
-const createPlaylistReducer = (state, action) => {
-  switch(action) {
-    case 'submit':
-      return {
-        loading: true,
-        success: false
-      }
-    case 'success':
-      return {
-        loading: false,
-        success: true
-      }
-    case 'error':
-    case 'initial':
-      return initialCreatePlaylistState;
-    default:
-      return state;
-  }
-};
-
-function PlaylistMenu(props) {
-  const classes = useStyles();
-  const [results, setResults] = useState([]);
-  const [formOpen, setFormOpen] = useState(false);
-  const [inputs, setInputs] = useState({});
-  const [createPlaylistState, setCreatePlaylistState] = useReducer(createPlaylistReducer, initialCreatePlaylistState);
-  let cancel = false;
-
-  useEffect(() => {
-    let id = getAuthenticatedUserID();
-    Api.getData('playlists','',[{column:'user_id',value:id,cmp:'exact'}],[])
-      .then(res => {
-        if(!cancel) setResults(res.data.response);
-      })
-      .catch(err => {
-        console.log('view',err);
-      })
-    
-    return () => {
-      cancel = true
-    };
-  }, []);
-
-  useEffect(() => {
-    if(createPlaylistState.loading) {
-      closeForm();
-    }
-  }, [createPlaylistState]);
-
-  let openForm = () => {
-    setFormOpen(true);
-  };
-  let closeForm = () => {
-    setFormOpen(false);
-  };
-  let submitForm = (e) => {
-    e.preventDefault();
-    setCreatePlaylistState('submit');
-  };
-
-  let handleChange = (key) => (e) => {
-    setInputs({...inputs, [key]: e.currentTarget.value});
-  };
-
-  let plistMenuItems = results.map(result => {
-    let {playlist_id, title} = result;
-    return <MenuItem key={`plist-result-${playlist_id}`} onClick={() => console.log('view',playlist_id)}>{title}</MenuItem>
-  });
-
-  let {loading, success} = createPlaylistState;
-
-  return (
-    <Popper {...props} className={classes.playlistMenu}>
-      <Paper className={classes.menuContents}>
-        <Typography variant="body1">Add to...</Typography>
-        <Divider/>
-        <DialogContent>
-          {plistMenuItems}
-        </DialogContent>
-        <Divider/>
-        <DialogActions>
-          <Collapse in={formOpen} timeout="auto" unmountOnExit>
-            <form className={classes.form} onSubmit={submitForm}>
-              <TextField id='name' label='Playlist Name' type='text' required={true}
-                className={classes.textField} margin='normal' variant='outlined'
-                onChange={handleChange('name')}
-                disabled={loading}
-                autoFocus/>
-              <TextField id='description' label='Description' type='text' required={false}
-                className={classes.textField} margin='normal' variant='outlined'
-                onChange={handleChange('description')}
-                disabled={loading}/>
-              <FormControl className={classes.selectInput}>
-                <InputLabel htmlFor="privacy">Privacy</InputLabel>
-                <Select value={inputs['privacy']} onChange={handleChange('privacy')}>
-                  <MenuItem value="private">Private</MenuItem>
-                  <MenuItem value="unlisted">Unlisted</MenuItem>
-                  <MenuItem value="public">Public</MenuItem>
-                </Select>
-              </FormControl>
-              <div className={classes.buttonWrapper}>
-                <Button type='submit'
-                  size='large'
-                  color='primary'
-                  className={classNames({
-                    [classes.buttonSuccess]: success
-                  })}
-                  variant='text'
-                  disabled={loading}>
-                  Submit
-                </Button>
-                {loading && <CircularProgress size={24} className={classes.buttonProgress}/>}
-              </div>
-            </form>
-          </Collapse>
-        </DialogActions>
-      </Paper>
-    </Popper>
-  );
-  // return <Menu className={classes.playlistMenu} {...props}>
-  //   <Typography variant="body1">Add to...</Typography>
-  //   <Divider key='divider'/>
-  //   {plistMenuItems}
-  //   <Divider key='divider'/>
-  //   <MenuItem key="new-playlist" onClick={openForm}>
-  //     <ListItemIcon><AddIcon/></ListItemIcon>
-  //     <ListItemText primary="Create new playlist"/>
-  //   </MenuItem>
-  //   <Collapse in={formOpen} timeout="auto" unmountOnExit>
-  //     <form className={classes.form} onSubmit={submitForm}>
-  //       <TextField id='name' label='Playlist Name' type='text' required={true}
-  //         className={classes.textField} margin='normal' variant='outlined'
-  //         onChange={handleChange('name')}
-  //         disabled={loading}
-  //         autoFocus/>
-  //       <TextField id='description' label='Description' type='text' required={false}
-  //         className={classes.textField} margin='normal' variant='outlined'
-  //         onChange={handleChange('description')}
-  //         disabled={loading}/>
-  //       <FormControl className={classes.selectInput}>
-  //         <InputLabel htmlFor="privacy">Privacy</InputLabel>
-  //         <Select value={inputs['privacy']} onChange={handleChange('privacy')}>
-  //           <MenuItem value="private">Private</MenuItem>
-  //           <MenuItem value="unlisted">Unlisted</MenuItem>
-  //           <MenuItem value="public">Public</MenuItem>
-  //         </Select>
-  //       </FormControl>
-  //       <div className={classes.buttonWrapper}>
-  //         <Button type='submit'
-  //           size='large'
-  //           color='primary'
-  //           className={classNames({
-  //             [classes.buttonSuccess]: success
-  //           })}
-  //           variant='text'
-  //           disabled={loading}>
-  //           Submit
-  //         </Button>
-  //         {loading && <CircularProgress size={24} className={classes.buttonProgress}/>}
-  //       </div>
-  //     </form>
-  //   </Collapse>
-  // </Menu>;
 }
 
 const initialAlertState = {
@@ -382,9 +200,11 @@ export default function ViewPage(props) {
                 </IconButton>
               </div>
               <div className={classes.metrics}>
-                <Typography variant="body1">{`${views !== null ? views : "?"} views`}</Typography>
-                <Typography variant="body1">{`${upvotes !== null ? upvotes : "?"} upvotes`}</Typography>
-                <Typography variant="body1">{`${downvotes !== null ? downvotes : "?"} downvotes`}</Typography>
+                <Typography variant="body1">{`${typeof(views) === "number" ? views : "?"} views`}</Typography>
+                <div className={classes.rating}>
+                  <Typography variant="body1"><ThumbUp className={classes.rateIcon}/>{`${typeof(upvotes) === "number" ? upvotes : "?"}`}</Typography>
+                  <Typography variant="body1"><ThumbDown className={classes.rateIcon}/>{`${typeof(downvotes) === "number" ? downvotes : "?"}`}</Typography>
+                </div>
               </div>
             </div>
           </div>
@@ -400,7 +220,7 @@ export default function ViewPage(props) {
         <Recommended/>
         */
       }
-      <PlaylistMenu anchorEl={plistMenuAnchor} open={isPlistMenuOpen} onClose={closePlistMenu}/>
+      <PlaylistMenu file_id={fileInfo.file_id} anchorEl={plistMenuAnchor} open={isPlistMenuOpen} onClose={closePlistMenu}/>
     </div>
   );
 }

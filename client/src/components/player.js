@@ -21,6 +21,7 @@ const useStyles = makeStyles(theme => ({
   },
   audioContainer: {
     width: '100%',
+    height: '30vw',
     backgroundColor: 'black'
   },
   audio: {
@@ -35,8 +36,8 @@ const useStyles = makeStyles(theme => ({
   },
   errorContainer: {
     display: 'flex',
-    width: '68vw',
-    height: '20vw',
+    width: '100%',
+    height: '30vw',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',

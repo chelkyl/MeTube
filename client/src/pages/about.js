@@ -27,7 +27,19 @@ export default function AboutPage(props) {
         }
       })
       .catch(err => {
-        console.log('error',err)
+        let tag = 'about';
+        // got response from server
+        if(err.response) {
+          console.log(tag,err.response);
+        }
+        // request sent but no response
+        else if(err.request) {
+          console.log(tag,err.request);
+        }
+        // catch all
+        else {
+          console.log(tag,err);
+        }
       });
   });
 

@@ -24,8 +24,11 @@ const useStyles = makeStyles(theme => ({
   },
   resultErrorWrap: {
     display: 'flex',
+    height: 100,
     flexDirection: 'column',
-    padding: `${theme.spacing.unit}px 0`
+    padding: `${theme.spacing.unit}px 0`,
+    backgroundColor: theme.palette.background.paper,
+    justifyContent: 'center'
   },
   resultError: {
     textAlign: 'left',
@@ -45,7 +48,19 @@ export default function Section(props) {
         if(!cancel) setFiles(response.data.response);
       })
       .catch(err => {
-        console.log('section',err);
+        let tag = 'section';
+        // got response from server
+        if(err.response) {
+          console.log(tag,err.response);
+        }
+        // request sent but no response
+        else if(err.request) {
+          console.log(tag,err.request);
+        }
+        // catch all
+        else {
+          console.log(tag,err);
+        }
       });
   }, []);
 
@@ -73,7 +88,7 @@ export default function Section(props) {
   }
   else contents = (
     <div className={classes.resultErrorWrap}>
-      <Typography variant="h5" className={classes.resultError}>No results</Typography>
+      <Typography variant="h6" className={classes.resultError}>No results</Typography>
     </div>
   );
 

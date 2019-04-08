@@ -22,15 +22,13 @@ from operator import itemgetter
 # }
 def passes_filters(filters, entry):
   values = [str(val).lower() for val in entry.values()]
-  keep = True
-  
+  keep = False
   for f in filters:
     if f.get('any', False):
       fval = str(f['value']).lower()
       # tests if value appears in entry
       if f['cmp'] == 'exact':
-        if fval not in values:
-          keep = False
+        keep = fval in values
       else:
         # if f['cmp'] == 'contains' or other value
         found = False
@@ -38,43 +36,38 @@ def passes_filters(filters, entry):
           if fval in value:
             found = True
             break
-        if not found:
-          keep = False
-    else:
-      # specific filter
-      if f['column'] in entry.keys():
-        if f['cmp'] == 'exact':
-          if f['value'] != entry[f['column']]:
-            keep = False
-        elif f['cmp'] == 'contains':
-          if f['value'] not in str(entry[f['column']]):
-            keep = False
-        elif f['cmp'] == 'min':
-          oval = entry[f['column']]
-          o_type = type(oval)
-          if isinstance(o_type,str):
-            print("Trying to compare min with string")
-          elif isinstance(o_type,int):
-            cval = int(f.value)
-            if not (cval >= oval):
-              keep = False
-          elif isinstance(o_type,datetime.date):
-            cval = datetime.date(f.value)
-            if not (cval >= oval):
-              keep = False
-        elif f['cmp'] == 'max':
-          oval = entry[f['column']]
-          o_type = type(oval)
-          if isinstance(o_type,str):
-            print("Trying to compare max with string")
-          elif isinstance(o_type,int):
-            cval = int(f.value)
-            if not (cval <= oval):
-              keep = False
-          elif isinstance(o_type,datetime.date):
-            cval = datetime.date(f.value)
-            if not (cval <= oval):
-              keep = False
+        keep = found
+      # print(f,values,keep)
+    # specific filter
+    elif f['column'] in entry.keys():
+      if f['cmp'] == 'exact':
+        keep = f['value'] == str(entry[f['column']])
+      elif f['cmp'] == 'contains':
+        if f['value'] in str(entry[f['column']]):
+          keep = True
+      elif f['cmp'] == 'min':
+        oval = entry[f['column']]
+        o_type = type(oval)
+        if isinstance(o_type,str):
+          print("Trying to compare min with string")
+        elif isinstance(o_type,int):
+          cval = int(f.value)
+          keep = cval >= oval
+        elif isinstance(o_type,datetime.date):
+          cval = datetime.date(f.value)
+          keep = cval >= oval
+      elif f['cmp'] == 'max':
+        oval = entry[f['column']]
+        o_type = type(oval)
+        if isinstance(o_type,str):
+          print("Trying to compare max with string")
+        elif isinstance(o_type,int):
+          cval = int(f.value)
+          keep = cval <= oval
+        elif isinstance(o_type,datetime.date):
+          cval = datetime.date(f.value)
+          keep = cval <= oval
+      # print(f,entry[f['column']],keep)
   return keep
 
 def filter_sort_paginate(data,opts):

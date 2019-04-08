@@ -18,6 +18,7 @@ import {
 } from '@material-ui/icons';
 import axios from 'axios';
 import Api from '../apiclient';
+import {deepCopyObject} from '../utils';
 import ResultItemCard from '../components/resultItemCard';
 
 const useStyles = makeStyles(theme => ({
@@ -130,14 +131,6 @@ export default function BrowsePage(props) {
     }
     return querySorters;
   };
-  let deepCopyObject = (obj) => {
-    let cpy = {};
-    for(let key in obj) {
-      if(obj[key] !== undefined && typeof(obj[key]) === 'object') cpy[key] = deepCopyObject(obj[key]);
-      else cpy[key] = obj[key];
-    }
-    return cpy;
-  };
   let updateInputs = (key,value) => {
     let newInputs = deepCopyObject(inputs);
     newInputs[key] = value;
@@ -239,7 +232,19 @@ export default function BrowsePage(props) {
         if(!cancelSearch) setResults(rankedResults);
       })
       .catch(err => {
-        console.log('browse',err);
+        let tag = 'browse';
+        // got response from server
+        if(err.response) {
+          console.log(tag,err.response);
+        }
+        // request sent but no response
+        else if(err.request) {
+          console.log(tag,err.request);
+        }
+        // catch all
+        else {
+          console.log(tag,err);
+        }
       });
 
     return () => {

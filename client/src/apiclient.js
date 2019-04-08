@@ -47,7 +47,13 @@ class Api {
       case 'patch':
         return this.client[type](URN,data,config);
       default:
-        return this.client[type](URN,data,config);
+        return this.client.request({
+          url: URN,
+          method: type,
+          params: data,
+          data: data,
+          ...config
+        });
     }
     /*let source = axios.CancelToken.source();
     let token = source.token;
@@ -63,8 +69,10 @@ class Api {
     };*/
   }
 
-  async getData(route, query, filters, sorters, start=0, limit=10, useAuth = false) {
-    return this.request('get',`/${route}?q=${query}&b=${start}&l=${limit}`, {filters, sorters}, {}, useAuth);
+  async getData(route, query=null, filters=[], sorters=[], start=0, limit=10, useAuth = false) {
+    let extras = `?b=${start}&l=${limit}`;
+    if(query !== null) extras += `&q=${query}`;
+    return this.request('get',`/${route}?${extras}`, {filters, sorters}, {}, useAuth);
   }
 }
 

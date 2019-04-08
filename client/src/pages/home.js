@@ -29,7 +29,19 @@ export default function HomePage() {
         if(!cancel) setTopChannels(response.data.response);
       })
       .catch(err => {
-        console.log('home',err);
+        let tag = 'home';
+        // got response from server
+        if(err.response) {
+          console.log(tag,err.response);
+        }
+        // request sent but no response
+        else if(err.request) {
+          console.log(tag,err.request);
+        }
+        // catch all
+        else {
+          console.log(tag,err);
+        }
       });
   }, []);
 

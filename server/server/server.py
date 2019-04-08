@@ -26,7 +26,7 @@ app.register_blueprint(categories.bp)
 app.register_blueprint(comments.bp)
 app.register_blueprint(keywords.bp)
 app.register_blueprint(messages.bp)
-CORS(app)
+CORS(app, methods=['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'LINK', 'UNLINK'])
 ERR_IN_CREATE = False
 FIX_ERR_IN_CREATE = True
 
