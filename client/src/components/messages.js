@@ -75,7 +75,7 @@ export default function Messages(props) {
     var newDialogConversationsMap = new Map();
     let newestMessageIndex = messageInfo.length - 1;
     let latestMessageIndex = 1;
-    if(messageInfo[0].contacting_id != parseInt(getAuthenticatedUserID())){
+    if(messageInfo[0].contacting_id !== parseInt(getAuthenticatedUserID())){
       newestMessageIndex--;
       latestMessageIndex--;
     }
