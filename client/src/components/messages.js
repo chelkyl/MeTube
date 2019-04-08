@@ -73,13 +73,21 @@ export default function Messages(props) {
     let newMenuConversations = [];
     var newMenuConversationsMap = new Map();
     var newDialogConversationsMap = new Map();
-    for(let i = messageInfo.length-1; i >= 1; i-=2){
-      if(messageInfo[i].contacted_id === parseInt(getAuthenticatedUserID())){
-        newMenuConversationsMap.set(messageInfo[i].contact_username, [messageInfo[i].message, messageInfo[i].contacting_id.toString()]);
+    let newestMessageIndex = messageInfo.length - 1;
+    let latestMessageIndex = 1;
+    if(messageInfo[0].contacting_id != parseInt(getAuthenticatedUserID())){
+      newestMessageIndex--;
+      latestMessageIndex--;
+    }
+    for(let j = latestMessageIndex; j <= newestMessageIndex; j+=2){
+      if(messageInfo[j].contacted_id === parseInt(getAuthenticatedUserID())){
+        newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacting_id.toString()]);
       }
       else {
-        newMenuConversationsMap.set(messageInfo[i].contact_username, [messageInfo[i].message, messageInfo[i].contacted_id.toString()]);
+        newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacted_id.toString()]);
       }
+    }
+    for(let i = newestMessageIndex; i >= latestMessageIndex; i-=2){
       if(newDialogConversationsMap.has(messageInfo[i].contact_username)){
         newDialogConversationsMap.set(messageInfo[i].contact_username, newDialogConversationsMap.get(messageInfo[i].contact_username).concat([messageInfo[i]]));
       }
@@ -155,6 +163,7 @@ export default function Messages(props) {
       const response = await Api.request('post','/messages/upload',newMessage,{},true);
       console.log('messages send',response);
       const res = response.data;
+      handleCloseMessageDialog();
       return res;
     }
     catch(err) {
@@ -179,6 +188,7 @@ export default function Messages(props) {
 
   function handleCloseMessageDialog() {
     setOpenMessageDialog(false);
+    setNewMessage("");
   }
 
   return (
