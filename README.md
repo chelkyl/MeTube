@@ -183,13 +183,72 @@ The webapp server should allow .htaccess files and have mod_rewrite enabled.
 
 
 ## TODO
-- Improve server and client authentication to use tokens
-  - See https://stackoverflow.com/questions/49819183/react-what-is-the-best-way-to-handle-authenticated-logged-in-state
-  - See https://flask-httpauth.readthedocs.io/en/latest/
-- Add filter_sort_paginate feature to all get_* routes
-- Add server video stream route and headers
-  - See https://medium.com/@daspinola/video-stream-with-node-js-and-html5-320b3191a6b6
-  - https://stackoverflow.com/questions/24976123/streaming-a-video-file-to-an-html5-video-player-with-node-js-so-that-the-video-c
+- Decide on favorites implementation
+  - Should it just be in the playlists table?
+    - No, it should not be able to be removed though we should give option to clear it
+      - if it is just another playlist, we would need to add a column to make sure it can't be deleted
+  - Suggestion: keep as is
+- Finalize server code
+  - (this is optional) add table to track which user upvotes/downvotes which files
+    - remove these columns from File table?
+  - Very optional, fix lines marked with #FIXME
+  - Run mysqldump to get SQL commands for creating DB
+    - Create ER diagram or schema from this
+    - Get sqlalchemy to execute these statements rather than create_all
+    - Get sqlalchemy to execute drop statements rather than drop_all
+  - Add rest of get_* routes to server
+    - Add filter_sort_paginate feature to all get_* routes
+- Finish/Add components/pages
+  - messages
+  - file view page
+    - if change upvote/downvote fix
+    - add comments component
+    - needs to keep track of whether it is playing through a playlist and show it
+    - if logged in, show edit controls
+  - masthead menu Options
+    - what should this do? YT uses it for features we don't have
+      - maybe remove it
+  - channel page
+    - Files       (channelfiles.js)
+    - File upload
+      - Fix file upload button to only show if logged in
+      - must have metadata: title, description, keywords, categories, etc
+    - Playlists   (channelplaylists.js)
+    - Contacts list  +channelcontacts.js
+      - this is supposedly optional, but if we are doing messaging anyway, maybe include it?
+    - About page needs a way to edit the profile
+  - browse page
+    - need to add categories, maybe admin only feature
+      - users then choose specific categories to add to their files
+  - playlist page (playlist.js)
+  - double check validation
+    - logged in states
+    - (opt) permissions
+- Techinical report
+  - system design
+  - ER diagram
+  - DB schema
+  - function design
+  - implementation details
+  - test cases
+  - test results
+  - user manual or instructions
+- 1 Canvas submission zip file named `<team #>.zip` e.g. `G4.zip`
+  - Due Thursday, April 18 midnight
+  - has technical report
+  - cover page
+    - lists all member names and team number
+- individually submit evaluation
+  - Can be found on course page [here](https://people.cs.clemson.edu/~jzwang/19014620/cpsc4620.htm)
+  - 1 evaluation for each teammate for 2 total
+  - named as `<team #> name nameOfTeammate.doc`
+    - not very clear how name should be formatted
+      - delimited by space or underscore or other? 
+      - Clemson username?
+
+### Stretch Goals
+- Add more sorting options
+  - add tables for download and view times/tracking
 - Add thumbnail extraction, both for video seek preview and file preview image
   - Note: I think docs do not need to be supported
   - 360x640px (mobile full-width) and 216x384px (widescreen grid list) or close should be good
@@ -201,9 +260,3 @@ The webapp server should allow .htaccess files and have mod_rewrite enabled.
     - https://tailsu.github.io/2016/07/11/generate-video-thumbnail-with-ffmpeg-and-python.html
     - https://makerhacks.com/thumbnail-images-using-python/
   - for audio? maybe user uploaded cover art
-- Create default file thumbnail images for docs, imgs, videos, and audio
-- Add components then build pages
-  - Home page
-  - File item card
-  - File item display page
-  - and more

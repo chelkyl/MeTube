@@ -103,7 +103,7 @@ export default function UserPage(props) {
         <AppBar position="static">
           <Tabs value={tabIndex} onChange={handleTabChange}>
             <Tab label="About" />
-            <Tab label="Videos" />
+            <Tab label="Files" />
             <Tab label="Playlists" />
           </Tabs>
         </AppBar>
