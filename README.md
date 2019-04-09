@@ -224,7 +224,7 @@ The webapp server should allow .htaccess files and have mod_rewrite enabled.
   - double check validation
     - logged in states
     - (opt) permissions
-- Techinical report
+- Technical report
   - system design
   - ER diagram
   - DB schema
