@@ -192,6 +192,8 @@ class Playlist(db.Model):
   user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
   title = db.Column(db.String(100), nullable=False)
   description = db.Column(db.String(400), nullable=False)
+  #TODO: add creation date
+  #TODO: add views
 
   files = db.relationship('File', secondary=playlist_files, lazy='dynamic', backref=db.backref('playlists', lazy=True))
 

@@ -119,7 +119,7 @@ export default function ResultItemCard(props) {
       case 'users':
         return '/channel';
       case 'playlists':
-        return '/list';
+        return '/playlist';
       case 'files':
       default:
         return '/view';

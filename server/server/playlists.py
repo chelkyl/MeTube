@@ -10,14 +10,14 @@ bp = Blueprint('playlists', __name__, url_prefix='/playlists')
 
 @bp.route('',methods=['GET'])
 def get_playlists():
-  result = db.engine.execute('SELECT * FROM Playlist')
+  result = db.engine.execute('SELECT playlist_id,User.user_id,title,description,username FROM Playlist INNER JOIN User ON Playlist.user_id = User.user_id')
   data = get_query_data(result)
   opts = get_request_opts(request)
   return JSONResponse(filter_sort_paginate(data,opts)).end()
 
 @bp.route('/<playlist_id>',methods=['GET'])
 def get_playlist(playlist_id):
-  result = db.engine.execute('SELECT * FROM Playlist WHERE playlist_id={ID}'.format(ID=playlist_id))
+  result = db.engine.execute('SELECT playlist_id,User.user_id,title,description,username FROM Playlist INNER JOIN User ON Playlist.user_id = User.user_id WHERE playlist_id={ID}'.format(ID=playlist_id))
   data = get_query_data(result)
   if data:
     return JSONResponse(data[0]).end()

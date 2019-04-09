@@ -17,9 +17,10 @@ const useStyles = makeStyles(theme => ({
 export default function AboutPage(props) {
   const classes = useStyles();
   let [description, setDescription] = useState('');
+  let {userID} = props;
 
   useEffect(() => {
-    Api.request('get',`/users/${props.user_id}` )
+    Api.request('get',`/users/${userID}` )
       .then(res =>{
         console.log('res',res, res.data);
         if(res.data.response) {

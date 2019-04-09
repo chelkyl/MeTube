@@ -12,6 +12,12 @@ import {
 import axios from 'axios';
 import Api from '../apiclient';
 import AboutPage from './about';
+import ChannelPlaylistsPage from './channelplaylists';
+import ChannelFilesPage from './channelfiles';
+import {
+  Route,
+  Switch
+} from 'react-router-dom';
 
 const useStyles = makeStyles(theme => ({
   tabbedpage: {
@@ -30,10 +36,12 @@ function TabContainer(props) {
 
 export default function UserPage(props) {
   const classes = useStyles();
-  const [tabIndex, setTabIndex] = useState(0);
+  const [tabIndex, setTabIndex] = useState('about');
   const [userID, setUserID] = useState(props.match.params.id);
   const [userInfo, setUserInfo] = useState({});
   let cancel = false;
+  let curPath = props.match.url;
+  console.log('channel',userID,props.match);
 
   useEffect(() => {
     //TODO: test is this is actually needed, maybe click on someone's channel?
@@ -46,6 +54,10 @@ export default function UserPage(props) {
     reqMap['labels'].push(label);
     reqMap['list'].push(request);
   };
+
+  // useEffect(() => {
+  //TODO: match params?
+  // });
 
   useEffect(() => {
     let requests = {list: [], labels: []};
@@ -89,6 +101,7 @@ export default function UserPage(props) {
   let handleTabChange = (e, newValue) => {
     console.log('channel tab event',e);
     setTabIndex(newValue);
+    props.history.push(`${curPath}/${newValue}`);
   }
 
   let {username,subscribers} = userInfo;
@@ -102,14 +115,18 @@ export default function UserPage(props) {
       <div className={classes.tabbedpage}>
         <AppBar position="static">
           <Tabs value={tabIndex} onChange={handleTabChange}>
-            <Tab label="About" />
-            <Tab label="Files" />
-            <Tab label="Playlists" />
+            <Tab label="About" value="about"/>
+            <Tab label="Files" value="files"/>
+            <Tab label="Playlists" value="playlists"/>
           </Tabs>
         </AppBar>
-        {tabIndex === 0 && <TabContainer> <AboutPage user_id={userID}/> </TabContainer>}
-        {tabIndex === 1 && <TabContainer>Item Two</TabContainer>}
-        {tabIndex === 2 && <TabContainer>Item Three</TabContainer>}
+        <TabContainer>
+          <Switch>
+            <Route path={`${props.match.path}/files`} render={() => <ChannelFilesPage userID={userID} />}/>
+            <Route path={`${props.match.path}/playlists`} render={() => <ChannelPlaylistsPage userID={userID} />}/>
+            <Route path={`${props.match.path}/`} render={() => <AboutPage userID={userID} />}/>
+          </Switch>
+        </TabContainer>
       </div>
     </div>
   );

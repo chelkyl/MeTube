@@ -302,8 +302,8 @@ export default function BrowsePage(props) {
             <FormLabel component="legend" className={classes.optionGroupLabel}>Sort</FormLabel>
             <RadioGroup name="sort" value={inputs['sort']} onChange={handleInputs('sort')} aria-label="sort">
               <FormControlLabel control={<Radio/>} label="Most Likes"       value="likes"       className={classes.optionLabel}/>
-              <FormControlLabel control={<Radio/>} label="Most Viewed"      value="views"       className={classes.optionLabel}/>
-              <FormControlLabel control={<Radio/>} label="Most Downloaded"  value="downloads"   className={classes.optionLabel}/>
+              <FormControlLabel control={<Radio/>} label="Most Views"       value="views"       className={classes.optionLabel}/>
+              <FormControlLabel control={<Radio/>} label="Most Downloads"   value="downloads"   className={classes.optionLabel}/>
               <FormControlLabel control={<Radio/>} label="Most Subscribers" value="subscribers" className={classes.optionLabel}/>
             </RadioGroup>
             <FormControlLabel label={inputs['sortDsc'] ? "Descending" : "Ascending"} className={classes.optionLabel} control={

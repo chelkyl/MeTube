@@ -70,7 +70,7 @@ class Api {
   }
 
   async getData(route, query=null, filters=[], sorters=[], start=0, limit=10, useAuth = false) {
-    let extras = `?b=${start}&l=${limit}`;
+    let extras = `b=${start}&l=${limit}`;
     if(query !== null) extras += `&q=${query}`;
     return this.request('get',`/${route}?${extras}`, {filters, sorters}, {}, useAuth);
   }
