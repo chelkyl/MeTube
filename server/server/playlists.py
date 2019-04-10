@@ -30,7 +30,7 @@ def get_playlist_files(playlist_id):
   opts = get_request_opts(request)
   return JSONResponse(filter_sort_paginate(data,opts)).end()
 
-@bp.route('/create',methods=['POST'])
+@bp.route('/upload',methods=['POST'])
 @auth.login_required
 def add_playlist():
   # shorten name for easier access
@@ -90,7 +90,7 @@ def remove_playlist(playlist_id):
   #   return JSONResponse(playlist.to_json()).end()
   # return JSONResponse("playlist_id {ID} not found".format(ID=playlist_id),404,True).end()
 
-@bp.route('/<playlist_id>/file',methods=['LINK'])
+@bp.route('/<playlist_id>/add_file',methods=['LINK'])
 @auth.login_required
 def add_file_to_playlist(playlist_id):
   # shorten name for easier access
@@ -117,7 +117,7 @@ def add_file_to_playlist(playlist_id):
   #db.session.commit()
   return JSONResponse("File added to playlist",200,False).end()
 
-@bp.route('/<playlist_id>/file',methods=['UNLINK'])
+@bp.route('/<playlist_id>/remove_file',methods=['UNLINK'])
 @auth.login_required
 def remove_file_from_playlist(playlist_id):
   # shorten name for easier access
