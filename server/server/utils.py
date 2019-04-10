@@ -104,7 +104,10 @@ def filter_sort_paginate(data,opts):
     for sorter in sorters:
       column = sorter['column']
       descending = sorter['descending'] in ['true','True']
-      ret = sorted(ret, key=itemgetter(column), reverse=descending)
+      try:
+        ret = sorted(ret, key=itemgetter(column), reverse=descending)
+      except KeyError:
+        continue
 
   if bounds:
     start = int(bounds['start']) if bounds['start'] else 0

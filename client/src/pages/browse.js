@@ -118,7 +118,7 @@ export default function BrowsePage(props) {
           break;
         case 'subscribers':
           querySorters.push({
-            'column': 'subscribed',
+            'column': 'subscribers',
             'descending': inputs.sortDsc
           });
           break;

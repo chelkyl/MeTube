@@ -14,6 +14,7 @@ import Api from '../apiclient';
 import AboutPage from './about';
 import ChannelPlaylistsPage from './channelplaylists';
 import ChannelFilesPage from './channelfiles';
+import ChannelUploadPage from './channelupload';
 import Error404Page from './pageNotFound';
 import {
   Route,
