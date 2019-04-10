@@ -12,21 +12,17 @@ bpLogin = Blueprint('login', __name__, url_prefix='/login')
 
 @auth.verify_password
 def verify_password(uname_or_token,password):
-  print('got request',uname_or_token)
   # try to get data from potential token
   user_id = get_auth_token_data(app.config['SECRET_KEY'],uname_or_token)
   if user_id:
-    print('is auth token',user_id)
     # got user id from token
     result = db.engine.execute('SELECT * FROM User WHERE user_id={ID}'.format(ID=user_id))
     data = get_query_data(result)
-    print('pass?',data)
     # make sure user exists
     if data:
       g.user = data[0]
       return True
     return False
-  print('not auth token')
   # was not token, try to validate as username and password pair
   result = db.engine.execute('SELECT * FROM User WHERE username="{UNAME}"'.format(UNAME=uname_or_token))
   data = get_query_data(result)

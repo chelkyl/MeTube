@@ -1,5 +1,9 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/styles';
+import classNames from 'classnames';
+import { makeStyles, useTheme } from '@material-ui/styles';
+import {
+  unstable_useMediaQuery as useMediaQuery
+} from '@material-ui/core/useMediaQuery';
 import {
   Card,
   CardActionArea,
@@ -17,7 +21,14 @@ import {
 } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
 
+let cardDim     = {w:210,    h:205};
+let cardWideDim = {w:'100%', h:205};
+let cardMedDim  = {w:'100%', h:205};
+
 const useStyles = makeStyles(theme => ({
+  cardWrap: {
+    width: 210
+  },
   card: {
     width: 210,
     height: 205,
@@ -25,29 +36,64 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     alignItems: 'stretch'
   },
+  mediaWrap: {
+    width: 210,
+    height: 118
+  },
   media: {
     width: 210,
-    height: 110,
+    height: 118,
     backgroundColor: theme.secondary
   },
   content: {
     height: 85
   },
+
+  cardWrapMed: {
+    width: 210
+  },
+  cardMed: {
+    width: 210,
+    height: 205,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'stretch'
+  },
+  mediaWrapMed: {
+    width: 210,
+    height: 118
+  },
+  mediaMed: {
+    width: 210,
+    height: 118,
+    backgroundColor: theme.secondary
+  },
+  contentMed: {
+    height: 85
+  },
+
+  cardWrapWide: {
+    width: '100%'
+  },
   cardWide: {
     width: '100%',
-    height: 100,
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'start'
+    height: 118,
+    display: 'grid',
+    gridTemplateColumns: '210px 1fr'
+  },
+  mediaWrapWide: {
+    width: 210,
+    height: 118,
   },
   mediaWide: {
-    width: 210,
-    height: 110,
+    width: '100%',
+    height: '100%',
     backgroundColor: theme.secondary
   },
   contentWide: {
     width: '100%'
   },
+
   thumbnailPlaceholder: {
     width: '100%',
     height: '100%',
@@ -102,6 +148,8 @@ function ResultItemThumbnail(props) {
 
 export default function ResultItemCard(props) {
   const classes = useStyles();
+  const theme = useTheme();
+  const isMobileWidth = useMediaQuery(theme.breakpoints.down('xs')) || document.body.clientWidth < theme.breakpoints.values.xs;
   const { 
     className:propClass,
     variant,
@@ -113,7 +161,6 @@ export default function ResultItemCard(props) {
     thumbnail
   } = props;
 
-  let card = null;
   let getRouteFromResultType = (type) => {
     switch(type) {
       case 'users':
@@ -125,36 +172,40 @@ export default function ResultItemCard(props) {
         return '/view';
     }
   };
-  switch(variant) {
-    case 'wide':
-      card = (
-        <Card className={propClass}>
-          <CardActionArea className={classes.cardWide} component={Link} to={`${getRouteFromResultType(result_type)}/${id}`}>
+  
+  let card = null;
+  if(variant === 'small' || isMobileWidth) {
+    card = (
+      <Card className={classNames(propClass,classes.cardWrap)}>
+        <CardActionArea className={classes.card} component={Link} to={`${getRouteFromResultType(result_type)}/${id}`}>
+          <div className={classes.mediaWrap}>
+            <ResultItemThumbnail className={classes.media}
+              {...{name, result_type, mimetype, thumbnail}}/>
+          </div>
+          <CardContent className={classes.content}>
+            <Typography gutterBottom variant="subtitle1">{name}</Typography>
+            <Typography gutterBottom variant="subtitle2">{owner}</Typography>
+          </CardContent>
+        </CardActionArea>
+      </Card>
+    )
+  }
+  else if (variant === 'wide') {
+    card = (
+      <Card className={classNames(propClass,classes.cardWrapWide)}>
+        <CardActionArea className={classes.cardWide} component={Link} to={`${getRouteFromResultType(result_type)}/${id}`}>
+          <div className={classes.mediaWrapWide}>
             <ResultItemThumbnail className={classes.mediaWide}
               {...{name, result_type, mimetype, thumbnail}}/>
-            <CardContent className={classes.contentWide}>
-              <Typography gutterBottom variant="subtitle1">{name}</Typography>
-              <Typography variant="subtitle2">{owner}</Typography>
-            </CardContent>
-          </CardActionArea>
-        </Card>
-      )
-      break;
-    case 'small':
-    default:
-      card = (
-        <Card>
-          <CardActionArea className={classes.card} component={Link} to={`${getRouteFromResultType(result_type)}/${id}`}>
-            <ResultItemThumbnail className={classes.media}
-                {...{name, result_type, mimetype, thumbnail}}/>
-            <CardContent className={classes.content}>
-              <Typography gutterBottom variant="subtitle1">{name}</Typography>
-              <Typography gutterBottom variant="subtitle2">{owner}</Typography>
-            </CardContent>
-          </CardActionArea>
-        </Card>
-      )
-      break;
+          </div>
+          <CardContent className={classes.contentWide}>
+            <Typography gutterBottom variant="subtitle1">{name}</Typography>
+            <Typography variant="subtitle2">{owner}</Typography>
+          </CardContent>
+        </CardActionArea>
+      </Card>
+    )
   }
+  
   return card;
 }

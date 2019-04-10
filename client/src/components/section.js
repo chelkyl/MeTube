@@ -13,7 +13,7 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
     margin: `${theme.spacing.unit*2}px 0`
   },
-  sectionTitle: {
+  sectionHeader: {
     marginBottom: 4
   },
   filesGrid: {
@@ -40,11 +40,13 @@ export default function Section(props) {
   const classes = useStyles();
   const [files, setFiles] = useState([]);
   let start = 0, count = 10;
+  let {filters, sorters, name, type, subscribers} = props;
   let cancel = false;
 
   useEffect(() => {
-    Api.getData('files','',props.filters,props.sorters,start,count)
+    Api.getData('files',null,filters,sorters,start,count)
       .then(response => {
+        console.log('section',response);
         if(!cancel) setFiles(response.data.response);
       })
       .catch(err => {
@@ -94,9 +96,16 @@ export default function Section(props) {
 
   return (
     <div className={classes.section}>
-      <Typography variant="h5" className={classes.sectionTitle}>
-        {props.name}
-      </Typography>
+      <div className={classes.sectionHeader}>
+        <Typography variant="h5" className={classes.sectionTitle}>
+          {name}
+        </Typography>
+        {type === 'channel' && 
+          <Typography variant="body1">
+            {`${subscribers} ${subscribers === 1 ? 'subscriber' : 'subscribers'}`}
+          </Typography>
+        }
+      </div>
       {contents}
     </div>
   );

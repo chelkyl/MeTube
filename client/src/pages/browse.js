@@ -18,7 +18,7 @@ import {
 } from '@material-ui/icons';
 import axios from 'axios';
 import Api from '../apiclient';
-import {deepCopyObject} from '../utils';
+import {deepCopyObject, basicRequestCatch} from '../utils';
 import ResultItemCard from '../components/resultItemCard';
 
 const useStyles = makeStyles(theme => ({
@@ -67,6 +67,7 @@ let getSearchType = (s) => {
     case 'video':
     case 'audio':
     case 'image':
+    case 'all':
       return s;
     default:
       return '';
@@ -75,15 +76,16 @@ let getSearchType = (s) => {
 
 const initialInputs = {
   'category': 'all',
-  'type': 'all',
+  'type': '',
   'sort': 'views',
   'sortDsc': true
 };
 
 export default function BrowsePage(props) {
   const classes = useStyles();
+  //FIXME: maybe reset sort and filters when search query changes?
   const params = new URLSearchParams(props.location.search);
-  const [query, setQuery] = useState(params.get('q') || '');
+  const [query, setQuery] = useState(params.get('q') || null);
   const [results, setResults] = useState([]);
   const [inputs, setInputs]   = useState({...initialInputs, 'type': getSearchType(params.get('type'))});
   let cancelSearch = false;
@@ -143,6 +145,7 @@ export default function BrowsePage(props) {
             newInputs['type'] = '';
             break;
           case 'files':
+            if(newInputs['type'] === '') newInputs['type'] = 'all';
             if(newInputs['sort'] === 'subscribers') newInputs['sort'] = initialInputs['sort'];
             break;
           case 'users':
@@ -154,8 +157,10 @@ export default function BrowsePage(props) {
         }
         break;
       case 'type':
-        newInputs['category'] = 'files';
-        if(newInputs['sort'] === 'subscribers') newInputs['sort'] = initialInputs['sort'];
+        if(value !== '') {
+          newInputs['category'] = 'files';
+          if(newInputs['sort'] === 'subscribers') newInputs['sort'] = initialInputs['sort'];
+        }
         break;
       case 'sort':
         if (value === 'subscribers') {
@@ -176,8 +181,10 @@ export default function BrowsePage(props) {
 
   useEffect(() => {
     const newParams = new URLSearchParams(props.location.search);
-    setQuery(newParams.get('q') || '');
-    updateInputs('type',newParams.get('type') || '');
+    const newQuery = newParams.get('q') || null;
+    const newType  = newParams.get('type') || '';
+    if(query !== newQuery) setQuery(newQuery);
+    if(inputs['type'] !== newType) updateInputs('type',newType);
   }, [props]);
 
   let getRankedResults = (results) => {
@@ -231,21 +238,7 @@ export default function BrowsePage(props) {
         let rankedResults = getRankedResults(reqResults);
         if(!cancelSearch) setResults(rankedResults);
       })
-      .catch(err => {
-        let tag = 'browse';
-        // got response from server
-        if(err.response) {
-          console.log(tag,err.response);
-        }
-        // request sent but no response
-        else if(err.request) {
-          console.log(tag,err.request);
-        }
-        // catch all
-        else {
-          console.log(tag,err);
-        }
-      });
+      .catch(basicRequestCatch('browse'));
 
     return () => {
       cancelSearch = true;
@@ -277,7 +270,7 @@ export default function BrowsePage(props) {
           <Button variant="text">
             <Tune /><Typography className={classes.optionsTitle}>Search Options</Typography>
           </Button>
-          <div></div>
+          <div key="placeholder_for_icon" name="necessary_for_styling"></div>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.options}>
           <FormControl component="fieldset">

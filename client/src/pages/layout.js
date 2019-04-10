@@ -1,6 +1,6 @@
 import React, { createContext, useReducer } from 'react';
 import classNames from 'classnames';
-import { makeStyles } from '@material-ui/styles';
+import { makeStyles, useTheme } from '@material-ui/styles';
 import Masthead from '../components/masthead';
 import Sidebar from '../components/sidebar';
 import HomePage from './home';
@@ -37,12 +37,12 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.up(0)+' and (orientation: landscape)']: {
       marginTop: 48
     },
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up('md')]: {
       marginTop: 64
     }
   },
   contentShift: {
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up('md')]: {
       transition: theme.transitions.create('margin', {
         easing: theme.transitions.easing.easeOut,
         duration: theme.transitions.duration.enteringScreen
@@ -56,6 +56,7 @@ export const DrawerOpenDispatch = createContext(null);
 
 export default function Layout({children}) {
   const classes = useStyles();
+  const theme = useTheme();
 
   const drawerOpenReducer = (state, action) => {
     switch (action) {
@@ -68,7 +69,7 @@ export default function Layout({children}) {
         return state;
     }
   };
-  const [drawerOpen, drawerOpenDispatch] = useReducer(drawerOpenReducer, document.body.clientWidth < 600 ? false : true);
+  const [drawerOpen, drawerOpenDispatch] = useReducer(drawerOpenReducer, document.body.clientWidth < theme.breakpoints.values.md ? false : true);
 
   return (
     <div className={classes.layoutRoot}>
