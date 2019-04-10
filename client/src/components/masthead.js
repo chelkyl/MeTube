@@ -222,7 +222,7 @@ function Masthead(props) {
           <IconButton color="inherit" aria-label="File Upload" onClick={onUploadClicked}>
             <CloudUpload />
           </IconButton>
-          <Messages isLoggedIn={isLoggedIn}/>
+          <Messages/>
           <IconButton color="inherit" aria-haspopup="true" onClick={openMenu}>
             <AccountCircle />
           </IconButton>

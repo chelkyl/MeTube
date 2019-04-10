@@ -80,10 +80,13 @@ export default function Messages(props) {
       latestMessageIndex--;
     }
     for(let j = latestMessageIndex; j <= newestMessageIndex; j+=2){
+      console.log(newMenuConversationsMap);
       if(messageInfo[j].contacted_id === parseInt(getAuthenticatedUserID())){
+        newMenuConversationsMap.delete(messageInfo[j].contact_username);
         newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacting_id.toString()]);
       }
       else {
+        newMenuConversationsMap.delete(messageInfo[j].contact_username);
         newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacted_id.toString()]);
       }
     }
@@ -99,7 +102,7 @@ export default function Messages(props) {
     for (var [key, value] of newMenuConversationsMap) {
       newMenuConversations.push([key, value]);
     }
-    return newMenuConversations;
+    return newMenuConversations.reverse();
   }
 
   let cancel = false;
