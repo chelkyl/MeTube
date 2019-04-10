@@ -13,17 +13,19 @@ import Api from '../apiclient';
 
 const useStyles = makeStyles(theme => ({
   container: {
-    
+
   }
 }));
 
 
-export default function ChannelUploadPage(props) {
+export default function UploadPage(props) {
   const classes = useStyles();
+  
 
   return (
     <div className={classes.container}>
-
+      
+      {/* {redirect && <Redirect to={`/${redirectPath}`}/>} */}
     </div>
   );
 }

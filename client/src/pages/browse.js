@@ -87,7 +87,11 @@ export default function BrowsePage(props) {
   const params = new URLSearchParams(props.location.search);
   const [query, setQuery] = useState(params.get('q') || null);
   const [results, setResults] = useState([]);
-  const [inputs, setInputs]   = useState({...initialInputs, 'type': getSearchType(params.get('type'))});
+  let initialInputsWithType = {
+    ...initialInputs,
+    'type': getSearchType(params.get('type'))
+  };
+  const [inputs, setInputs]   = useState({...initialInputsWithType, 'category': initialInputsWithType['type'] !== '' ? 'files' : initialInputs['category']});
   let cancelSearch = false;
 
   let makeFilters = (category) => {
@@ -176,6 +180,10 @@ export default function BrowsePage(props) {
   };
   let handleInputs = (key) => (e) => {
     let value = e.currentTarget.value;
+    if(key === 'type') {
+      params.set('type',value);
+      props.history.push(`/browse?${params.toString()}`);
+    }
     updateInputs(key,value);
   };
 

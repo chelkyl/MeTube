@@ -21,32 +21,59 @@ import {
 } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
 
-let cardDim     = {w:210,    h:205};
-let cardWideDim = {w:'100%', h:205};
-let cardMedDim  = {w:'100%', h:205};
+let dimensions = {
+  normal: {
+    card: {
+      w: 210,
+      h: 205
+    },
+    media: {
+      w: 210,
+      h: 118
+    },
+    content: {
+      w: 210,
+      h: 85
+    }
+  },
+  wide: {
+    card: {
+      w: '100%',
+      h: 118
+    },
+    media: {
+      w: 210,
+      h: 118
+    },
+    content: {
+      w: '100%',
+      h: '100%'
+    }
+  }
+}
 
 const useStyles = makeStyles(theme => ({
   cardWrap: {
-    width: 210
+    width: dimensions.normal.card.w
   },
   card: {
-    width: 210,
-    height: 205,
+    width: dimensions.normal.card.w,
+    height: dimensions.normal.card.h,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'stretch'
   },
   mediaWrap: {
-    width: 210,
-    height: 118
+    width: dimensions.normal.media.w,
+    height: dimensions.normal.media.h
   },
   media: {
-    width: 210,
-    height: 118,
+    width: '100%',
+    height: '100%',
     backgroundColor: theme.secondary
   },
   content: {
-    height: 85
+    height: dimensions.normal.content.h
   },
 
   cardWrapMed: {
@@ -73,17 +100,17 @@ const useStyles = makeStyles(theme => ({
   },
 
   cardWrapWide: {
-    width: '100%'
+    width: dimensions.wide.card.w
   },
   cardWide: {
-    width: '100%',
-    height: 118,
+    width: dimensions.wide.card.w,
+    height: dimensions.wide.card.h,
     display: 'grid',
     gridTemplateColumns: '210px 1fr'
   },
   mediaWrapWide: {
-    width: 210,
-    height: 118,
+    width: dimensions.wide.media.w,
+    height: dimensions.wide.media.h
   },
   mediaWide: {
     width: '100%',
@@ -91,7 +118,7 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: theme.secondary
   },
   contentWide: {
-    width: '100%'
+    width: dimensions.wide.content.w
   },
 
   thumbnailPlaceholder: {

@@ -9,6 +9,7 @@ import RegisterPage from './register';
 import BrowsePage from './browse';
 import ViewPage from './view';
 import UserPage from './channel';
+import UploadPage from './upload';
 import Error404Page from './pageNotFound';
 import {
   Route,
@@ -86,6 +87,7 @@ export default function Layout({children}) {
           <Route path='/login' component={LoginPage}/>
           <Route path='/register' component={RegisterPage}/>
           <Route path='/browse' component={BrowsePage}/>
+          <Route path='/upload' component={UploadPage}/>
           <Route path='/view/:id' component={ViewPage}/>
           <Route path='/channel/:id' component={UserPage}/>
           <Route component={Error404Page}/>

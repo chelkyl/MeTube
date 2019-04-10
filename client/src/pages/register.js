@@ -53,8 +53,10 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function RegisterPage() {
+export default function RegisterPage(props) {
   const classes = useStyles();
+  const params = new URLSearchParams(props.location.search);
+  let redirectPath = params.get('redirect') || '';
   const [isLoggedIn, authActionDispatch, errorState,, regState] = useAuthCtx();
   const [redirect, setRedirect] = useState(false);
   const [inputs, setInputs] = useState({email:'', username:'', password:''});
@@ -137,7 +139,7 @@ export default function RegisterPage() {
             {loading && <CircularProgress size={24} className={classes.buttonProgress}/>}
           </div>
         </form>
-        {redirect && <Redirect to="/"/>}
+        {redirect && <Redirect to={`/${redirectPath}`}/>}
       </Paper>
     </div>
   );

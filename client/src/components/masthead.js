@@ -115,8 +115,8 @@ function Masthead(props) {
   }, [props]);
 
   let onUploadClicked = () => {
-    if(isLoggedIn) props.history.push(`/channel/${getAuthenticatedUserID()}/upload`);
-    else props.history.push('/login');
+    if(isLoggedIn) props.history.push(`/upload`);
+    else props.history.push('/login?redirect=upload');
   };
 
   let openMenu = (e) => {
