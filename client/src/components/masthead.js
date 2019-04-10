@@ -177,6 +177,14 @@ function Masthead(props) {
     <MenuItem key='options' onClick={handleMenu('options')}>Options</MenuItem>,
     <MenuItem key='logout' onClick={handleMenu('logout')}>Log Out</MenuItem>
   ];
+  const uploadButton = (
+    isLoggedIn ?
+    (  <IconButton color="inherit" aria-label="File Upload" onClick={onUploadClicked}>
+        <CloudUpload />
+      </IconButton>
+    ) : (<div></div>)
+    );
+
 
   const menu = (
     <Menu anchorEl={menuAnchor} open={isMenuOpen} onClose={closeMenu}>
@@ -219,9 +227,7 @@ function Masthead(props) {
               onKeyPress={catchSearchEnter}/>
           </div>
           <div className={classes.grow} />
-          <IconButton color="inherit" aria-label="File Upload" onClick={onUploadClicked}>
-            <CloudUpload />
-          </IconButton>
+          {uploadButton}
           <Messages/>
           <IconButton color="inherit" aria-haspopup="true" onClick={openMenu}>
             <AccountCircle />
