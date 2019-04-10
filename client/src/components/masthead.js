@@ -177,6 +177,7 @@ function Masthead(props) {
     <MenuItem key='options' onClick={handleMenu('options')}>Options</MenuItem>,
     <MenuItem key='logout' onClick={handleMenu('logout')}>Log Out</MenuItem>
   ];
+
   const uploadButton = (
     isLoggedIn ?
     (  <IconButton color="inherit" aria-label="File Upload" onClick={onUploadClicked}>

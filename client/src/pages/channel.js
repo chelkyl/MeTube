@@ -7,7 +7,7 @@ import {
   Tab
 } from '@material-ui/core';
 import {
-  
+
 } from '@material-ui/icons';
 import axios from 'axios';
 import Api from '../apiclient';
@@ -94,7 +94,7 @@ export default function UserPage(props) {
           console.log(tag,err);
         }
       });
-    
+
     return () => {
       cancel = true;
     }
@@ -107,7 +107,7 @@ export default function UserPage(props) {
   }
 
   let {username,subscribers} = userInfo;
-  
+
   return (
     <div>
       <div className={classes.header}>
@@ -128,6 +128,8 @@ export default function UserPage(props) {
             <Route path={`${props.match.path}/about`} render={() => <AboutPage userID={userID} />}/>
             <Route path={`${props.match.path}/files`} render={() => <ChannelFilesPage userID={userID} />}/>
             <Route path={`${props.match.path}/playlists`} render={() => <ChannelPlaylistsPage userID={userID} />}/>
+            <Route path={`${props.match.path}/upload`} render={() => <ChannelUploadPage userID={userID} />}/>
+
             <Route component={Error404Page}/>
           </Switch>
         </TabContainer>
