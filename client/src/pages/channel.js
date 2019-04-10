@@ -7,7 +7,7 @@ import {
   Tab
 } from '@material-ui/core';
 import {
-  
+
 } from '@material-ui/icons';
 import AboutPage from './about';
 import ChannelPlaylistsPage from './channelplaylists';
@@ -89,7 +89,7 @@ export default function UserPage(props) {
   }
 
   let {username,subscribers} = userInfo;
-  
+
   return (
     <div>
       <div className={classes.header}>
