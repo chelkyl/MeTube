@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "75fa7cce-cf26-4145-b06f-272a2c744682",
+		"_postman_id": "4af53b0d-6db9-4fba-b271-f6728329d46b",
 		"name": "MeTube-API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -3929,13 +3929,13 @@
 							"raw": "{\"user_id\":\"1\",\"title\":\"Bob's Playlist\",\"description\":\"A test playlist\"}"
 						},
 						"url": {
-							"raw": "{{host}}/playlists/upload",
+							"raw": "{{host}}/playlists/create",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"playlists",
-								"upload"
+								"create"
 							]
 						}
 					},
@@ -3995,13 +3995,13 @@
 							"raw": "{\"user_id\":\"1\",\"title\":\"Bob's Playlist\",\"description\":\"A test playlist\"}"
 						},
 						"url": {
-							"raw": "{{host}}/playlists/upload",
+							"raw": "{{host}}/playlists/create",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"playlists",
-								"upload"
+								"create"
 							]
 						}
 					},
@@ -4141,7 +4141,7 @@
 					"response": []
 				},
 				{
-					"name": "LINK bob adds his file to his playlist",
+					"name": "LINK bob adds his file to his playlist 1",
 					"event": [
 						{
 							"listen": "test",
@@ -4187,20 +4187,21 @@
 							"raw": "{\"file_id\":\"1\",\"playlist_id\":\"1\"}"
 						},
 						"url": {
-							"raw": "{{host}}/playlists/add_file",
+							"raw": "{{host}}/playlists/1/file",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"playlists",
-								"add_file"
+								"1",
+								"file"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "UNLINK joe tries to remove file from bobs playlist",
+					"name": "UNLINK joe tries to remove file from bobs playlist 1",
 					"event": [
 						{
 							"listen": "test",
@@ -4246,20 +4247,21 @@
 							"raw": "{\"file_id\":\"1\",\"playlist_id\":\"1\"}"
 						},
 						"url": {
-							"raw": "{{host}}/playlists/remove_file",
+							"raw": "{{host}}/playlists/1/file",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"playlists",
-								"remove_file"
+								"1",
+								"file"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "UNLINK bob removes his file from his playlist",
+					"name": "UNLINK bob removes his file from his playlist 1",
 					"event": [
 						{
 							"listen": "test",
@@ -4305,13 +4307,14 @@
 							"raw": "{\"file_id\":\"1\",\"playlist_id\":\"1\"}"
 						},
 						"url": {
-							"raw": "{{host}}/playlists/remove_file",
+							"raw": "{{host}}/playlists/1/file",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"playlists",
-								"remove_file"
+								"1",
+								"file"
 							]
 						}
 					},
@@ -4364,20 +4367,21 @@
 							"raw": "{\"file_id\":\"1\",\"playlist_id\":\"1\"}"
 						},
 						"url": {
-							"raw": "{{host}}/playlists/add_file",
+							"raw": "{{host}}/playlists/1/file",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"playlists",
-								"add_file"
+								"1",
+								"file"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "DELETE playlist_id 1 (Bob's playlist) not logged in Copy",
+					"name": "DELETE playlist_id 1 (Bob's playlist) not logged in",
 					"event": [
 						{
 							"listen": "test",
