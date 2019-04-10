@@ -38,12 +38,13 @@ def passes_filters(filters, entry):
             break
         keep = found
       # print(f,values,keep)
-    # specific filter
+    # column must exist in entry
     elif f['column'] in entry.keys():
+      # specific filter
       if f['cmp'] == 'exact':
-        keep = f['value'] == str(entry[f['column']])
+        keep = str(f['value']) == str(entry[f['column']])
       elif f['cmp'] == 'contains':
-        if f['value'] in str(entry[f['column']]):
+        if str(f['value']) in str(entry[f['column']]):
           keep = True
       elif f['cmp'] == 'min':
         oval = entry[f['column']]
@@ -51,22 +52,34 @@ def passes_filters(filters, entry):
         if isinstance(o_type,str):
           print("Trying to compare min with string")
         elif isinstance(o_type,int):
-          cval = int(f.value)
+          cval = int(f['value'])
           keep = cval >= oval
-        elif isinstance(o_type,datetime.date):
-          cval = datetime.date(f.value)
+        elif o_type in [datetime, datetime.datetime]:
+          try:
+            cval = datetime.datetime.strptime(f['value'],'%Y-%d-%m')
+          except OverflowError:
+            print('Error: invalid datetime',f['value'])
+            continue
           keep = cval >= oval
+        else:
+          print('Unsupported type to compare max')
       elif f['cmp'] == 'max':
         oval = entry[f['column']]
         o_type = type(oval)
         if isinstance(o_type,str):
           print("Trying to compare max with string")
         elif isinstance(o_type,int):
-          cval = int(f.value)
+          cval = int(f['value'])
           keep = cval <= oval
-        elif isinstance(o_type,datetime.date):
-          cval = datetime.date(f.value)
+        elif o_type in [datetime, datetime.datetime]:
+          try:
+            cval = datetime.datetime.strptime(f['value'],'%Y-%d-%m')
+          except OverflowError:
+            print('Error: invalid datetime',f['value'])
+            continue
           keep = cval <= oval
+        else:
+          print('Unsupported type to compare max')
       # print(f,entry[f['column']],keep)
   return keep
 

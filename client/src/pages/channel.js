@@ -14,6 +14,7 @@ import Api from '../apiclient';
 import AboutPage from './about';
 import ChannelPlaylistsPage from './channelplaylists';
 import ChannelFilesPage from './channelfiles';
+import Error404Page from './pageNotFound';
 import {
   Route,
   Switch
@@ -122,9 +123,11 @@ export default function UserPage(props) {
         </AppBar>
         <TabContainer>
           <Switch>
+            <Route path={`${props.match.path}/`} exact render={() => <AboutPage userID={userID} />}/>
+            <Route path={`${props.match.path}/about`} render={() => <AboutPage userID={userID} />}/>
             <Route path={`${props.match.path}/files`} render={() => <ChannelFilesPage userID={userID} />}/>
             <Route path={`${props.match.path}/playlists`} render={() => <ChannelPlaylistsPage userID={userID} />}/>
-            <Route path={`${props.match.path}/`} render={() => <AboutPage userID={userID} />}/>
+            <Route component={Error404Page}/>
           </Switch>
         </TabContainer>
       </div>

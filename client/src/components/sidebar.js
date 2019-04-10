@@ -31,7 +31,7 @@ import {getAuthenticatedUserID} from '../authutils';
 
 const useStyles = makeStyles(theme => ({
   drawer: {
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up('md')]: {
       width: theme.drawerWidth,
       flexShrink: 0
     }
@@ -61,7 +61,7 @@ export default function Sidebar() {
   const [isOpen, setDrawerState] = useContext(DrawerOpenDispatch);
   const [isLoggedIn] = useAuthCtx();
   const theme = useTheme();
-  const isMobileWidth = useMediaQuery(theme.breakpoints.down('xs')) || document.body.clientWidth < 600;
+  const isMobileWidth = useMediaQuery(theme.breakpoints.down('sm')) || document.body.clientWidth < theme.breakpoints.values.md;
 
   useEffect(() => {
     if(isMobileWidth) {
@@ -69,7 +69,7 @@ export default function Sidebar() {
     }
     else {
       setTimeout(() => {
-        if(document.body.clientWidth >= 600) setDrawerState(true)
+        if(document.body.clientWidth >= theme.breakpoints.values.md) setDrawerState(true)
       }, 330);
     }
   }, [isMobileWidth]);
@@ -125,14 +125,14 @@ export default function Sidebar() {
 
   return (
     <nav className={classes.drawer}>
-      <Hidden smUp implementation="js">
+      <Hidden mdUp implementation="js">
         <Drawer variant="temporary" open={isOpen} onClose={toggleDrawer(false)}>
           <div tabIndex={0} role="button" onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
             {navList}
           </div>
         </Drawer>
       </Hidden>
-      <Hidden xsDown implementation="js">
+      <Hidden smDown implementation="js">
         <Drawer variant="persistent" open={isOpen} onClose={toggleDrawer(false)}>
           <div tabIndex={0} role="button">
             {navList}

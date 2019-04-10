@@ -12,6 +12,7 @@ import {
 } from '@material-ui/icons';
 import Api from '../apiclient';
 import {useAuthCtx} from '../authentication';
+import { getAuthenticatedUserID } from '../authutils';
 import { basicRequestCatch } from '../utils';
 import ResultItemCard from '../components/resultItemCard';
 
@@ -51,6 +52,7 @@ export default function ChannelFilesPage(props) {
   const [files, setFilesInfo] = useState([]);
   const [sortMenuAnchor, setSortMenuAnchor] = useState(null);
   let {userID} = props;
+  let canEdit = userID === getAuthenticatedUserID();
   let cancel = false;
   console.log('channel files',userID,props.match);
 
@@ -86,6 +88,7 @@ export default function ChannelFilesPage(props) {
         if(!cancel) setFilesInfo(res.data.response);
       })
       .catch(basicRequestCatch('files get'));
+    closeSortMenu();
   };
 
   let isSortMenuOpen = Boolean(sortMenuAnchor);
@@ -118,7 +121,8 @@ export default function ChannelFilesPage(props) {
             result_type="files"
             mimetype={mimetype}
             id={file_id}
-            variant="small"/>
+            variant="small"
+            canEdit={canEdit}/>
         })}
       </div>
       {sortMenu}

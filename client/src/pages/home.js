@@ -2,6 +2,7 @@ import React, {useState,useEffect} from 'react';
 import { makeStyles } from '@material-ui/styles';
 import Api from '../apiclient';
 import Section from '../components/section';
+import { basicRequestCatch } from '../utils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -24,31 +25,17 @@ export default function HomePage() {
         'descending': 'true'
       }
     ];
-    Api.getData('users/subscribers', '', [], topChannelSorts)
+    Api.getData('users/subscribers', null, [], topChannelSorts)
       .then(response => {
         if(!cancel) setTopChannels(response.data.response);
       })
-      .catch(err => {
-        let tag = 'home';
-        // got response from server
-        if(err.response) {
-          console.log(tag,err.response);
-        }
-        // request sent but no response
-        else if(err.request) {
-          console.log(tag,err.request);
-        }
-        // catch all
-        else {
-          console.log(tag,err);
-        }
-      });
+      .catch(basicRequestCatch('home'));
   }, []);
 
   const trendingFilts = [
     {
       'column': 'upload_date',
-      'value': '01-01-0001',
+      'value': '0001-01-01',
       'cmp': 'max'
     }
   ];
@@ -65,13 +52,9 @@ export default function HomePage() {
         filters={trendingFilts}
         sorters={trendingSorts} />
       {topChannels.map(user => {
-        let {user_id, username} = user;
-        return <Section key={`channel-${user_id}`} name={username}
-          filters={[...trendingFilts, {
-            'column': 'user_id',
-            'value': user_id,
-            'cmp': 'exact'
-          }]}
+        let {user_id, username, subscribers} = user;
+        return <Section key={`channel-${user_id}`} name={username} type='channel' subscribers={subscribers}
+          filters={[...trendingFilts,{column:'user_id',value:user_id,cmp:'exact'}]}
           sorters={trendingSorts}/>
       })}
     </div>

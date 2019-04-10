@@ -9,6 +9,7 @@ import {
 } from '@material-ui/icons';
 import Api from '../apiclient';
 import {useAuthCtx} from '../authentication';
+import { getAuthenticatedUserID } from '../authutils';
 import { basicRequestCatch } from '../utils';
 import ResultItemCard from '../components/resultItemCard';
 
@@ -41,6 +42,7 @@ export default function ChannelPlaylistsPage(props) {
   const [isLoggedIn] = useAuthCtx();
   const [playlists, setPlaylistsInfo] = useState([]);
   let {userID} = props;
+  let canEdit = userID === getAuthenticatedUserID();
   let cancel = false;
 
   useEffect(() => {
@@ -75,7 +77,8 @@ export default function ChannelPlaylistsPage(props) {
             owner={username}
             result_type="playlists"
             id={playlist_id}
-            variant="small"/>
+            variant="small"
+            canEdit={canEdit}/>
         })}
       </div>
     </div>
