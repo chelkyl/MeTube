@@ -8,13 +8,12 @@ from response import ResponseObject as JSONResponse
 
 bp = Blueprint('comments', __name__, url_prefix='/comments')
 
-@bp.route('/<comment_id>',methods=['GET'])
-def get_comment(comment_id):
-  result = db.engine.execute('SELECT comment_id,user_id,file_id,comment,comment_date FROM Comment WHERE comment_id={ID}'.format(ID=comment_id))
+@bp.route('/<file_id>',methods=['GET'])
+def get_file_comments(file_id):
+  result = db.engine.execute('SELECT comment_id,Comment.user_id as user_id,file_id,comment,comment_date,User.username as username FROM Comment INNER JOIN User on User.user_id = Comment.user_id WHERE file_id={ID}'.format(ID=file_id))
   data = get_query_data(result)
-  if data:
-    return JSONResponse(data[0]).end()
-  return JSONResponse("comment_id {ID} not found".format(ID=comment_id),404,True).end()
+  opts = get_request_opts(request)
+  return JSONResponse(filter_sort_paginate(data,opts)).end()
 
 @bp.route('/add_comment',methods=['POST'])
 @auth.login_required
