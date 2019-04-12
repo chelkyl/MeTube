@@ -20,6 +20,7 @@ import {
 } from '@material-ui/icons';
 import Player from '../components/player';
 import PlaylistMenu from '../components/playlistmenu';
+import ViewerPlaylist from '../components/viewerplaylist';
 import Api from '../apiclient';
 import { saveAs } from 'file-saver';
 import {useAuthCtx} from '../authentication';
@@ -81,12 +82,18 @@ const initialAlertState = {
 export default function ViewPage(props) {
   const classes = useStyles();
   const [isLoggedIn] = useAuthCtx();
+  const params = new URLSearchParams(props.location.search);
+  const [playlistID, setPlaylistID] = useState(params.get('playlist') || null);
   const [fileInfo,setFileInfo] = useState({file_id:props.match.params.id});
   const [alertState, setAlertState] = useState(initialAlertState);
   const [plistMenuAnchor, setPlistMenuAnchor] = useState(null);
   let cancel = false;
 
   useEffect(() => {
+    const newParams = new URLSearchParams(props.location.search);
+    const newPlaylistID = newParams.get('playlist') || null;
+    if(newPlaylistID !== playlistID) setPlaylistID(newPlaylistID);
+
     let id = props.match.params.id;
     Api.request('get',`/files/${id}`)
       .then(res => {
@@ -132,6 +139,7 @@ export default function ViewPage(props) {
         cancel = true;
       }
   }, [props]);
+
 
   let openPlaylistMenu = (e) => {
     setPlistMenuAnchor(e.currentTarget);
@@ -180,6 +188,7 @@ export default function ViewPage(props) {
         </DialogActions>
       </Dialog>
       <Player {...fileInfo}/>
+      <ViewerPlaylist playlist_id={playlistID} />
       <Paper>
         <div className={classes.fileInfo}>
           <div className={classes.header}>

@@ -185,7 +185,8 @@ export default function ResultItemCard(props) {
     id,
     result_type,
     mimetype,
-    thumbnail
+    thumbnail,
+    playlist_id
   } = props;
 
   let getRouteFromResultType = (type) => {
@@ -199,12 +200,18 @@ export default function ResultItemCard(props) {
         return '/view';
     }
   };
+
+  let getRoute = (resultType, id, playlistID) => {
+    let extras = '';
+    if(playlistID) extras = `?playlist=${playlistID}`;
+    return `${getRouteFromResultType(resultType)}/${id}${extras}`;
+  }
   
   let card = null;
   if(variant === 'small' || isMobileWidth) {
     card = (
       <Card className={classNames(propClass,classes.cardWrap)}>
-        <CardActionArea className={classes.card} component={Link} to={`${getRouteFromResultType(result_type)}/${id}`}>
+        <CardActionArea className={classes.card} component={Link} to={getRoute(result_type,id,playlist_id)}>
           <div className={classes.mediaWrap}>
             <ResultItemThumbnail className={classes.media}
               {...{name, result_type, mimetype, thumbnail}}/>
@@ -220,7 +227,7 @@ export default function ResultItemCard(props) {
   else if (variant === 'wide') {
     card = (
       <Card className={classNames(propClass,classes.cardWrapWide)}>
-        <CardActionArea className={classes.cardWide} component={Link} to={`${getRouteFromResultType(result_type)}/${id}`}>
+        <CardActionArea className={classes.cardWide} component={Link} to={getRoute(result_type,id,playlist_id)}>
           <div className={classes.mediaWrapWide}>
             <ResultItemThumbnail className={classes.mediaWide}
               {...{name, result_type, mimetype, thumbnail}}/>

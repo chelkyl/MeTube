@@ -107,7 +107,7 @@ export default function PlaylistMenu(props) {
   const [inputs, setInputs] = useState(initialInputs);
   const [createPlaylistState, setCreatePlaylistState] = useReducer(createPlaylistReducer, initialCreatePlaylistState);
   let userID = getAuthenticatedUserID();
-  let fileID = props.file_id;
+  let {file_id} = props;
   let cancel = false;
 
   useEffect(() => {
@@ -136,7 +136,7 @@ export default function PlaylistMenu(props) {
     if(playlists.length > 0) {
       playlists.forEach(playlist => {
         let {playlist_id:id} = playlist;
-        requests.push(Api.getData(`playlists/${id}/files`,null,[{column:'file_id',value:fileID,cmp:'exact'}]));
+        requests.push(Api.getData(`playlists/${id}/files`,null,[{column:'file_id',value:file_id,cmp:'exact'}]));
       });
       axios.all(requests)
         .then(responses => {
@@ -168,6 +168,8 @@ export default function PlaylistMenu(props) {
       .then(res => {
         console.log('playlistmenu post success',res);
         setCreatePlaylistState('success');
+        let {playlist_id} = res.data.response;
+        onClickPlaylist(playlist_id)();
       })
       .catch(err => {
         basicRequestCatch(`playlistmenu post`)(err);
@@ -182,7 +184,7 @@ export default function PlaylistMenu(props) {
     let key = `checkbox-${id}`;
     let isAdd = !inputs[key];
     let method = isAdd ? 'link' : 'unlink';
-    Api.request(method,`playlists/${id}/file`, {file_id:fileID}, {}, true)
+    Api.request(method,`playlists/${id}/file`, {file_id:file_id}, {}, true)
       .then(res => {
         console.log(`playlistmenu ${method}`,res);
         setInputs({...inputs, [key]: isAdd});

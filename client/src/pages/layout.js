@@ -8,6 +8,7 @@ import LoginPage from './login';
 import RegisterPage from './register';
 import BrowsePage from './browse';
 import ViewPage from './view';
+import PlaylistPage from './playlist';
 import UserPage from './channel';
 import UploadPage from './upload';
 import Error404Page from './pageNotFound';
@@ -89,6 +90,7 @@ export default function Layout({children}) {
           <Route path='/browse' component={BrowsePage}/>
           <Route path='/upload' component={UploadPage}/>
           <Route path='/view/:id' component={ViewPage}/>
+          <Route path='/playlist/:id' component={PlaylistPage}/>
           <Route path='/channel/:id' component={UserPage}/>
           <Route component={Error404Page}/>
         </Switch>
