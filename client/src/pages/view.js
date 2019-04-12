@@ -7,31 +7,23 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Divider,
   Slide,
   Paper,
   Typography,
-  TextField,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  Toolbar
+  IconButton
 } from '@material-ui/core';
 import {
-  AccountCircle,
   CloudDownload,
   PlaylistAdd,
   ThumbUp,
-  ThumbDown,
-  Send
+  ThumbDown
 } from '@material-ui/icons';
 import Player from '../components/player';
 import PlaylistMenu from '../components/playlistmenu';
+import Comments from '../components/comments';
 import Api from '../apiclient';
 import { saveAs } from 'file-saver';
 import {useAuthCtx} from '../authentication';
-import {getAuthenticatedUserID} from '../authutils';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -75,20 +67,6 @@ const useStyles = makeStyles(theme => ({
   rateIcon: {
     marginRight: theme.spacing.unit * 2
   },
-  comment: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    textAlign: 'left',
-    marginTop: theme.spacing.unit * 2
-  },
-  comments: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    textAlign: 'left',
-    marginTop: theme.spacing.unit * 2
-  },
   rightIcon: {
     marginLeft: theme.spacing.unit,
   },
@@ -115,30 +93,9 @@ export default function ViewPage(props) {
   const [isLoggedIn] = useAuthCtx();
   const [fileInfo,setFileInfo] = useState({file_id:props.match.params.id});
   const [alertState, setAlertState] = useState(initialAlertState);
-  const [comments, setComments] = useState([]);
   const [plistMenuAnchor, setPlistMenuAnchor] = useState(null);
-  const [newComment, setNewComment] = useState({
-    comment: '',
-  })
 
   let cancel = false;
-
-  async function sendComment() {
-    newComment.file_id = props.match.params.id;
-    newComment.user_id = parseInt(getAuthenticatedUserID());
-    console.log('comment uploading', newComment);
-    try {
-      const response = await Api.request('post','/comments/add_comment',newComment,{},true);
-      console.log('comment upload',response);
-      const res = response.data;
-      setNewComment("");
-      return res;
-    }
-    catch(err) {
-      console.log('messages send',err);
-      throw err;
-    }
-  }
 
   useEffect(() => {
     let id = props.match.params.id;
@@ -161,54 +118,6 @@ export default function ViewPage(props) {
           }
           else if (status === 403) {
             msg = "File permission blocked";
-          }
-          else {
-            msg = `Sorry, unknown error ${status}`;
-          }
-        }
-        // request sent but no response
-        else if(err.request) {
-          title = 'Check connection';
-          msg = 'Could not connect to the server';
-        }
-        // catch all
-        else {
-          title = 'Send report?';
-          msg = 'Sorry, unknown error';
-        }
-        console.log('view',err);
-        if(cancel) return;
-        setAlertState({title: title, message: msg, open: true});
-        setFileInfo({file_id:id});
-      });
-
-      return () => {
-        cancel = true;
-      }
-  }, [props]);
-
-  useEffect(() => {
-    let id = props.match.params.id;
-    Api.request('get',`/comments/${id}`)
-      .then(res => {
-        console.log('comments: ',res.data.response);
-        if(!cancel) setComments(res.data.response);
-      })
-      .catch(err => {
-        let msg = '';
-        let title = '';
-        // got response from server
-        if(err.response) {
-          const { status } = err.response;
-          title = 'Send report?';
-          if (status >= 500 && status < 600) {
-            msg = `Server error ${status}, please contact the admins`;
-          }
-          else if (status === 404) {
-            msg = "Comments not found";
-          }
-          else if (status === 403) {
-            msg = "Comments permission blocked";
           }
           else {
             msg = `Sorry, unknown error ${status}`;
@@ -264,10 +173,6 @@ export default function ViewPage(props) {
 
   const isPlistMenuOpen = Boolean(plistMenuAnchor);
 
-  const handleChange = prop => event => {
-    setNewComment({ ...newComment, [prop]: event.target.value });
-  };
-
   return (
     <div className={classes.container}>
       <Dialog open={alertState.open}
@@ -317,48 +222,7 @@ export default function ViewPage(props) {
           <div className={classes.description}>
             <Typography variant="body1">{description}</Typography>
           </div>
-          <Divider/>
-          <div className={classes.comment}>
-            <TextField
-              id="standard-multiline-flexible"
-              label= {isLoggedIn ? "Add a public comment. . ." : "Please login to comment. . ."}
-              value={newComment.comment}
-              onChange={handleChange('comment')}
-              multiline
-              rowsMax="4"
-              className={classes.textField}
-              variant="outlined"
-            />
-            <Toolbar>
-              <div className={classes.grow} />
-              <Button color="primary">
-                Cancel
-              </Button>
-              <Button variant="contained" color="primary" className={classes.button} onClick={sendComment}>
-                Comment
-                <Send className={classes.rightIcon}>send</Send>
-              </Button>
-            </Toolbar>
-          </div>
-          <Divider/>
-          {
-            comments.length == 1 ? (
-              <Typography variant="body1">{comments.length+" comment"}</Typography>
-            ):
-            <Typography variant="body1">{comments.length+" comments"}</Typography>
-          }
-          <div className={classes.comments}>
-            <List>
-              {comments.map((comment) => (
-                <ListItem key={comment.comment_id}>
-                  <AccountCircle/>
-                  <ListItemText
-                    primary={comment.username + ": " + comment.comment}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </div>
+          <Comments file_id={props.match.params.id}/>
         </div>
       </Paper>
       {
