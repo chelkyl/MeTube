@@ -20,8 +20,66 @@ from operator import itemgetter
 #     limit: num,
 #   }
 # }
+def filter_passes(f, entry):
+  if f.get('any', False):
+    values = [str(val).lower() for val in entry.values()]
+    fval = str(f['value']).lower()
+    # tests if value appears in entry
+    if f['cmp'] == 'exact':
+      return fval in values
+    else:
+      # if f['cmp'] == 'contains' or other value
+      for value in values:
+        if fval in value:
+          return True
+    # print(f,values,keep)
+  # column must exist in entry
+  elif f['column'] in entry.keys():
+    # specific filter
+    if f['cmp'] == 'exact':
+      return str(f['value']) == str(entry[f['column']])
+    elif f['cmp'] == 'contains':
+      if str(f['value']) in str(entry[f['column']]):
+        return True
+    elif f['cmp'] == 'min':
+      oval = entry[f['column']]
+      o_type = type(oval)
+      if isinstance(o_type,str):
+        print("Trying to compare min with string")
+      elif isinstance(o_type,int):
+        cval = int(f['value'])
+        return cval >= oval
+      elif o_type in [datetime, datetime.datetime]:
+        try:
+          cval = datetime.datetime.strptime(f['value'],'%Y-%d-%m')
+        except OverflowError:
+          print('Error: invalid datetime',f['value'])
+          return False
+        return cval >= oval
+      else:
+        print('Unsupported type to compare max')
+    elif f['cmp'] == 'max':
+      oval = entry[f['column']]
+      o_type = type(oval)
+      if isinstance(o_type,str):
+        print("Trying to compare max with string")
+      elif isinstance(o_type,int):
+        cval = int(f['value'])
+        return cval <= oval
+      elif o_type in [datetime, datetime.datetime]:
+        try:
+          cval = datetime.datetime.strptime(f['value'],'%Y-%d-%m')
+        except OverflowError:
+          print('Error: invalid datetime',f['value'])
+          return False
+        return cval <= oval
+      else:
+        print('Unsupported type to compare max')
+  return False
+
 def passes_filters(filters, entry):
   values = [str(val).lower() for val in entry.values()]
+  return all(filter_passes(f, entry) for f in filters)
   keep = False
   for f in filters:
     if f.get('any', False):
@@ -104,7 +162,10 @@ def filter_sort_paginate(data,opts):
     for sorter in sorters:
       column = sorter['column']
       descending = sorter['descending'] in ['true','True']
-      ret = sorted(ret, key=itemgetter(column), reverse=descending)
+      try:
+        ret = sorted(ret, key=itemgetter(column), reverse=descending)
+      except KeyError:
+        continue
 
   if bounds:
     start = int(bounds['start']) if bounds['start'] else 0

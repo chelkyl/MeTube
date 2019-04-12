@@ -7,10 +7,8 @@ import {
   Tab
 } from '@material-ui/core';
 import {
-  
+
 } from '@material-ui/icons';
-import axios from 'axios';
-import Api from '../apiclient';
 import AboutPage from './about';
 import ChannelPlaylistsPage from './channelplaylists';
 import ChannelFilesPage from './channelfiles';
@@ -19,6 +17,9 @@ import {
   Route,
   Switch
 } from 'react-router-dom';
+import axios from 'axios';
+import Api from '../apiclient';
+import { basicRequestCatch } from '../utils';
 
 const useStyles = makeStyles(theme => ({
   tabbedpage: {
@@ -56,10 +57,6 @@ export default function UserPage(props) {
     reqMap['list'].push(request);
   };
 
-  // useEffect(() => {
-  //TODO: match params?
-  // });
-
   useEffect(() => {
     let requests = {list: [], labels: []};
     addRequest(requests, 'userInfo', Api.getData(`users/${userID}`));
@@ -78,21 +75,7 @@ export default function UserPage(props) {
         };
         setUserInfo(data);
       })
-      .catch(err => {
-        let tag = 'channel';
-        // got response from server
-        if(err.response) {
-          console.log(tag,err.response);
-        }
-        // request sent but no response
-        else if(err.request) {
-          console.log(tag,err.request);
-        }
-        // catch all
-        else {
-          console.log(tag,err);
-        }
-      });
+      .catch(basicRequestCatch('channel'));
     
     return () => {
       cancel = true;
@@ -106,7 +89,7 @@ export default function UserPage(props) {
   }
 
   let {username,subscribers} = userInfo;
-  
+
   return (
     <div>
       <div className={classes.header}>

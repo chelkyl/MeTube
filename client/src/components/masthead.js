@@ -115,8 +115,9 @@ function Masthead(props) {
   }, [props]);
 
   let onUploadClicked = () => {
-    if(isLoggedIn) props.history.push(`/channel/${getAuthenticatedUserID()}/upload`);
-    else props.history.push('/login');
+    props.history.push(`/upload`);
+    // if(isLoggedIn) props.history.push(`/upload`);
+    // else props.history.push('/login?redirect=upload');
   };
 
   let openMenu = (e) => {
@@ -219,9 +220,11 @@ function Masthead(props) {
               onKeyPress={catchSearchEnter}/>
           </div>
           <div className={classes.grow} />
-          <IconButton color="inherit" aria-label="File Upload" onClick={onUploadClicked}>
-            <CloudUpload />
-          </IconButton>
+          { isLoggedIn && 
+            <IconButton color="inherit" aria-label="File Upload" onClick={onUploadClicked}>
+              <CloudUpload />
+            </IconButton>
+          }
           <Messages/>
           <IconButton color="inherit" aria-haspopup="true" onClick={openMenu}>
             <AccountCircle />
