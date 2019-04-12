@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "4af53b0d-6db9-4fba-b271-f6728329d46b",
+		"_postman_id": "a576798c-d501-4cc3-b320-d7ed6e5e25c1",
 		"name": "MeTube-API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -6908,9 +6908,9 @@
 									"",
 									"pm.test(\"should have returned file_id:1, user_id:2, comment: cool file\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.response).to.have.property('file_id',1);",
-									"    pm.expect(jsonData.response).to.have.property('user_id',2);",
-									"    pm.expect(jsonData.response).to.have.property('comment','cool file');",
+									"    pm.expect(jsonData.response[0]).to.have.property('file_id',1);",
+									"    pm.expect(jsonData.response[0]).to.have.property('user_id',2);",
+									"    pm.expect(jsonData.response[0]).to.have.property('comment','cool file');",
 									"});",
 									""
 								],
