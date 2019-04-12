@@ -7,10 +7,15 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   Slide,
   Paper,
   Typography,
-  IconButton
+  TextField,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText
 } from '@material-ui/core';
 import {
   CloudDownload,
@@ -65,7 +70,21 @@ const useStyles = makeStyles(theme => ({
   },
   rateIcon: {
     marginRight: theme.spacing.unit * 2
-  }
+  },
+  comment: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    textAlign: 'left',
+    marginTop: theme.spacing.unit * 2
+  },
+  comments: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    textAlign: 'left',
+    marginTop: theme.spacing.unit * 2
+  },
 }));
 
 function SlideTransition(props) {
@@ -83,6 +102,7 @@ export default function ViewPage(props) {
   const [isLoggedIn] = useAuthCtx();
   const [fileInfo,setFileInfo] = useState({file_id:props.match.params.id});
   const [alertState, setAlertState] = useState(initialAlertState);
+  const [comments, setComments] = useState([]);
   const [plistMenuAnchor, setPlistMenuAnchor] = useState(null);
   let cancel = false;
 
@@ -162,6 +182,14 @@ export default function ViewPage(props) {
 
   const isPlistMenuOpen = Boolean(plistMenuAnchor);
 
+  const [newComment, setNewComment] = useState({
+    comment: '',
+  })
+
+  const handleChange = prop => event => {
+    setNewComment({ ...newComment, [prop]: event.target.value });
+  };
+
   return (
     <div className={classes.container}>
       <Dialog open={alertState.open}
@@ -211,10 +239,35 @@ export default function ViewPage(props) {
           <div className={classes.description}>
             <Typography variant="body1">{description}</Typography>
           </div>
+          <Divider/>
+          <div className={classes.comment}>
+            <TextField
+              id="standard-multiline-flexible"
+              label= {isLoggedIn ? "Add a public comment. . ." : "Please login to comment. . ."}
+              value={newComment.comment}
+              onChange={handleChange('comment')}
+              multiline
+              rowsMax="4"
+              className={classes.textField}
+              variant="outlined"
+            />
+          </div>
+          <Divider/>
+          <div className={classes.comments}>
+            <List>
+              {comments.map((comment) => (
+                <ListItem key={comment.comment_id}>
+                  <ListItemText
+                    primary={"hi"}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </div>
         </div>
       </Paper>
       {
-        /* 
+        /*
         <Comments/>
         <Playlist/>
         <Recommended/>
