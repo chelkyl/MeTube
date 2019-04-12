@@ -21,6 +21,7 @@ import {
 import Player from '../components/player';
 import PlaylistMenu from '../components/playlistmenu';
 import ViewerPlaylist from '../components/viewerplaylist';
+import Comments from '../components/comments';
 import Api from '../apiclient';
 import { saveAs } from 'file-saver';
 import {useAuthCtx} from '../authentication';
@@ -66,6 +67,15 @@ const useStyles = makeStyles(theme => ({
   },
   rateIcon: {
     marginRight: theme.spacing.unit * 2
+  },
+  rightIcon: {
+    marginLeft: theme.spacing.unit,
+  },
+  button: {
+    margin: theme.spacing.unit,
+  },
+  grow: {
+    flexGrow: 1
   }
 }));
 
@@ -87,6 +97,7 @@ export default function ViewPage(props) {
   const [fileInfo,setFileInfo] = useState({file_id:props.match.params.id});
   const [alertState, setAlertState] = useState(initialAlertState);
   const [plistMenuAnchor, setPlistMenuAnchor] = useState(null);
+
   let cancel = false;
 
   useEffect(() => {
@@ -220,10 +231,11 @@ export default function ViewPage(props) {
           <div className={classes.description}>
             <Typography variant="body1">{description}</Typography>
           </div>
+          <Comments file_id={props.match.params.id}/>
         </div>
       </Paper>
       {
-        /* 
+        /*
         <Comments/>
         <Playlist/>
         <Recommended/>
