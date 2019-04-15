@@ -164,7 +164,9 @@ export default function UserPage(props) {
   let {username,subscribers} = userInfo;
 
   let openContactMenu = (e) => {
-    setContactMenuAnchor(e.currentTarget);
+    if(userID!==getAuthenticatedUserID()){
+      setContactMenuAnchor(e.currentTarget);
+    }
   };
 
   let closeContactMenu = () => {

@@ -64,6 +64,7 @@ export default function Messages(props) {
   const anchorEl = useRef(null);
   const [isLoggedIn] = useAuthCtx();
   let [contacts, setContacts] = useState([]);
+  let [contactNameIDs, setContactNameIDs] = useState(new Map());
   let [menuConversations, setMenuConversations] = useState([]);
   let [dialogConversations, setDialogConversations] = useState(new Map());
   let [currentDialog, setCurrentDialog] = useState([]);
@@ -91,22 +92,25 @@ export default function Messages(props) {
       latestMessageIndex--;
     }
     for(let j = latestMessageIndex; j <= newestMessageIndex; j+=2){
-      console.log(newMenuConversationsMap);
-      if(messageInfo[j].contacted_id === parseInt(getAuthenticatedUserID())){
-        newMenuConversationsMap.delete(messageInfo[j].contact_username);
-        newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacting_id.toString()]);
-      }
-      else {
-        newMenuConversationsMap.delete(messageInfo[j].contact_username);
-        newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacted_id.toString()]);
+      if(contactNameIDs.get(messageInfo[j].contact_username) !== undefined) {
+        if(messageInfo[j].contacted_id === parseInt(getAuthenticatedUserID())){
+          newMenuConversationsMap.delete(messageInfo[j].contact_username);
+          newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacting_id.toString()]);
+        }
+        else {
+          newMenuConversationsMap.delete(messageInfo[j].contact_username);
+          newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacted_id.toString()]);
+        }
       }
     }
     for(let i = newestMessageIndex; i >= latestMessageIndex; i-=2){
-      if(newDialogConversationsMap.has(messageInfo[i].contact_username)){
-        newDialogConversationsMap.set(messageInfo[i].contact_username, newDialogConversationsMap.get(messageInfo[i].contact_username).concat([messageInfo[i]]));
-      }
-      else {
-        newDialogConversationsMap.set(messageInfo[i].contact_username, [messageInfo[i]]);
+      if(contactNameIDs.get(messageInfo[i].contact_username) !== undefined) {
+        if(newDialogConversationsMap.has(messageInfo[i].contact_username)){
+          newDialogConversationsMap.set(messageInfo[i].contact_username, newDialogConversationsMap.get(messageInfo[i].contact_username).concat([messageInfo[i]]));
+        }
+        else {
+          newDialogConversationsMap.set(messageInfo[i].contact_username, [messageInfo[i]]);
+        }
       }
     }
     setDialogConversations(newDialogConversationsMap);
@@ -118,59 +122,21 @@ export default function Messages(props) {
 
   function getContacts(contactsInfo){
     let newContacts = [];
+    let newContactNameIDs = new Map();
     for(let i=0; i<contactsInfo.length; i++){
+      if(contactsInfo[i].contacting_id === parseInt(getAuthenticatedUserID())){
+        newContactNameIDs.set(contactsInfo[i].username, contactsInfo[i].contacted_id)
+      }
+      else {
+        newContactNameIDs.set(contactsInfo[i].username, contactsInfo[i].contacting_id)
+      }
       newContacts.push(contactsInfo[i].username);
     }
+    setContactNameIDs(newContactNameIDs);
     return newContacts;
   }
 
   let cancel = false;
-
-  useEffect(() => {
-    if(openMessagesMenu && isLoggedIn){
-      Api.request('get',`/messages/${getAuthenticatedUserID()}`)
-        .then(res => {
-          console.log('messages: ',res.data.response);
-          if(!cancel) setMenuConversations(getConversations(res.data.response));
-        })
-        .catch(err => {
-          let msg = '';
-          // got response from server
-          if(err.response) {
-            console.log(err.response);
-            const { status } = err.response;
-            if (status >= 500 && status < 600) {
-              msg = `Server error ${status}, please contact the admins`;
-            }
-            else if (status === 404) {
-              msg = "Messages not found";
-            }
-            else if (status === 403) {
-              msg = "Messages permission blocked";
-            }
-            else {
-              msg = `Sorry, unknown error ${status}`;
-            }
-          }
-          // request sent but no response
-          else if(err.request) {
-            console.log(err.request);
-            msg = 'Could not connect to the server';
-          }
-          // catch all
-          else {
-            console.log(err);
-            msg = 'Sorry, unknown error';
-          }
-          console.log(msg, err);
-          if(cancel) return; //TODO: set error status message in global app status or in the messages panel
-        });
-      }
-
-      return () => {
-        cancel = true;
-      }
-  }, [openMessagesMenu]);
 
   useEffect(() => {
     if(openMessagesMenu && isLoggedIn){
@@ -218,13 +184,59 @@ export default function Messages(props) {
       }
   }, [openMessagesMenu]);
 
+  useEffect(() => {
+    if(openMessagesMenu && isLoggedIn){
+      Api.request('get',`/messages/${getAuthenticatedUserID()}`)
+        .then(res => {
+          console.log('messages: ',res.data.response);
+          if(!cancel) setMenuConversations(getConversations(res.data.response));
+        })
+        .catch(err => {
+          let msg = '';
+          // got response from server
+          if(err.response) {
+            console.log(err.response);
+            const { status } = err.response;
+            if (status >= 500 && status < 600) {
+              msg = `Server error ${status}, please contact the admins`;
+            }
+            else if (status === 404) {
+              msg = "Messages not found";
+            }
+            else if (status === 403) {
+              msg = "Messages permission blocked";
+            }
+            else {
+              msg = `Sorry, unknown error ${status}`;
+            }
+          }
+          // request sent but no response
+          else if(err.request) {
+            console.log(err.request);
+            msg = 'Could not connect to the server';
+          }
+          // catch all
+          else {
+            console.log(err);
+            msg = 'Sorry, unknown error';
+          }
+          console.log(msg, err);
+          if(cancel) return; //TODO: set error status message in global app status or in the messages panel
+        });
+      }
+
+      return () => {
+        cancel = true;
+      }
+  }, [openMessagesMenu]);
+
   function toggleMessagesMenu() {
     setOpenMessagesMenu(!openMessagesMenu);
   }
 
   async function sendMessage() {
     newMessage.contacting_id = parseInt(getAuthenticatedUserID());
-    newMessage.contacted_id = dialogContactInfo.id;
+    newMessage.contacted_id = contactNameIDs.get(dialogContactInfo.name);
     console.log('messages sending',newMessage,getAccessToken());
     try {
       const response = await Api.request('post','/messages/upload',newMessage,{},true);
@@ -276,7 +288,7 @@ export default function Messages(props) {
       ...dialogContactInfo,
       [event.target.name]: event.target.value,
     });
-    if(dialogConversations.get(event.target.value).lenth === 0){
+    if(dialogConversations.get(event.target.value) === undefined){
       setCurrentDialog([]);
     }
     else {
