@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useReducer} from 'react';
 import classNames from 'classnames';
 import { makeStyles } from '@material-ui/styles';
 import { useAuthCtx } from '../authentication';
@@ -52,34 +52,77 @@ export default function UploadPage(props) {
   const classes = useStyles();
   //FIXME: good start but should not be using useAuthCtx for keeping track of request state; regState is used for registration state
   //TODO: look at regState and its associated objects in authentication for an example of writing a reducer for handling state
-  const [isLoggedIn, authActionDispatch, errorState,, regState] = useAuthCtx();
-  let {userID} = props;
+  const [isLoggedIn] = useAuthCtx();
+  let userID = getAuthenticatedUserID();
   let cancel = false;
   const [file, setFilesInfo] = useState([]);
 
-  const [inputs, setInputs] = useState({title:'', description:'', keywords:'', categories:''});
+  const [inputs, setInputs] = useState({file:'', user_id:'', title:'', description:'', keywords:'', categories:''});
+  let handleFile = (e) => {
+    const newfile = e;
+    inputs.file = newfile;
+    setFilesInfo(newfile);
 
-  let handleChange = (key) => (e) => {
+    console.log(file);
+
+  }
+
+    let handleChange = (key) => (e) => {
     setInputs({ ...inputs, [key]: e.currentTarget.value });
   }
 
   //TODO: I recommend VSCode for linting and code formatting, it also has useful extensions
+
+  //console.log(file);
     useEffect(() => {
       if(uploading && isLoggedIn) {
-        Api.request('post','files/upload',{inputs,user_id:getAuthenticatedUserID()},{},true)
 
+        //Api.request('post','files/upload',{inputs,user_id:{userID}},{},true);
+        uploading = false;
       }
 
       return () => {
         cancel = true;
       };
     }, []);
+
+
+
+    const initialReqState = {
+      loading: false,
+      success: false
+    };
+const reqStateReducer = (state, action) => {
+  switch(action) {
+    case 'submit':
+      return {
+        uploading: true,
+        success: false
+      }
+    case 'success':
+      return {
+        uploading: false,
+        success: true
+      }
+    case 'error':
+    case 'initial':
+      return initialReqState;
+    default:
+      return state;
+  }
+};
+const [reqState, reqStateDispatch] = useReducer(reqStateReducer,initialReqState);
+
 let uploading = false;
       let handleSubmit = (e) => {
+        console.log(file);
+        inputs.user_id = getAuthenticatedUserID();
+        Api.request('post','files/upload',inputs,{},true);
+        console.log(inputs);
         uploading = true;
 
   }
-  const { loading, success } = regState;
+  const { loading, success } = reqState;
 
 
   return (
@@ -110,18 +153,29 @@ let uploading = false;
           onChange={handleChange('categories')}
           disabled={loading}
         />
+        <input type='file'
+          className={classes.container}
+          accept='image/*,video/*,audio/*'
+          onChange={e => handleFile(e.currentTarget.files[0])}
+          ></input>
         <div className={classes.buttonWrapper}>
-          <Button type='submit'
+
+          <Button
             size='large'
             color='primary'
+            onClick={()=>handleSubmit()}
+            //type='submit'
             className={classNames({
               [classes.buttonSuccess]: success
             })}
             variant='contained'
-            disabled={loading}>
+            disabled={loading}
+            >
             Upload
           </Button>
           {loading && <CircularProgress size={24} className={classes.buttonProgress}/>}
+
+
         </div>
       </form>
       {/* {redirect && <Redirect to={`/${redirectPath}`}/>} */}
