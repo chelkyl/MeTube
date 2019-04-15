@@ -183,11 +183,6 @@ The webapp server should allow .htaccess files and have mod_rewrite enabled.
 
 
 ## TODO
-- Decide on favorites implementation
-  - Should it just be in the playlists table?
-    - No, it should not be able to be removed though we should give option to clear it
-      - if it is just another playlist, we would need to add a column to make sure it can't be deleted
-  - Suggestion: keep as is
 - Finalize server code
   - (this is optional) add table to track which user upvotes/downvotes which files
     - remove these columns from File table?
@@ -196,31 +191,21 @@ The webapp server should allow .htaccess files and have mod_rewrite enabled.
     - Create ER diagram or schema from this
     - Get sqlalchemy to execute these statements rather than create_all
     - Get sqlalchemy to execute drop statements rather than drop_all
-  - Add rest of get_* routes to server
-    - Add filter_sort_paginate feature to all get_* routes
 - Finish/Add components/pages
-  - messages
   - file view page
     - if change upvote/downvote fix
-    - add comments component
-    - needs to keep track of whether it is playing through a playlist and show it
-    - if logged in, show edit controls
   - masthead menu Options
-    - what should this do? YT uses it for features we don't have
-      - maybe remove it
+    - options page for rename account, change email, or delete account
   - channel page
-    - Files       (channelfiles.js)
+    - Add favorites list to playlists page
     - File upload
       - Fix file upload button to only show if logged in
       - must have metadata: title, description, keywords, categories, etc
-    - Playlists   (channelplaylists.js)
     - Contacts list  +channelcontacts.js
       - this is supposedly optional, but if we are doing messaging anyway, maybe include it?
-    - About page needs a way to edit the profile
   - browse page
     - need to add categories, maybe admin only feature
       - users then choose specific categories to add to their files
-  - playlist page (playlist.js)
   - double check validation
     - logged in states
     - (opt) permissions
