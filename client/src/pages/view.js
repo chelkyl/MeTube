@@ -20,6 +20,9 @@ import {
   ThumbDown,
   Edit
 } from '@material-ui/icons';
+import {
+  Link
+} from 'react-router-dom';
 import Player from '../components/player';
 import PlaylistMenu from '../components/playlistmenu';
 import ViewerPlaylist from '../components/viewerplaylist';
@@ -169,7 +172,6 @@ export default function ViewPage(props) {
 
   useEffect(() => {
     if(editState.loading) {
-      console.log('view sending edits',editInputs)
       Api.request('patch',`files/${fileInfo.file_id}`,editInputs,{},true)
         .then(res => {
           if(cancel) return;
@@ -191,16 +193,16 @@ export default function ViewPage(props) {
             else if (status === 401) {
               msg = "Not allowed";
             }
-            else if (status === 400) {
-              let {error} = err.response.data;
-              if(error['not unique']) {
-                error['not unique'].forEach((tag) => {
-                  err[tag+'Error'] = true;
-                  err[tag+'ErrorMsg'] = 'Must be unique';
-                });
-              }
-              else msg = err.error;
-            }
+            // else if (status === 400) {
+            //   let {error} = err.response.data;
+            //   if(error['not unique']) {
+            //     error['not unique'].forEach((tag) => {
+            //       err[tag+'Error'] = true;
+            //       err[tag+'ErrorMsg'] = 'Must be unique';
+            //     });
+            //   }
+            //   else msg = err.error;
+            // }
             else {
               msg = `Sorry, unknown error ${status}`;
             }
@@ -213,7 +215,6 @@ export default function ViewPage(props) {
           else {
             msg = 'Sorry, unknown error';
           }
-          console.log('view',err);
           if(cancel) return;
           setEditState({open:true,loading:false,error:{...err,message:msg}});
         });
@@ -345,7 +346,7 @@ export default function ViewPage(props) {
           <div className={classes.header}>
             <div className={classes.details}>
               <Typography variant="h6">{title}</Typography>
-              <Typography variant="body1">{username}</Typography>
+              <Typography variant="body1" component={Link} to={`/channel/${user_id}`} style={{textDecoration: 'none'}}>{username}</Typography>
               <Typography variant="body1">{upload_date}</Typography>
             </div>
             <div className={classes.extras}>
@@ -370,13 +371,6 @@ export default function ViewPage(props) {
           <Comments file_id={props.match.params.id}/>
         </div>
       </Paper>
-      {
-        /*
-        <Comments/>
-        <Playlist/>
-        <Recommended/>
-        */
-      }
       <PlaylistMenu file_id={fileInfo.file_id} anchorEl={plistMenuAnchor} open={isPlistMenuOpen} onClose={closePlistMenu}/>
     </div>
   );

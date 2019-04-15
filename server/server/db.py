@@ -194,6 +194,7 @@ class Playlist(db.Model):
   description = db.Column(db.String(400), nullable=False)
   #TODO: add creation date
   #TODO: add views
+  #TODO: add permissions
 
   files = db.relationship('File', secondary=playlist_files, lazy='dynamic', backref=db.backref('playlists', lazy=True))
 

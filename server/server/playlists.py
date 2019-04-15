@@ -65,6 +65,30 @@ def add_playlist():
     return JSONResponse(data[0]).end()
   return JSONResponse("Playlist creation failed",500,True).end()
 
+@bp.route('/<playlist_id>',methods=['PATCH'])
+@auth.login_required
+def edit_playlist(playlist_id):
+  result = db.engine.execute('SELECT * FROM Playlist WHERE playlist_id={ID}'.format(ID=playlist_id))
+  data = get_query_data(result)
+  if data:
+    if g.user['user_id'] != data[0]['user_id']:
+      return JSONResponse("Unauthorized",401,True).end()
+    
+    oldData = data[0]
+  
+    # shorten name for easier access
+    req = request.json
+    # get json data
+    title       = None if req is None else req.get('title',oldData['title'])
+    description = None if req is None else req.get('description',oldData['description'])
+    
+    sql = text("UPDATE Playlist SET title=:TITLE,description=:DESC WHERE playlist_id={ID}".format(ID=playlist_id))
+    db.engine.execute(sql,TITLE=title,DESC=description)
+    result = db.engine.execute('SELECT * FROM Playlist WHERE playlist_id={ID}'.format(ID=playlist_id))
+    data = get_query_data(result)
+    return JSONResponse(data[0]).end()
+  return JSONResponse("playlist_id {ID} not found".format(ID=playlist_id),404,True).end()
+
 @bp.route('/<playlist_id>',methods=['DELETE'])
 @auth.login_required
 def remove_playlist(playlist_id):

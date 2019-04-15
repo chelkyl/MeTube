@@ -104,15 +104,15 @@ def upload_file():
   if missing:
     return JSONResponse({'missing':missing},400,isError=True).end()
 
-  # make sure title is unique
-  result = db.engine.execute(text('SELECT * FROM File WHERE title=:TITLE'),TITLE=title)
-  data = get_query_data(result)
-  # titleUniq = len(File.query.filter_by(title=title).all()) == 0
-  notUniq = []
-  if len(data) != 0:
-    notUniq.append('title')
-  if notUniq:
-    return JSONResponse({'not unique':notUniq},400,isError=True).end()
+  # # make sure title is unique
+  # result = db.engine.execute(text('SELECT * FROM File WHERE title=:TITLE'),TITLE=title)
+  # data = get_query_data(result)
+  # # titleUniq = len(File.query.filter_by(title=title).all()) == 0
+  # notUniq = []
+  # if len(data) != 0:
+  #   notUniq.append('title')
+  # if notUniq:
+  #   return JSONResponse({'not unique':notUniq},400,isError=True).end()
 
   #fileEntry = File(user_id=user_id,title=title,description=description,permissions=permissions,upload_date = upload_date,views=0,upvotes=0,downvotes=0,mimetype=mimetype,file_type=file_type)
   #db.session.add(fileEntry)
@@ -148,19 +148,19 @@ def edit_file(file_id):
     # shorten name for easier access
     req = request.json
     # get json data
-    title    = None if req is None else req.get('title',oldData['title'])
+    title       = None if req is None else req.get('title',oldData['title'])
     description = None if req is None else req.get('description',oldData['description'])
     permissions = None if req is None else req.get('permissions',oldData['permissions'])
 
-    # make sure title is unique
-    result = db.engine.execute(text('SELECT * FROM File WHERE file_id!=:ID AND title=:TITLE'),ID=file_id,TITLE=title)
-    data = get_query_data(result)
-    # titleUniq = len(File.query.filter_by(title=title).all()) == 0
-    notUniq = []
-    if len(data) != 0:
-      notUniq.append('title')
-    if notUniq:
-      return JSONResponse({'not unique':notUniq},400,isError=True).end()
+    # # make sure title is unique
+    # result = db.engine.execute(text('SELECT * FROM File WHERE file_id!=:ID AND title=:TITLE'),ID=file_id,TITLE=title)
+    # data = get_query_data(result)
+    # # titleUniq = len(File.query.filter_by(title=title).all()) == 0
+    # notUniq = []
+    # if len(data) != 0:
+    #   notUniq.append('title')
+    # if notUniq:
+    #   return JSONResponse({'not unique':notUniq},400,isError=True).end()
     
     sql = text("UPDATE File SET title=:TITLE,description=:DESC,permissions=:PERM WHERE file_id={ID}".format(ID=file_id))
     db.engine.execute(sql,TITLE=title,DESC=description,PERM=permissions)
