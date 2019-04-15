@@ -7,12 +7,10 @@ import {
   
 } from '@material-ui/core/colors';
 import {
-  Paper,
-  Divider,
   Typography
 } from '@material-ui/core';
 import {
-
+  // Edit
 } from '@material-ui/icons';
 import Api from '../apiclient';
 import {basicRequestCatch} from '../utils';

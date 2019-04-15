@@ -3,11 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import {
   Paper,
   Divider,
-  Typography,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText
+  Typography
 } from '@material-ui/core';
 import {
 } from '@material-ui/icons';
@@ -24,12 +20,15 @@ const useStyles = makeStyles(theme => ({
   },
   resultItem: {
     marginTop: theme.spacing.unit
+  },
+  filesList: {
+    overflowY: 'auto'
   }
 }));
 
 export default function ViewerPlaylist(props) {
   const classes = useStyles();
-  let {playlist_id} = props;
+  let {playlist_id, title:list_title, variant} = props;
   const [fileIDs, setFileIDs] = useState([]);
   const [files, setFiles]     = useState([]);
   let cancel = false;
@@ -74,18 +73,26 @@ export default function ViewerPlaylist(props) {
 
   return (
     <div className={classes.viewerPlaylist}>
-      {files.map((file) => {
-        let {file_id, title, username, mimetype} = file;
-        return <ResultItemCard key={`file-${file_id}`}
-            className={classes.resultItem}
-            name={title}
-            owner={username}
-            result_type="files"
-            mimetype={mimetype}
-            id={file_id}
-            playlist_id={playlist_id}
-            variant="wide"/>
-      })}
+      <Paper>
+        <Typography variant="h6">{list_title}</Typography>
+        <Divider/>
+        <div className={classes.filesList} styles={{
+          height: variant === 'player' ? 118*3 : '100%' 
+        }}>
+          {files.map((file) => {
+            let {file_id, title, username, mimetype} = file;
+            return <ResultItemCard key={`file-${file_id}`}
+                className={classes.resultItem}
+                name={title}
+                owner={username}
+                result_type="files"
+                mimetype={mimetype}
+                id={file_id}
+                playlist_id={playlist_id}
+                variant="wide"/>
+          })}
+        </div>
+      </Paper>
     </div>
   )
 }

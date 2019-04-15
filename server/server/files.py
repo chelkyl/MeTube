@@ -89,18 +89,14 @@ def upload_file():
   if not is_allowed_file(filename):
     return JSONResponse("file type not allowed",400,True).end()
 
-  title = request.form['title']
-  description = request.form['description']
-  permissions = request.form['permissions']
-  file_type = request.form['file_type']
+  title = request.form.get('title',None)
+  description = request.form.get('description','')
+  permissions = request.form.get('permissions','private')
+  file_type = request.form.get('file_type',None)
   # trivial validate not empty
   missing = []
   if title is None:
     missing.append('title')
-  if description is None:
-    missing.append('description')
-  if permissions is None:
-    missing.append('permissions')
   if file_type is None:
     missing.append('file_type')
 
@@ -122,7 +118,7 @@ def upload_file():
   #db.session.add(fileEntry)
   #db.session.commit()
   sql = text("""INSERT INTO File(user_id, title, description, permissions, upload_date, views, upvotes, downvotes, mimetype, file_type) VALUES(:user_id, :title, :description, :permissions, :upload_date, :views, :upvotes, :downvotes, :mimetype, :file_type)""")
-  result = db.engine.execute(sql, user_id=user_id,title=title,description=description,permissions=permissions,upload_date = upload_date,views=0,upvotes=0,downvotes=0,mimetype=mimetype,file_type=file_type)
+  result = db.engine.execute(sql, user_id=user_id,title=title,description=description,permissions=permissions,upload_date=upload_date,views=0,upvotes=0,downvotes=0,mimetype=mimetype,file_type=file_type)
   # result = db.engine.execute('INSERT INTO File(user_id, title, description, permissions, upload_date, views, upvotes, downvotes, mimetype, file_type) VALUES({user_id}, {title}, {description}, {permissions}, {upload_date}, {views}, {upvotes}, {downvotes}, {mimetype}, {file_type})'.format(user_id=user_id,title=title,description=description,permissions=permissions,upload_date=upload_date,views=0,upvotes=0,downvotes=0,mimetype=mimetype,file_type=file_type))
   result = db.engine.execute('SELECT * FROM File WHERE file_id={ID}'.format(ID=result.lastrowid))
   data = get_query_data(result)
@@ -137,6 +133,41 @@ def upload_file():
       db.engine.execute('DELETE FROM File WHERE file_id={ID}'.format(ID=data[0]['file_id']))
       return JSONResponse("Could not save file",400,True).end()
   return JSONResponse("Could not add file to database",500,True).end()
+
+@bp.route('/<file_id>',methods=['PATCH'])
+@auth.login_required
+def edit_file(file_id):
+  result = db.engine.execute('SELECT * FROM File WHERE file_id={ID}'.format(ID=file_id))
+  data = get_query_data(result)
+  if data:
+    if g.user['user_id'] != data[0]['user_id']:
+      return JSONResponse("Unauthorized",401,True).end()
+    
+    oldData = data[0]
+  
+    # shorten name for easier access
+    req = request.json
+    # get json data
+    title    = None if req is None else req.get('title',oldData['title'])
+    description = None if req is None else req.get('description',oldData['description'])
+    permissions = None if req is None else req.get('permissions',oldData['permissions'])
+
+    # make sure title is unique
+    result = db.engine.execute(text('SELECT * FROM File WHERE file_id!=:ID AND title=:TITLE'),ID=file_id,TITLE=title)
+    data = get_query_data(result)
+    # titleUniq = len(File.query.filter_by(title=title).all()) == 0
+    notUniq = []
+    if len(data) != 0:
+      notUniq.append('title')
+    if notUniq:
+      return JSONResponse({'not unique':notUniq},400,isError=True).end()
+    
+    sql = text("UPDATE File SET title=:TITLE,description=:DESC,permissions=:PERM WHERE file_id={ID}".format(ID=file_id))
+    db.engine.execute(sql,TITLE=title,DESC=description,PERM=permissions)
+    result = db.engine.execute('SELECT * FROM File WHERE file_id={ID}'.format(ID=file_id))
+    data = get_query_data(result)
+    return JSONResponse(data[0]).end()
+  return JSONResponse("file_id {ID} not found".format(ID=file_id),404,True).end()
 
 def remove_file_from_store(file_id):
   folder = app.config['UPLOAD_DIR']

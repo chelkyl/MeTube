@@ -10,13 +10,15 @@ import {
   Slide,
   Paper,
   Typography,
-  IconButton
+  IconButton,
+  TextField
 } from '@material-ui/core';
 import {
   CloudDownload,
   PlaylistAdd,
   ThumbUp,
-  ThumbDown
+  ThumbDown,
+  Edit
 } from '@material-ui/icons';
 import Player from '../components/player';
 import PlaylistMenu from '../components/playlistmenu';
@@ -25,6 +27,7 @@ import Comments from '../components/comments';
 import Api from '../apiclient';
 import { saveAs } from 'file-saver';
 import {useAuthCtx} from '../authentication';
+import {getAuthenticatedUserID} from '../authutils';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -76,6 +79,10 @@ const useStyles = makeStyles(theme => ({
   },
   grow: {
     flexGrow: 1
+  },
+  editForm: {
+    display: 'flex',
+    flexDirection: 'column'
   }
 }));
 
@@ -94,9 +101,14 @@ export default function ViewPage(props) {
   const [isLoggedIn] = useAuthCtx();
   const params = new URLSearchParams(props.location.search);
   const [playlistID, setPlaylistID] = useState(params.get('playlist') || null);
-  const [fileInfo,setFileInfo] = useState({file_id:props.match.params.id});
+  const [fileInfo, setFileInfo] = useState({file_id:props.match.params.id});
   const [alertState, setAlertState] = useState(initialAlertState);
+  
   const [plistMenuAnchor, setPlistMenuAnchor] = useState(null);
+
+  const initialEditState = {open:false,loading:false,error:{}};
+  const [editState, setEditState] = useState(initialEditState);
+  const [editInputs, setEditInputs] = useState({title:'',description:'',permissions:''});
 
   let cancel = false;
 
@@ -108,7 +120,11 @@ export default function ViewPage(props) {
     let id = props.match.params.id;
     Api.request('get',`/files/${id}`)
       .then(res => {
-        if(!cancel) setFileInfo(res.data.response);
+        if(!cancel) {
+          setFileInfo(res.data.response);
+          let {title, description, permissions} = res.data.response;
+          setEditInputs({title,description,permissions});
+        }
       })
       .catch(err => {
         let msg = '';
@@ -151,6 +167,58 @@ export default function ViewPage(props) {
       }
   }, [props]);
 
+  useEffect(() => {
+    if(editState.loading) {
+      console.log('view sending edits',editInputs)
+      Api.request('patch',`files/${fileInfo.file_id}`,editInputs,{},true)
+        .then(res => {
+          if(cancel) return;
+          setFileInfo({...fileInfo,...res.data.response});
+          setEditInputs(res.data.response);
+          setEditState(initialEditState);
+        })
+        .catch(err => {
+          let msg = '';
+          // got response from server
+          if(err.response) {
+            const { status } = err.response;
+            if (status >= 500 && status < 600) {
+              msg = `Server error ${status}, please contact the admins`;
+            }
+            else if (status === 404) {
+              msg = "File not found";
+            }
+            else if (status === 401) {
+              msg = "Not allowed";
+            }
+            else if (status === 400) {
+              let {error} = err.response.data;
+              if(error['not unique']) {
+                error['not unique'].forEach((tag) => {
+                  err[tag+'Error'] = true;
+                  err[tag+'ErrorMsg'] = 'Must be unique';
+                });
+              }
+              else msg = err.error;
+            }
+            else {
+              msg = `Sorry, unknown error ${status}`;
+            }
+          }
+          // request sent but no response
+          else if(err.request) {
+            msg = 'Could not connect to the server';
+          }
+          // catch all
+          else {
+            msg = 'Sorry, unknown error';
+          }
+          console.log('view',err);
+          if(cancel) return;
+          setEditState({open:true,loading:false,error:{...err,message:msg}});
+        });
+    }
+  }, [editState]);
 
   let openPlaylistMenu = (e) => {
     setPlistMenuAnchor(e.currentTarget);
@@ -177,9 +245,41 @@ export default function ViewPage(props) {
     }
   };
 
-  const { title, username, description, upload_date, views, upvotes, downvotes } = fileInfo;
+  let openEditDialog = () => {
+    setEditState({...initialEditState,open:true});
+  };
+  let closeEditDialog = () => {
+    setEditState(initialEditState);
+  };
+  let handleEditChange = (key) => (e) => {
+    setEditInputs({...editInputs,[key]:e.currentTarget.value});
+  };
+  let handleEditSubmit = (e) => {
+    e.preventDefault();
+    if(!editState.loading) {
+      setEditState({...editState, loading: true});
+    }
+  }
+
+  const { title, user_id, username, description, upload_date, views, upvotes, downvotes, permissions } = fileInfo;
 
   const isPlistMenuOpen = Boolean(plistMenuAnchor);
+
+  let extras = [];
+  if(isLoggedIn) {
+    extras.push(
+      <IconButton key='playlist-add' aria-label="Add to Playlist" onClick={openPlaylistMenu}>
+        <PlaylistAdd />
+      </IconButton>
+    );
+    if(getAuthenticatedUserID() === String(user_id)) {
+      extras.push(
+        <IconButton key='edit-file' aria-label="Edit file" onClick={openEditDialog}>
+          <Edit />
+        </IconButton>
+      )
+    }
+  }
 
   return (
     <div className={classes.container}>
@@ -198,6 +298,46 @@ export default function ViewPage(props) {
           <Button onClick={handleDialogButton('report')} color="primary" variant="contained" autoFocus>Send Report</Button>
         </DialogActions>
       </Dialog>
+      <Dialog open={editState.open}
+          TransitionComponent={SlideTransition}
+          keepMounted
+          onClose={closeEditDialog}
+          aria-labelledby="edit-title">
+        <DialogTitle id="edit-title">Edit File</DialogTitle>
+        <form className={classes.editFormWrap} onSubmit={handleEditSubmit}>
+          <DialogContent className={classes.editForm}>
+            <Typography variant="body1" color="error">
+              {editState.error.message}
+            </Typography>
+            <TextField id='title' label='Title' type='text' required={true}
+              className={classes.textField} margin='normal' variant='outlined'
+              onChange={handleEditChange('title')}
+              disabled={editState.loading}
+              value={editInputs.title || title || ''}
+              autoFocus
+              error={editState.error['titleError']}
+              helperText={editState.error['titleErrorMsg']}/>
+            <TextField id='description' label='Description' type='text' required={true}
+              className={classes.textField} margin='normal' variant='outlined' multiline
+              onChange={handleEditChange('description')}
+              disabled={editState.loading}
+              value={editInputs.description || description || ''}
+              error={editState.error['descriptionError']}
+              helperText={editState.error['descriptionErrorMsg']}/>
+            <TextField id='permissions' label='Permissions' type='text' required={true}
+              className={classes.textField} margin='normal' variant='outlined'
+              onChange={handleEditChange('permissions')}
+              disabled={editState.loading}
+              value={editInputs.permissions || permissions || ''}
+              error={editState.error['permissionsError']}
+              helperText={editState.error['permissionsErrorMsg']}/>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={closeEditDialog} color="primary">Cancel</Button>
+            <Button type="submit" color="primary" variant="contained" disabled={editState.loading}>Save</Button>
+          </DialogActions>
+        </form>
+      </Dialog>
       <Player {...fileInfo}/>
       <ViewerPlaylist playlist_id={playlistID} />
       <Paper>
@@ -210,11 +350,7 @@ export default function ViewPage(props) {
             </div>
             <div className={classes.extras}>
               <div className={classes.toolbar}>
-                { isLoggedIn &&
-                  <IconButton aria-label="Add to Playlist" onClick={openPlaylistMenu}>
-                    <PlaylistAdd />
-                  </IconButton>
-                }
+                { extras }
                 <IconButton aria-label="Download" onClick={downloadFile}>
                   <CloudDownload />
                 </IconButton>
