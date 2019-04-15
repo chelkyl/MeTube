@@ -60,7 +60,7 @@ const useStyles = makeStyles(theme => ({
 export default function LoginPage(props) {
   const classes = useStyles();
   const params = new URLSearchParams(props.location.search);
-  let redirectPath = params.get('redirect') || '';
+  let redirectPath = decodeURIComponent(params.get('redirect') || '');
   const [isLoggedIn, authActionDispatch, errorState, authState] = useAuthCtx();
   const [redirect, setRedirect] = useState(false);
   const [inputs, setInputs] = useState({username:'', password:''});

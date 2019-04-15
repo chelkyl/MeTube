@@ -106,7 +106,6 @@ function Masthead(props) {
   const [menuAnchor, setMenuAnchor] = useState(null);
 
   const [isLoggedIn, authActionDispatch] = useAuthCtx();
-
   const params = new URLSearchParams(props.location.search);
   const [searchQuery, setSearchQuery] = useState(params.get('q') || '');
 
@@ -137,7 +136,24 @@ function Masthead(props) {
         closeMenu();
         break;
       case 'login':
-        props.history.push('/login');
+        let {pathname:curPath,search} = props.location;
+        let curParams = new URLSearchParams(search);
+        curParams.delete('redirect');
+        let curParamsArr = [];
+        for(let key of curParams.keys()) curParamsArr.push(key);
+        let hasOthers = curParamsArr.length > 0;
+        let newParams = new URLSearchParams();
+        if(hasOthers || (curPath !== '/' && curPath !== '/login' && curPath !== '/register')) {
+          curPath = curPath.slice(1);
+          if(hasOthers) {
+            let others = curParams.toString();
+            newParams.set('redirect',encodeURIComponent(`${curPath}?${others}`));
+          }
+          else newParams.set('redirect',encodeURIComponent(`${curPath}`));
+        }
+        let newParamsStr = newParams.toString();
+        if(newParamsStr) props.history.push(`/login?${newParamsStr}`);
+        else props.history.push('/login');
         closeMenu();
         break;
       case 'logout':
