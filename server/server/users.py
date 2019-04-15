@@ -85,13 +85,36 @@ def add_user():
     return JSONResponse(data[0]).end()
   return JSONResponse("Could not find created account",500,True).end()
 
+@bp.route('/<user_id>',methods=['PATCH'])
+@auth.login_required
+def edit_user(user_id):
+  result = db.engine.execute('SELECT * FROM User WHERE user_id={ID}'.format(ID=user_id))
+  data = get_query_data(result)
+  if data:
+    if g.user['user_id'] != data[0]['user_id']:
+      return JSONResponse("Unauthorized",401,True).end()
+    
+    oldData = data[0]
+  
+    # shorten name for easier access
+    req = request.json
+    # get json data
+    description = None if req is None else req.get('channel_description',oldData['channel_description'])
+    
+    sql = text("UPDATE User SET channel_description=:DESC WHERE user_id={ID}".format(ID=user_id))
+    db.engine.execute(sql,DESC=description)
+    result = db.engine.execute('SELECT user_id,username,email,channel_description FROM User WHERE user_id={ID}'.format(ID=user_id))
+    data = get_query_data(result)
+    return JSONResponse(data[0]).end()
+  return JSONResponse("user_id {ID} not found".format(ID=user_id),404,True).end()
+
 @bp.route('/<user_id>',methods=['DELETE'])
 @auth.login_required
 def remove_user(user_id):
   if g.user['user_id'] != int(user_id):
     return JSONResponse("Unauthorized",401,True).end()
 
-  result = db.engine.execute('SELECT * FROM User WHERE user_id={ID}'.format(ID=user_id))
+  result = db.engine.execute('SELECT user_id,username,email,channel_description FROM User WHERE user_id={ID}'.format(ID=user_id))
   data = get_query_data(result)
   if data:
     # Unlinks neccessary relationships
