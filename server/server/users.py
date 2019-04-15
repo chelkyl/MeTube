@@ -134,6 +134,13 @@ def remove_user(user_id):
   #   return JSONResponse(user.to_json()).end()
   # return JSONResponse("user_id {ID} not found".format(ID=user_id),404,True).end()
 
+@bp.route('/<user_id>/contacts',methods=['GET'])
+def get_contacts(user_id):
+  result = db.engine.execute('SELECT contacting_id, contacted_id, User.username FROM contacts INNER JOIN User ON User.user_id=contacted_id WHERE contacting_id={ID}'.format(ID=user_id))
+  data = get_query_data(result)
+  opts = get_request_opts(request)
+  return JSONResponse(filter_sort_paginate(data,opts)).end()
+
 @bp.route('/add_contact',methods=['LINK'])
 @auth.login_required
 def add_contact():
@@ -466,4 +473,3 @@ def unfavorite():
     #db.session.commit()
     return JSONResponse("User favorite removed",200,False).end()
   return JSONResponse("No favorite exists",404,True).end()
-

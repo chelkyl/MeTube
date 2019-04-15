@@ -9,6 +9,7 @@ import {
   MenuList,
   List,
   ListItem,
+  FormControl,
   ListItemSecondaryAction,
   IconButton,
   ListSubheader,
@@ -18,14 +19,17 @@ import {
   TextField,
   Dialog,
   DialogActions,
+  InputLabel,
   DialogContent,
-  Divider
+  Divider,
+  Select
 } from '@material-ui/core';
 import {
   Reply,
   ForumOutlined,
   AccountCircle,
-  Send
+  Send,
+  Message
 } from '@material-ui/icons';
 import {
   Link
@@ -46,6 +50,10 @@ const useStyles = makeStyles(theme => ({
   },
   button: {
     margin: theme.spacing.unit,
+  },
+  formControl: {
+    margin: theme.spacing.unit,
+    minWidth: 160,
   }
 }));
 
@@ -55,15 +63,19 @@ export default function Messages(props) {
   const [openMessageDialog, setOpenMessageDialog] = useState(false);
   const anchorEl = useRef(null);
   const [isLoggedIn] = useAuthCtx();
+  let [contacts, setContacts] = useState([]);
+  let [contactNameIDs, setContactNameIDs] = useState(new Map());
   let [menuConversations, setMenuConversations] = useState([]);
   let [dialogConversations, setDialogConversations] = useState(new Map());
   let [currentDialog, setCurrentDialog] = useState([]);
-  let [dialogContactUsername, setDialogContactUserName] = useState("");
-  let [dialogContactUserId, setDialogContactUserId] = useState();
-
   const [newMessage, setNewMessage] = useState({
     message: '',
   })
+  const [dialogContactInfo, setDialogContactInfo] = useState({
+    id: '',
+    name: '',
+    labelWidth: 0,
+  });
 
   const handleChange = prop => event => {
     setNewMessage({ ...newMessage, [prop]: event.target.value });
@@ -80,22 +92,25 @@ export default function Messages(props) {
       latestMessageIndex--;
     }
     for(let j = latestMessageIndex; j <= newestMessageIndex; j+=2){
-      console.log(newMenuConversationsMap);
-      if(messageInfo[j].contacted_id === parseInt(getAuthenticatedUserID())){
-        newMenuConversationsMap.delete(messageInfo[j].contact_username);
-        newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacting_id.toString()]);
-      }
-      else {
-        newMenuConversationsMap.delete(messageInfo[j].contact_username);
-        newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacted_id.toString()]);
+      if(contactNameIDs.get(messageInfo[j].contact_username) !== undefined) {
+        if(messageInfo[j].contacted_id === parseInt(getAuthenticatedUserID())){
+          newMenuConversationsMap.delete(messageInfo[j].contact_username);
+          newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacting_id.toString()]);
+        }
+        else {
+          newMenuConversationsMap.delete(messageInfo[j].contact_username);
+          newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacted_id.toString()]);
+        }
       }
     }
     for(let i = newestMessageIndex; i >= latestMessageIndex; i-=2){
-      if(newDialogConversationsMap.has(messageInfo[i].contact_username)){
-        newDialogConversationsMap.set(messageInfo[i].contact_username, newDialogConversationsMap.get(messageInfo[i].contact_username).concat([messageInfo[i]]));
-      }
-      else {
-        newDialogConversationsMap.set(messageInfo[i].contact_username, [messageInfo[i]]);
+      if(contactNameIDs.get(messageInfo[i].contact_username) !== undefined) {
+        if(newDialogConversationsMap.has(messageInfo[i].contact_username)){
+          newDialogConversationsMap.set(messageInfo[i].contact_username, newDialogConversationsMap.get(messageInfo[i].contact_username).concat([messageInfo[i]]));
+        }
+        else {
+          newDialogConversationsMap.set(messageInfo[i].contact_username, [messageInfo[i]]);
+        }
       }
     }
     setDialogConversations(newDialogConversationsMap);
@@ -105,13 +120,74 @@ export default function Messages(props) {
     return newMenuConversations.reverse();
   }
 
+  function getContacts(contactsInfo){
+    let newContacts = [];
+    let newContactNameIDs = new Map();
+    for(let i=0; i<contactsInfo.length; i++){
+      if(contactsInfo[i].contacting_id === parseInt(getAuthenticatedUserID())){
+        newContactNameIDs.set(contactsInfo[i].username, contactsInfo[i].contacted_id)
+      }
+      else {
+        newContactNameIDs.set(contactsInfo[i].username, contactsInfo[i].contacting_id)
+      }
+      newContacts.push(contactsInfo[i].username);
+    }
+    setContactNameIDs(newContactNameIDs);
+    return newContacts;
+  }
+
   let cancel = false;
+
+  useEffect(() => {
+    if(openMessagesMenu && isLoggedIn){
+      Api.request('get',`/users/${getAuthenticatedUserID()}/contacts`)
+        .then(res => {
+          console.log('contacts: ',res.data.response);
+          if(!cancel) setContacts(getContacts(res.data.response));
+        })
+        .catch(err => {
+          let msg = '';
+          // got response from server
+          if(err.response) {
+            console.log(err.response);
+            const { status } = err.response;
+            if (status >= 500 && status < 600) {
+              msg = `Server error ${status}, please contact the admins`;
+            }
+            else if (status === 404) {
+              msg = "Contacts not found";
+            }
+            else if (status === 403) {
+              msg = "Contacts permission blocked";
+            }
+            else {
+              msg = `Sorry, unknown error ${status}`;
+            }
+          }
+          // request sent but no response
+          else if(err.request) {
+            console.log(err.request);
+            msg = 'Could not connect to the server';
+          }
+          // catch all
+          else {
+            console.log(err);
+            msg = 'Sorry, unknown error';
+          }
+          console.log(msg, err);
+          if(cancel) return; //TODO: set error status message in global app status or in the messages panel
+        });
+      }
+
+      return () => {
+        cancel = true;
+      }
+  }, [openMessagesMenu]);
 
   useEffect(() => {
     if(openMessagesMenu && isLoggedIn){
       Api.request('get',`/messages/${getAuthenticatedUserID()}`)
         .then(res => {
-          console.log('messages:',res);
           console.log('messages: ',res.data.response);
           if(!cancel) setMenuConversations(getConversations(res.data.response));
         })
@@ -160,7 +236,7 @@ export default function Messages(props) {
 
   async function sendMessage() {
     newMessage.contacting_id = parseInt(getAuthenticatedUserID());
-    newMessage.contacted_id = dialogContactUserId;
+    newMessage.contacted_id = contactNameIDs.get(dialogContactInfo.name);
     console.log('messages sending',newMessage,getAccessToken());
     try {
       const response = await Api.request('post','/messages/upload',newMessage,{},true);
@@ -182,16 +258,42 @@ export default function Messages(props) {
     setOpenMessagesMenu(false);
   }
 
-  function handleMessageDialogOpen(menuConversation) {
+  function handleMessageDialogOpenOld(menuConversation) {
     setOpenMessageDialog(true);
     setCurrentDialog(dialogConversations.get(menuConversation[0]).reverse());
-    setDialogContactUserId(menuConversation[1][1]);
-    setDialogContactUserName(menuConversation[0]);
+    setDialogContactInfo({
+      id: menuConversation[1][1],
+      name: menuConversation[0],
+      labelWidth: 0,
+    })
+  }
+
+  function handleMessageDialogOpenNew() {
+    setDialogContactInfo({
+      id: '',
+      name: '',
+      labelWidth: 0,
+    });
+    setCurrentDialog([]);
+    setOpenMessageDialog(true);
   }
 
   function handleCloseMessageDialog() {
     setOpenMessageDialog(false);
     setNewMessage("");
+  }
+
+  function handleDialogContactChange(event) {
+    setDialogContactInfo({
+      ...dialogContactInfo,
+      [event.target.name]: event.target.value,
+    });
+    if(dialogConversations.get(event.target.value) === undefined){
+      setCurrentDialog([]);
+    }
+    else {
+      setCurrentDialog(dialogConversations.get(event.target.value).reverse());
+    }
   }
 
   return (
@@ -219,6 +321,16 @@ export default function Messages(props) {
                     <div className={classes.root}>
                       <List subheader={<ListSubheader component="div">Messages</ListSubheader>}>
                         <Divider />
+                        <ListItem>
+                          <ListItemText
+                            primary={'New message. . .'}
+                          />
+                          <ListItemSecondaryAction>
+                            <IconButton onClick={() => handleMessageDialogOpenNew()}>
+                              <Message/>
+                            </IconButton>
+                          </ListItemSecondaryAction>
+                        </ListItem>
                         {menuConversations.map(menuConversation => (
                           <ListItem key={menuConversation}>
                             <ListItemText
@@ -230,7 +342,7 @@ export default function Messages(props) {
                               }
                             />
                             <ListItemSecondaryAction>
-                              <IconButton onClick={() => handleMessageDialogOpen(menuConversation)}>
+                              <IconButton onClick={() => handleMessageDialogOpenOld(menuConversation)}>
                                 <Reply/>
                               </IconButton>
                             </ListItemSecondaryAction>
@@ -256,10 +368,21 @@ export default function Messages(props) {
       </div>
       <Dialog open={openMessageDialog} onClose={handleCloseMessageDialog} aria-labelledby="form-dialog-title" >
         <DialogContent>
-          <IconButton className={classes.button} aria-label="Contact">
-            <AccountCircle />
-            {dialogContactUsername}
-          </IconButton>
+          <FormControl className={classes.formControl}>
+            <InputLabel>Choose contact. . .</InputLabel>
+            <Select
+              value={dialogContactInfo.name}
+              onChange={handleDialogContactChange}
+              name = "name"
+              renderValue={value => `${value}`}
+            >
+              {contacts.map(contact => (
+                <MenuItem key={contact} value={contact}>
+                  {contact}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <Divider />
           <List>
             {currentDialog.map((dialogConversation) => (
