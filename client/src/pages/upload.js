@@ -26,6 +26,9 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     alignItems: 'center'
   },
+  input:{
+      position:'center'
+  },
   buttonWrapper: {
     margin: theme.spacing.unit,
     position: 'relative'
@@ -57,28 +60,35 @@ export default function UploadPage(props) {
   let cancel = false;
   const [file, setFilesInfo] = useState([]);
 
-  const [inputs, setInputs] = useState({file:'', user_id:'', title:'', description:'', keywords:'', categories:''});
-  let handleFile = (e) => {
-    const newfile = e;
-    inputs.file = newfile;
-    setFilesInfo(newfile);
+  const [inputs, setInputs] = useState({file_type:'', user_id:'', title:'', description:'', keywords:'', categories:''});
 
-    console.log(file);
+    let handleFile = (e) => {
+      const newFile = e[0];
+      console.log(newFile);
+      setFilesInfo(newFile);
+      console.log(file);
+      const reader = new FileReader();
+      reader.readAsDataURL(e[0]);
+      reqStateDispatch('submit');
 
-  }
+      reader.onloadend = () => {
+      reqStateDispatch('success');
+
+      setInputs({...inputs, file_type:newFile.type});
+    }
+    };
+
 
     let handleChange = (key) => (e) => {
     setInputs({ ...inputs, [key]: e.currentTarget.value });
-  }
+  };
 
   //TODO: I recommend VSCode for linting and code formatting, it also has useful extensions
 
   //console.log(file);
     useEffect(() => {
-      if(uploading && isLoggedIn) {
+      if(isLoggedIn) {
 
-        //Api.request('post','files/upload',{inputs,user_id:{userID}},{},true);
-        uploading = false;
       }
 
       return () => {
@@ -88,20 +98,20 @@ export default function UploadPage(props) {
 
 
 
-    const initialReqState = {
-      loading: false,
-      success: false
-    };
+const initialReqState = {
+  loading: false,
+  success: false
+};
 const reqStateReducer = (state, action) => {
   switch(action) {
     case 'submit':
       return {
-        uploading: true,
+        loading: true,
         success: false
       }
     case 'success':
       return {
-        uploading: false,
+        loading: false,
         success: true
       }
     case 'error':
@@ -113,15 +123,23 @@ const reqStateReducer = (state, action) => {
 };
 const [reqState, reqStateDispatch] = useReducer(reqStateReducer,initialReqState);
 
-let uploading = false;
       let handleSubmit = (e) => {
-        console.log(file);
-        inputs.user_id = getAuthenticatedUserID();
-        Api.request('post','files/upload',inputs,{},true);
-        console.log(inputs);
-        uploading = true;
+        const uID = getAuthenticatedUserID();//append userID
+        setInputs({...inputs, user_id: uID});
+
+        let data = new FormData();//append file to form data
+        data.append('file',file);
+
+        for (let key in inputs){//append the rest of inputs to form data
+          data.append(key,inputs[key]);
+        }
+        console.log(data);
+
+        if (!Api.request('post', 'files/upload', data, {}, true))//send request
+        reqStateDispatch('error');
 
   }
+
   const { loading, success } = reqState;
 
 
@@ -130,7 +148,7 @@ let uploading = false;
       <Typography variant="h5">
         Upload File Here
       </Typography>
-      <form className={classes.form} onSubmit={handleChange}>
+      <form className={classes.form} onSubmit={handleSubmit}>
         <TextField id='title' label='Title' type='text' required={true}
           className={classes.textField} margin='normal' variant='outlined'
           onChange={handleChange('title')}
@@ -153,11 +171,13 @@ let uploading = false;
           onChange={handleChange('categories')}
           disabled={loading}
         />
-        <input type='file'
-          className={classes.container}
-          accept='image/*,video/*,audio/*'
-          onChange={e => handleFile(e.currentTarget.files[0])}
-          ></input>
+        <div className={classes.container}>
+          <input type='file'
+            content-type='multipart/FormData'
+            accept='image/*,video/*,audio/*'
+            onChange={e => handleFile(e.currentTarget.files)}
+          />
+          </div>
         <div className={classes.buttonWrapper}>
 
           <Button
