@@ -131,7 +131,7 @@ The web app is hosted on http://webapp.cs.clemson.edu/~username
    ```
    cd MeTube/server/server
    ```
-6. Edit .flaskenv on the line with `SERVER_CFG` replacing its value with `production`
+6. Edit .flaskenv on the lines with `FLASK_ENV` and `SERVER_CFG` replacing their values with `production`
 7. Run the server in the background with public access. It should stay running even after you log out.
    ```
    python server.py &
@@ -184,24 +184,24 @@ The webapp server should allow .htaccess files and have mod_rewrite enabled.
 
 ## TODO
 - Finalize server code
-  - (this is optional) add table to track which user upvotes/downvotes which files
+  - (optional) add table to track which user upvotes/downvotes which files
     - remove these columns from File table?
-  - Very optional, fix lines marked with #FIXME
+  - (optional) fix lines marked with #FIXME
   - Run mysqldump to get SQL commands for creating DB
     - Create ER diagram or schema from this
     - Get sqlalchemy to execute these statements rather than create_all
     - Get sqlalchemy to execute drop statements rather than drop_all
 - Finish/Add components/pages
-  - file view page
-    - if change upvote/downvote fix
+  - (optional) file view page upvotes/downvotes
+    - needs a new table similar to user_playlists
   - masthead menu Options
     - options page for rename account, change email, or delete account
   - browse page
-    - (is this necessary?) need to add categories, maybe admin only feature
+    - (is this necessary?) add categories to file upload and browse
       - users then choose specific categories to add to their files
-  - double check validation
-    - logged in states
-    - (opt) permissions
+  - (optional) implement permissions validation
+  - (optional) move alert dialog out of view page into another component and expose as a context provider
+    - replace appropriate error state handling
 - Technical report
   - system design
   - ER diagram
