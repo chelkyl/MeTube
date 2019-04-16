@@ -49,13 +49,17 @@ const useStyles = makeStyles(theme => ({
     minHeight: 64,
     paddingLeft: 24,
     paddingRight: 24,
+    color: theme.secondary
   },
   menuButton: {
     marginLeft: 12,
     marginRight: 12
   },
+  titleWrap: {
+    width: '7em'
+  },
   title: {
-    display: 'block',
+    textDecoration: 'none'
   }
 }));
 
@@ -87,9 +91,11 @@ export default function Sidebar() {
         <IconButton className={classes.menuButton} color="inherit" aria-label="Menu" onClick={toggleDrawer(false)}>
           <MenuIcon />
         </IconButton>
-        <Typography variant="h6" color="inherit" className={classes.title} noWrap>
-          MeTube
-        </Typography>
+        <div className={classes.titleWrap}>
+          <Typography variant="h6" component={Link} to="/" color="inherit" className={classes.title} noWrap>
+            MeTube
+          </Typography>
+        </div>
       </div>
       <List>
         <ListItem button component={Link} to='/' key='Home'>

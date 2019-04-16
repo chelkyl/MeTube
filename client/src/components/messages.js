@@ -26,7 +26,7 @@ import {
 } from '@material-ui/core';
 import {
   Reply,
-  ForumOutlined,
+  Forum,
   AccountCircle,
   Send,
   Message
@@ -305,7 +305,7 @@ export default function Messages(props) {
           aria-haspopup="true"
           onClick={toggleMessagesMenu}
         >
-          <ForumOutlined/>
+          <Forum/>
         </IconButton>
         <Popper open={openMessagesMenu} anchorEl={anchorEl.current} transition disablePortal>
           {({ TransitionProps, placement }) => (

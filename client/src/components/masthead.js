@@ -237,12 +237,12 @@ function Masthead(props) {
           </div>
           <div className={classes.grow} />
           { isLoggedIn && 
-            <IconButton color="inherit" aria-label="File Upload" onClick={onUploadClicked}>
+            <IconButton aria-label="File Upload" onClick={onUploadClicked}>
               <CloudUpload />
             </IconButton>
           }
           <Messages/>
-          <IconButton color="inherit" aria-haspopup="true" onClick={openMenu}>
+          <IconButton aria-haspopup="true" onClick={openMenu}>
             <AccountCircle />
           </IconButton>
         </Toolbar>
