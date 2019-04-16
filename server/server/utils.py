@@ -156,15 +156,16 @@ def filter_sort_paginate(data,opts):
         ret.append(entry)
   else:
     ret = data
-
+  
   if sorters:
     # sorted() handles multi sort stability (according to docs)
     for sorter in sorters:
       column = sorter['column']
-      descending = sorter['descending'] in ['true','True']
+      descending = sorter['descending'] in ['true','True',True]
       try:
         ret = sorted(ret, key=itemgetter(column), reverse=descending)
       except KeyError:
+        print('Sorting error: column',column,'is not in entry')
         continue
 
   if bounds:

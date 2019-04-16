@@ -82,6 +82,7 @@ def upload_file():
   if 'file' not in request.files:
     return JSONResponse("missing file in request",400,True).end()
 
+  #TODO: check mimetype or extension?
   file = request.files['file']
   mimetype = file.content_type
   filename = file.filename

@@ -48,13 +48,18 @@ const useStyles = makeStyles(theme => ({
 export default function ChannelFilesPage(props) {
   const classes = useStyles();
   const [files, setFilesInfo] = useState([]);
+  const [sortKey, setSortKey] = useState('upload_date');
   const [sortMenuAnchor, setSortMenuAnchor] = useState(null);
   let {userID} = props;
   // let canEdit = userID === getAuthenticatedUserID();
   let cancel = false;
 
   useEffect(() => {
-    Api.getData('files',null,[{column:'user_id',value:userID,cmp:'exact'}])
+    let sorter = {
+      column: sortKey,
+      descending: true
+    };
+    Api.getData('files',null,[{column:'user_id',value:userID,cmp:'exact'}],[sorter])
       .then(res => {
         if(!cancel) setFilesInfo(res.data.response);
       })
@@ -63,7 +68,7 @@ export default function ChannelFilesPage(props) {
     return () => {
       cancel = true;
     };
-  }, []);
+  }, [sortKey]);
 
   let openSortMenu = (e) => {
     setSortMenuAnchor(e.target);
@@ -72,15 +77,7 @@ export default function ChannelFilesPage(props) {
     setSortMenuAnchor(null);
   };
   let handleSortMenu = (key) => (e) => {
-    let sorter = {
-      column: key,
-      descending: true
-    };
-    Api.getData('files',null,[{column:'user_id',value:userID,cmp:'exact'}],[sorter])
-      .then(res => {
-        if(!cancel) setFilesInfo(res.data.response);
-      })
-      .catch(basicRequestCatch('files get'));
+    setSortKey(key);
     closeSortMenu();
   };
 
@@ -88,6 +85,7 @@ export default function ChannelFilesPage(props) {
   
   let sortMenu = (
     <Menu anchorEl={sortMenuAnchor} open={isSortMenuOpen} onClose={closeSortMenu}>
+      <MenuItem key='upload_date' onClick={handleSortMenu('upload_date')}>Most Recent</MenuItem>
       <MenuItem key='views' onClick={handleSortMenu('views')}>Most Views</MenuItem>
       <MenuItem key='likes' onClick={handleSortMenu('upvotes')}>Most Likes</MenuItem>
     </Menu>
