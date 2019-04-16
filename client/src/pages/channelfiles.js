@@ -11,8 +11,7 @@ import {
   Sort
 } from '@material-ui/icons';
 import Api from '../apiclient';
-import {useAuthCtx} from '../authentication';
-import { getAuthenticatedUserID } from '../authutils';
+// import { getAuthenticatedUserID } from '../authutils';
 import { basicRequestCatch } from '../utils';
 import ResultItemCard from '../components/resultItemCard';
 
@@ -48,23 +47,18 @@ const useStyles = makeStyles(theme => ({
 
 export default function ChannelFilesPage(props) {
   const classes = useStyles();
-  const [isLoggedIn] = useAuthCtx();
   const [files, setFilesInfo] = useState([]);
   const [sortMenuAnchor, setSortMenuAnchor] = useState(null);
   let {userID} = props;
-  let canEdit = userID === getAuthenticatedUserID();
+  // let canEdit = userID === getAuthenticatedUserID();
   let cancel = false;
-  console.log('channel files',userID,props.match);
 
   useEffect(() => {
-    if(isLoggedIn) {
-      Api.getData('files',null,[{column:'user_id',value:userID,cmp:'exact'}])
-        .then(res => {
-          console.log('files get',res);
-          if(!cancel) setFilesInfo(res.data.response);
-        })
-        .catch(basicRequestCatch('files get'));
-    }
+    Api.getData('files',null,[{column:'user_id',value:userID,cmp:'exact'}])
+      .then(res => {
+        if(!cancel) setFilesInfo(res.data.response);
+      })
+      .catch(basicRequestCatch('files get'));
 
     return () => {
       cancel = true;
@@ -84,7 +78,6 @@ export default function ChannelFilesPage(props) {
     };
     Api.getData('files',null,[{column:'user_id',value:userID,cmp:'exact'}],[sorter])
       .then(res => {
-        console.log('files get',res);
         if(!cancel) setFilesInfo(res.data.response);
       })
       .catch(basicRequestCatch('files get'));
@@ -121,8 +114,7 @@ export default function ChannelFilesPage(props) {
             result_type="files"
             mimetype={mimetype}
             id={file_id}
-            variant="small"
-            canEdit={canEdit}/>
+            variant="small"/>
         })}
       </div>
       {sortMenu}

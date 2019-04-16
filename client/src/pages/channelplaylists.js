@@ -8,8 +8,7 @@ import {
 
 } from '@material-ui/icons';
 import Api from '../apiclient';
-import {useAuthCtx} from '../authentication';
-import { getAuthenticatedUserID } from '../authutils';
+// import { getAuthenticatedUserID } from '../authutils';
 import { basicRequestCatch } from '../utils';
 import ResultItemCard from '../components/resultItemCard';
 
@@ -39,26 +38,25 @@ const useStyles = makeStyles(theme => ({
 
 export default function ChannelPlaylistsPage(props) {
   const classes = useStyles();
-  const [isLoggedIn] = useAuthCtx();
   const [playlists, setPlaylistsInfo] = useState([]);
   let {userID} = props;
-  let canEdit = userID === getAuthenticatedUserID();
+  // let canEdit = userID === getAuthenticatedUserID(); TODO: allows create, select and delete
   let cancel = false;
 
   useEffect(() => {
-    if(isLoggedIn) {
-      Api.getData('playlists',null,[{column:'user_id',value:userID,cmp:'exact'}])
-        .then(res => {
-          console.log('playlists get',res);
-          if(!cancel) setPlaylistsInfo(res.data.response);
-        })
-        .catch(basicRequestCatch('playlists get'));
-    }
+    Api.getData('playlists',null,[{column:'user_id',value:userID,cmp:'exact'}])
+      .then(res => {
+        console.log('playlists get',res);
+        if(!cancel) setPlaylistsInfo(res.data.response);
+      })
+      .catch(basicRequestCatch('playlists get'));
 
     return () => {
       cancel = true;
     };
   }, []);
+
+  console.log(playlists);
 
   return (
     <div className={classes.container}>
@@ -69,7 +67,7 @@ export default function ChannelPlaylistsPage(props) {
         Created Playlists
       </Typography>
       <div className={classes.itemsGrid}>
-        {playlists.map((playlist) => {
+        {playlists.length !== 0 ? playlists.map((playlist) => {
           let {playlist_id,title,username} = playlist;
           return <ResultItemCard key={`playlist-${playlist_id}`}
             className={classes.resultItem}
@@ -77,9 +75,9 @@ export default function ChannelPlaylistsPage(props) {
             owner={username}
             result_type="playlists"
             id={playlist_id}
-            variant="small"
-            canEdit={canEdit}/>
-        })}
+            variant="small"/>
+        }) : <Typography variant="h6">No Playlists</Typography>
+        }
       </div>
     </div>
   );

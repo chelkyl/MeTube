@@ -120,7 +120,6 @@ const useStyles = makeStyles(theme => ({
   contentWide: {
     width: dimensions.wide.content.w
   },
-
   thumbnailPlaceholder: {
     width: '100%',
     height: '100%',

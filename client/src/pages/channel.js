@@ -19,6 +19,7 @@ import {
 import AboutPage from './about';
 import ChannelPlaylistsPage from './channelplaylists';
 import ChannelFilesPage from './channelfiles';
+import ChannelContactsPage from './channelcontacts';
 import Error404Page from './pageNotFound';
 import {
   Route,
@@ -49,9 +50,15 @@ function TabContainer(props) {
   );
 }
 
+let getTabFromPath = (path) => {
+  let pieces = path.split('/');
+  if(pieces.length === 3) return 'about';
+  return pieces[3];
+};
+
 export default function UserPage(props) {
   const classes = useStyles();
-  const [tabIndex, setTabIndex] = useState('about');
+  const [tabIndex, setTabIndex] = useState(getTabFromPath(props.location.pathname));
   const [userID, setUserID] = useState(props.match.params.id);
   const [userInfo, setUserInfo] = useState({});
   const [contactMenuAnchor, setContactMenuAnchor] = useState(null);
@@ -61,7 +68,6 @@ export default function UserPage(props) {
   const isContactMenuOpen = Boolean(contactMenuAnchor);
   let cancel = false;
   let curPath = props.match.url;
-  console.log('channel',userID,props.match);
 
   useEffect(() => {
     //TODO: test is this is actually needed, maybe click on someone's channel?
@@ -83,7 +89,6 @@ export default function UserPage(props) {
     axios.all(requests.list)
       .then(responses => {
         if(cancel) return;
-        console.log('channel',responses);
         let data = {};
         for(let i=0;i<responses.length;++i) {
           let res = responses[i];
@@ -104,7 +109,6 @@ export default function UserPage(props) {
     if(isLoggedIn){
       Api.request('get',`/users/${getAuthenticatedUserID()}/contacts`)
         .then(res => {
-          console.log('contacts: ',res.data.response);
           if(!cancel) {
             if(getContacts(res.data.response).indexOf(username)===-1){
               setIsContact(false);
@@ -156,7 +160,6 @@ export default function UserPage(props) {
   }, [isContactMenuOpen]);
 
   let handleTabChange = (e, newValue) => {
-    console.log('channel tab event',e);
     setTabIndex(newValue);
     props.history.push(`${curPath}/${newValue}`);
   }
@@ -263,6 +266,7 @@ export default function UserPage(props) {
               <Tab label="About" value="about"/>
               <Tab label="Files" value="files"/>
               <Tab label="Playlists" value="playlists"/>
+              <Tab label="Contacts" value="contacts"/>
             </Tabs>
             <div className={classes.grow} />
             <IconButton color="inherit" aria-haspopup="true" onClick={openContactMenu}>
@@ -276,6 +280,7 @@ export default function UserPage(props) {
             <Route path={`${props.match.path}/about`} render={() => <AboutPage userID={userID} />}/>
             <Route path={`${props.match.path}/files`} render={() => <ChannelFilesPage userID={userID} />}/>
             <Route path={`${props.match.path}/playlists`} render={() => <ChannelPlaylistsPage userID={userID} />}/>
+            <Route path={`${props.match.path}/contacts`} render={() => <ChannelContactsPage userID={userID} />}/>
             <Route component={Error404Page}/>
           </Switch>
         </TabContainer>

@@ -98,11 +98,11 @@ export default function Sidebar() {
             {/* <ListItem button component={Link} to='/history' key='History'>
               <ListItemIcon><History/></ListItemIcon>
               <ListItemText primary='History'/>
-            </ListItem> */}
+            </ListItem>
             <ListItem button component={Link} to={`/channel/${getAuthenticatedUserID()}/subscriptions`} key='Subscriptions'>
               <ListItemIcon><Subscriptions/></ListItemIcon>
               <ListItemText primary='Subscriptions'/>
-            </ListItem>
+            </ListItem> */}
           </>
           ) : null
         }
