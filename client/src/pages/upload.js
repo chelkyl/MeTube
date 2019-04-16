@@ -3,16 +3,12 @@ import classNames from 'classnames';
 import { makeStyles } from '@material-ui/styles';
 import { useAuthCtx } from '../authentication';
 import { getAuthenticatedUserID } from '../authutils';
-import { basicRequestCatch } from '../utils';
 
 import {
-  AppBar,
   TextField,
   Typography,
   Button,
   CircularProgress,
-  Tabs,
-  Tab
 } from '@material-ui/core';
 import {
   blue,
@@ -56,8 +52,6 @@ export default function UploadPage(props) {
   //FIXME: good start but should not be using useAuthCtx for keeping track of request state; regState is used for registration state
   //TODO: look at regState and its associated objects in authentication for an example of writing a reducer for handling state
   const [isLoggedIn] = useAuthCtx();
-  let userID = getAuthenticatedUserID();
-  let cancel = false;
   const [file, setFilesInfo] = useState([]);
 
   const [inputs, setInputs] = useState({file_type:'', user_id:'', title:'', description:'', keywords:'', categories:''});
@@ -92,7 +86,6 @@ export default function UploadPage(props) {
       }
 
       return () => {
-        cancel = true;
       };
     }, []);
 
