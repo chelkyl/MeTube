@@ -184,17 +184,33 @@ export default function PlaylistMenu(props) {
     let key = `checkbox-${id}`;
     let isAdd = !inputs[key];
     let method = isAdd ? 'link' : 'unlink';
-    Api.request(method,`playlists/${id}/file`, {file_id:file_id}, {}, true)
-      .then(res => {
-        console.log(`playlistmenu ${method}`,res);
-        setInputs({...inputs, [key]: isAdd});
-      })
-      .catch(basicRequestCatch(`playlistmenu ${method}`));
+    if(id === 'favorites') {
+      Api.request(method,`users/${userID}/favorites`, {file_id:file_id}, {}, true)
+        .then(res => {
+          console.log(`playlistmenu favorites ${method}`,res);
+          setInputs({...inputs, [key]: isAdd});
+        })
+        .catch(basicRequestCatch(`playlistmenu favorites ${method}`));
+    }
+    else {
+      Api.request(method,`playlists/${id}/file`, {file_id:file_id}, {}, true)
+        .then(res => {
+          console.log(`playlistmenu ${method}`,res);
+          setInputs({...inputs, [key]: isAdd});
+        })
+        .catch(basicRequestCatch(`playlistmenu ${method}`));
+    }
   };
 
-  let plistItems;
+  //TODO: add favorites
+  let plistItems = [
+    <ListItem key={`plist-favorites`} button onClick={onClickPlaylist('favorites')} className={classes.listItem}>
+      <Checkbox checked={inputs[`checkbox-favorites`] || false} tabIndex={-1} disableRipple className={classes.listItemBox}/>
+      <ListItemText primary="Favorites" />
+    </ListItem>
+  ];
   if(playlists.length > 0) {
-    plistItems = playlists.map(result => {
+    plistItems.concat(playlists.map(result => {
       let {playlist_id, title} = result;
       return (
         <ListItem key={`plist-result-${playlist_id}`} button onClick={onClickPlaylist(playlist_id)} className={classes.listItem}>
@@ -202,11 +218,11 @@ export default function PlaylistMenu(props) {
           <ListItemText primary={title} />
         </ListItem>
       );
-    });
+    }));
   }
-  else {
-    plistItems = <ListItem><ListItemText primary="No playlists"></ListItemText></ListItem>;
-  }
+  // else {
+  //   plistItems = <ListItem><ListItemText primary="No playlists"></ListItemText></ListItem>;
+  // }
 
   let {loading} = createPlaylistState;
 

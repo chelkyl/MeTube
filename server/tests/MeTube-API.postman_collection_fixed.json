@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "a576798c-d501-4cc3-b320-d7ed6e5e25c1",
+		"_postman_id": "bcf58786-c209-4da8-9b0c-f9173dba3556",
 		"name": "MeTube-API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -3355,7 +3355,7 @@
 					"response": []
 				},
 				{
-					"name": "LINK joe favorites Bob's file",
+					"name": "LINK joe user_id 2 favorites Bob's file",
 					"event": [
 						{
 							"listen": "test",
@@ -3398,23 +3398,24 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"file_id\":\"1\",\"user_id\":\"2\"}"
+							"raw": "{\"file_id\":\"1\"}"
 						},
 						"url": {
-							"raw": "{{host}}/users/favorite",
+							"raw": "{{host}}/users/2/favorites",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"users",
-								"favorite"
+								"2",
+								"favorites"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "UNLINK joe unfavorites Bob's file",
+					"name": "UNLINK joe user_id 2 unfavorites Bob's file",
 					"event": [
 						{
 							"listen": "test",
@@ -3457,16 +3458,17 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"file_id\":\"1\",\"user_id\":\"2\"}"
+							"raw": "{\"file_id\":\"1\"}"
 						},
 						"url": {
-							"raw": "{{host}}/users/unfavorite",
+							"raw": "{{host}}/users/2/favorites",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"users",
-								"unfavorite"
+								"2",
+								"favorites"
 							]
 						}
 					},
@@ -3532,7 +3534,7 @@
 					"response": []
 				},
 				{
-					"name": "LINK joe favorites Bob's file while blocked",
+					"name": "LINK joe user_id 2 favorites Bob's file while blocked",
 					"event": [
 						{
 							"listen": "test",
@@ -3575,16 +3577,17 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"file_id\":\"1\",\"user_id\":\"2\"}"
+							"raw": "{\"file_id\":\"1\"}"
 						},
 						"url": {
-							"raw": "{{host}}/users/favorite",
+							"raw": "{{host}}/users/2/favorites",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"users",
-								"favorite"
+								"2",
+								"favorites"
 							]
 						}
 					},

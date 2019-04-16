@@ -22,19 +22,22 @@ import {
   VideoLibrary,
   LibraryMusic,
   // LibraryBooks,
-  Subscriptions
+  // Subscriptions
 } from '@material-ui/icons';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Link } from 'react-router-dom';
 import {useAuthCtx} from '../authentication';
-import {getAuthenticatedUserID} from '../authutils';
+// import {getAuthenticatedUserID} from '../authutils';
 
 const useStyles = makeStyles(theme => ({
-  drawer: {
+  drawerWrap: {
     [theme.breakpoints.up('md')]: {
       width: theme.drawerWidth,
       flexShrink: 0
     }
+  },
+  drawer: {
+    overflowX: 'hidden'
   },
   list: {
     width: theme.drawerWidth
@@ -124,17 +127,17 @@ export default function Sidebar() {
   );
 
   return (
-    <nav className={classes.drawer}>
+    <nav className={classes.drawerWrap}>
       <Hidden mdUp implementation="js">
         <Drawer variant="temporary" open={isOpen} onClose={toggleDrawer(false)}>
-          <div tabIndex={0} role="button" onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
+          <div tabIndex={0} role="button" onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)} className={classes.drawer}>
             {navList}
           </div>
         </Drawer>
       </Hidden>
       <Hidden smDown implementation="js">
         <Drawer variant="persistent" open={isOpen} onClose={toggleDrawer(false)}>
-          <div tabIndex={0} role="button">
+          <div tabIndex={0} role="button" className={classes.drawer}>
             {navList}
           </div>
         </Drawer>

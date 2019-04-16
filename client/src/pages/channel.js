@@ -18,6 +18,7 @@ import {
 } from '@material-ui/icons';
 import AboutPage from './about';
 import ChannelPlaylistsPage from './channelplaylists';
+import ChannelFavoritesPage from './channelfavorites';
 import ChannelFilesPage from './channelfiles';
 import ChannelContactsPage from './channelcontacts';
 import Error404Page from './pageNotFound';
@@ -279,6 +280,7 @@ export default function UserPage(props) {
             <Route path={`${props.match.path}/`} exact render={() => <AboutPage userID={userID} />}/>
             <Route path={`${props.match.path}/about`} render={() => <AboutPage userID={userID} />}/>
             <Route path={`${props.match.path}/files`} render={() => <ChannelFilesPage userID={userID} />}/>
+            <Route path={`${props.match.path}/playlists/favorites`} render={() => <ChannelFavoritesPage userID={userID} />}/>
             <Route path={`${props.match.path}/playlists`} render={() => <ChannelPlaylistsPage userID={userID} />}/>
             <Route path={`${props.match.path}/contacts`} render={() => <ChannelContactsPage userID={userID} />}/>
             <Route component={Error404Page}/>

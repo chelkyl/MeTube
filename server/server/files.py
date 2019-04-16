@@ -1,5 +1,6 @@
-from flask import Blueprint, g, request, send_file, send_from_directory, current_app as app
+from flask import Blueprint, g, request, Response, send_file, send_from_directory, current_app as app
 from flask_httpauth import HTTPBasicAuth
+import os
 from db import *
 from sqlalchemy.sql import text
 from utils import *
@@ -51,7 +52,7 @@ def get_actual_file(file_id):
     beg, end = ranges[ranges.find('=')+1:].split('-')
     length = -1
     beg = int(beg)
-    file_size = stat(file_path).st_size
+    file_size = os.path.getsize(file_path)
     if beg >= file_size:
       return JSONResponse("Invalid range",400,isError=True).end()
     if end:

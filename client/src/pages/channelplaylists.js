@@ -34,8 +34,6 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-//TODO: goes in channel page, shows all playlists created by channel's user (not current logged in user) with some sort (maybe also folder/group organization) controls
-
 export default function ChannelPlaylistsPage(props) {
   const classes = useStyles();
   const [playlists, setPlaylistsInfo] = useState([]);
@@ -56,8 +54,6 @@ export default function ChannelPlaylistsPage(props) {
     };
   }, []);
 
-  console.log(playlists);
-
   return (
     <div className={classes.container}>
       <div className={classes.header}>
@@ -67,7 +63,13 @@ export default function ChannelPlaylistsPage(props) {
         Created Playlists
       </Typography>
       <div className={classes.itemsGrid}>
-        {playlists.length !== 0 ? playlists.map((playlist) => {
+        <ResultItemCard key={`playlist-favorites`}
+          className={classes.resultItem}
+          name="Favorites"
+          result_type="favorites"
+          id={userID}
+          variant="small"/>
+        {playlists.map(playlist => {
           let {playlist_id,title,username} = playlist;
           return <ResultItemCard key={`playlist-${playlist_id}`}
             className={classes.resultItem}
@@ -76,8 +78,7 @@ export default function ChannelPlaylistsPage(props) {
             result_type="playlists"
             id={playlist_id}
             variant="small"/>
-        }) : <Typography variant="h6">No Playlists</Typography>
-        }
+        })}
       </div>
     </div>
   );

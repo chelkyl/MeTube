@@ -92,34 +92,41 @@ export default function UploadPage(props) {
       loading: false,
       success: false
     };
-const reqStateReducer = (state, action) => {
-  switch(action) {
-    case 'submit':
-      return {
-        uploading: true,
-        success: false
-      }
-    case 'success':
-      return {
-        uploading: false,
-        success: true
-      }
-    case 'error':
-    case 'initial':
-      return initialReqState;
-    default:
-      return state;
-  }
-};
-const [reqState, reqStateDispatch] = useReducer(reqStateReducer,initialReqState);
+  const reqStateReducer = (state, action) => {
+    switch(action) {
+      case 'submit':
+        return {
+          uploading: true,
+          success: false
+        }
+      case 'success':
+        return {
+          uploading: false,
+          success: true
+        }
+      case 'error':
+      case 'initial':
+        return initialReqState;
+      default:
+        return state;
+    }
+  };
+  const [reqState, reqStateDispatch] = useReducer(reqStateReducer,initialReqState);
 
-let uploading = false;
-      let handleSubmit = (e) => {
-        console.log(file);
-        inputs.user_id = getAuthenticatedUserID();
-        Api.request('post','files/upload',inputs,{},true);
-        console.log(inputs);
-        uploading = true;
+  let uploading = false;
+
+  let handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(file);
+    inputs.user_id = getAuthenticatedUserID();
+    inputs.file_type = file.type;
+    let data = new FormData();
+    for(let key in inputs) {
+      data.append(key, inputs[key]);
+    }
+    Api.request('post','files/upload',data,{},true);
+    console.log(inputs);
+    uploading = true;
 
   }
   const { loading, success } = reqState;
@@ -130,7 +137,7 @@ let uploading = false;
       <Typography variant="h5">
         Upload File Here
       </Typography>
-      <form className={classes.form} onSubmit={handleChange}>
+      <form id="upload-form" className={classes.form} onSubmit={handleSubmit}>
         <TextField id='title' label='Title' type='text' required={true}
           className={classes.textField} margin='normal' variant='outlined'
           onChange={handleChange('title')}
@@ -160,10 +167,9 @@ let uploading = false;
           ></input>
         <div className={classes.buttonWrapper}>
 
-          <Button
+          <Button type='submit'
             size='large'
             color='primary'
-            onClick={()=>handleSubmit()}
             //type='submit'
             className={classNames({
               [classes.buttonSuccess]: success

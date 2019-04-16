@@ -411,65 +411,76 @@ def unblock():
     return JSONResponse("Blocking removed",200,False).end()
   return JSONResponse("No blocking exists",404,True).end()
 
-@bp.route('/favorite',methods=['LINK'])
+@bp.route('/<user_id>/favorites',methods=['GET'])
 @auth.login_required
-def favorite():
-  # shorten name for easier access
-  req = request.json
-  # get json data
-  file_id = None if req is None else req.get('file_id',None)
-  user_id = None if req is None else req.get('user_id',None)
-  # trivial validate not empty
-  missing = []
-  if file_id is None:
-    missing.append('file_id')
-  if user_id is None:
-    missing.append('user_id')
+def get_favorites(user_id):
+  result = db.engine.execute('SELECT * FROM user_favorites INNER JOIN File on user_favorites.file_id = File.file_id WHERE user_favorites.user_id={ID}'.format(ID=user_id))
+  data = get_query_data(result)
+  opts = get_request_opts(request)
+  return JSONResponse(filter_sort_paginate(data,opts)).end()
 
-  # return error if missing any
-  if missing:
-    return JSONResponse({'missing':missing},400,isError=True).end()
-
-  # FIXME: Using sql alchemy rather than raw SQL
-  file=File.query.get(file_id)
-  user=User.query.get(user_id)
-  file_owner=User.query.get(file.user_id)
-
-  if file_owner.is_blocked(user):
-    return JSONResponse("Favoriting user is blocked from file owners content",401,True).end()
-
-  if not user.is_favorite(file):
-    #user.favorites.append(file)
-    db.engine.execute("INSERT INTO user_favorites VALUES({file_id}, {user_id})".format(file_id=file_id, user_id=user_id))
-    #db.session.commit()
-    return JSONResponse("User favorite created",200,False).end()
-  return JSONResponse("User favorite already exists",404,True).end()
-
-@bp.route('/unfavorite',methods=['UNLINK'])
+#TODO: replace routes with /<user_id>/favorites
+@bp.route('<user_id>/favorites',methods=['LINK'])
 @auth.login_required
-def unfavorite():
-  # shorten name for easier access
-  req = request.json
-  # get json data
-  file_id = None if req is None else req.get('file_id',None)
-  user_id = None if req is None else req.get('user_id',None)
-  # trivial validate not empty
-  missing = []
-  if user_id is None:
-    missing.append('user_id')
-  if file_id is None:
-    missing.append('file_id')
+def favorite(user_id):
+  result = db.engine.execute('SELECT * FROM User WHERE user_id={ID}'.format(ID=user_id))
+  data = get_query_data(result)
+  if data:
+    # shorten name for easier access
+    req = request.json
+    # get json data
+    file_id = None if req is None else req.get('file_id',None)
+    # trivial validate not empty
+    missing = []
+    if file_id is None:
+      missing.append('file_id')
 
-  # return error if missing any
-  if missing:
-    return JSONResponse({'missing':missing},400,isError=True).end()
+    # return error if missing any
+    if missing:
+      return JSONResponse({'missing':missing},400,isError=True).end()
 
-  # FIXME: Using sql alchemy rather than raw SQL
-  user=User.query.get(user_id)
-  file=File.query.get(file_id)
-  if user.is_favorite(file):
-    #user.favorites.remove(file)
-    db.engine.execute("DELETE FROM user_favorites WHERE file_id={file_id} AND user_id={user_id}".format(file_id=file_id, user_id=user_id))
-    #db.session.commit()
-    return JSONResponse("User favorite removed",200,False).end()
-  return JSONResponse("No favorite exists",404,True).end()
+    # FIXME: Using sql alchemy rather than raw SQL
+    file=File.query.get(file_id)
+    user=User.query.get(user_id)
+    file_owner=User.query.get(file.user_id)
+
+    if file_owner.is_blocked(user):
+      return JSONResponse("Favoriting user is blocked from file owners content",401,True).end()
+
+    if not user.is_favorite(file):
+      #user.favorites.append(file)
+      db.engine.execute("INSERT INTO user_favorites VALUES({file_id}, {user_id})".format(file_id=file_id, user_id=user_id))
+      #db.session.commit()
+      return JSONResponse("User favorite created",200,False).end()
+    return JSONResponse("User favorite already exists",404,True).end()
+  return JSONResponse("user_id {ID} not found".format(ID=user_id),404,True).end()
+
+@bp.route('<user_id>/favorites',methods=['UNLINK'])
+@auth.login_required
+def unfavorite(user_id):
+  result = db.engine.execute('SELECT * FROM User WHERE user_id={ID}'.format(ID=user_id))
+  data = get_query_data(result)
+  if data:
+    # shorten name for easier access
+    req = request.json
+    # get json data
+    file_id = None if req is None else req.get('file_id',None)
+    # trivial validate not empty
+    missing = []
+    if file_id is None:
+      missing.append('file_id')
+
+    # return error if missing any
+    if missing:
+      return JSONResponse({'missing':missing},400,isError=True).end()
+
+    # FIXME: Using sql alchemy rather than raw SQL
+    user=User.query.get(user_id)
+    file=File.query.get(file_id)
+    if user.is_favorite(file):
+      #user.favorites.remove(file)
+      db.engine.execute("DELETE FROM user_favorites WHERE file_id={file_id} AND user_id={user_id}".format(file_id=file_id, user_id=user_id))
+      #db.session.commit()
+      return JSONResponse("User favorite removed",200,False).end()
+    return JSONResponse("No favorite exists",404,True).end()
+  return JSONResponse("user_id {ID} not found".format(ID=user_id),404,True).end()

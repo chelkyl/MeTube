@@ -17,11 +17,15 @@ const useStyles = makeStyles(theme => ({
   },
   video: {
     width: '100%',
-    maxHeight: '80vh'
+    maxHeight: '80vh',
+    [theme.breakpoints.down('xs')]: {
+      maxHeight: '95vh'
+    }
   },
   audioContainer: {
     width: '100%',
-    height: '30vw',
+    height: '20vh',
+    minHeight: 100,
     backgroundColor: 'black'
   },
   audio: {
@@ -29,6 +33,7 @@ const useStyles = makeStyles(theme => ({
   },
   imageContainer: {
     width: '100%',
+    minHeight: 100,
     backgroundColor: 'black'
   },
   image: {
@@ -37,7 +42,8 @@ const useStyles = makeStyles(theme => ({
   errorContainer: {
     display: 'flex',
     width: '100%',
-    height: '30vw',
+    height: '20vh',
+    minHeight: 100,
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
@@ -57,7 +63,6 @@ export default function Player(props) {
   const [blobURL, setBlobURL] = useState(null);
   const [errorMessage,setErrorMessage] = useState(initialErrorState);
   let {mimetype='', name=''} = props;
-  let cancel = false;
 
   useEffect(() => {
     setFileID(props.file_id);
@@ -65,57 +70,77 @@ export default function Player(props) {
 
   useEffect(() => {
     if(fileID) {
-      Api.request('get',`/files/${fileID}/g`,{},{responseType: 'blob'})
-        .then(res => {
-          mimetype = res.data.type;
-          if(mimetype.includes('video') || mimetype.includes('audio') || mimetype.includes('image')) {
-            let blob_url = URL.createObjectURL(res.data);
-            if(cancel) return;
-            setBlobURL(blob_url);
-            if(errorMessage.show) setErrorMessage(initialErrorState);
-          }
-          else {
-            if(cancel) return;
-            setErrorMessage({
-              show: true,
-              primary: 'Viewer unavailable',
-              secondary: `Unsupported mimetype ${mimetype}`
-            });
-          }
-        })
-        .catch(err => {
-          let msg = '';
-          // got response from server
-          if(err.response) {
-            const { status } = err.response;
-            if (status >= 500 && status < 600) {
-              msg = `Server error ${status}, please contact the admins`;
-            }
-            else if (status === 404) {
-              msg = "File not found";
-            }
-            else if (status === 403) {
-              msg = "File permission blocked";
-            }
-            else {
-              msg = `Sorry, unknown error ${status}`;
-            }
-          }
-          // request sent but no response
-          else if(err.request) {
-            msg = err.message;
-          }
-          // catch all
-          else {
-            msg = 'Sorry, unknown error';
-          }
-          console.log('player',err);
-          if(cancel) return;
-          setErrorMessage({
-            show: true,
-            primary: msg
-          });
-        })
+      if(mimetype.includes('video') || mimetype.includes('audio') || mimetype.includes('image')) {
+        let reqURL = `${Api.baseURL}/files/${fileID}/g`;
+        setBlobURL(reqURL);
+        if(errorMessage.show) setErrorMessage(initialErrorState);
+      }
+      else if(mimetype === '') {
+        setErrorMessage({
+          show: true,
+          primary: 'Viewer unavailable',
+          secondary: `Unknown mimetype`
+        });
+      }
+      else {
+        setErrorMessage({
+          show: true,
+          primary: 'Viewer unavailable',
+          secondary: `Unsupported mimetype ${mimetype}`
+        });
+      }
+
+      // Api.request('get',`/files/${fileID}/g`,{},{responseType: 'blob'})
+      //   .then(res => {
+      //     mimetype = res.data.type;
+      //     if(mimetype.includes('video') || mimetype.includes('audio') || mimetype.includes('image')) {
+      //       let blob_url = URL.createObjectURL(res.data);
+      //       if(cancel) return;
+      //       setBlobURL(blob_url);
+      //       if(errorMessage.show) setErrorMessage(initialErrorState);
+      //     }
+      //     else {
+      //       if(cancel) return;
+      //       setErrorMessage({
+      //         show: true,
+      //         primary: 'Viewer unavailable',
+      //         secondary: `Unsupported mimetype ${mimetype}`
+      //       });
+      //     }
+      //   })
+      //   .catch(err => {
+      //     let msg = '';
+      //     // got response from server
+      //     if(err.response) {
+      //       const { status } = err.response;
+      //       if (status >= 500 && status < 600) {
+      //         msg = `Server error ${status}, please contact the admins`;
+      //       }
+      //       else if (status === 404) {
+      //         msg = "File not found";
+      //       }
+      //       else if (status === 403) {
+      //         msg = "File permission blocked";
+      //       }
+      //       else {
+      //         msg = `Sorry, unknown error ${status}`;
+      //       }
+      //     }
+      //     // request sent but no response
+      //     else if(err.request) {
+      //       msg = err.message;
+      //     }
+      //     // catch all
+      //     else {
+      //       msg = 'Sorry, unknown error';
+      //     }
+      //     console.log('player',err);
+      //     if(cancel) return;
+      //     setErrorMessage({
+      //       show: true,
+      //       primary: msg
+      //     });
+      //   })
     }
     else {
       setErrorMessage({
@@ -123,10 +148,6 @@ export default function Player(props) {
         primary: "Viewer unavailable",
         secondary: "File not found"
       });
-    }
-
-    return () => {
-      cancel = true;
     }
   }, [fileID]);
 

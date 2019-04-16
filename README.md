@@ -196,15 +196,8 @@ The webapp server should allow .htaccess files and have mod_rewrite enabled.
     - if change upvote/downvote fix
   - masthead menu Options
     - options page for rename account, change email, or delete account
-  - channel page
-    - Add favorites list to playlists page
-    - File upload
-      - Fix file upload button to only show if logged in
-      - must have metadata: title, description, keywords, categories, etc
-    - Contacts list  +channelcontacts.js
-      - this is supposedly optional, but if we are doing messaging anyway, maybe include it?
   - browse page
-    - need to add categories, maybe admin only feature
+    - (is this necessary?) need to add categories, maybe admin only feature
       - users then choose specific categories to add to their files
   - double check validation
     - logged in states

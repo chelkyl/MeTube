@@ -43,9 +43,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-//TODO: goes in channel page, shows all files uploaded by channel's user (not current logged in user) with some sort (maybe also folder/group organization) controls
-
-export default function ChannelFilesPage(props) {
+export default function ChannelFavoritesPage(props) {
   const classes = useStyles();
   const [files, setFilesInfo] = useState([]);
   const [sortMenuAnchor, setSortMenuAnchor] = useState(null);
@@ -54,7 +52,7 @@ export default function ChannelFilesPage(props) {
   let cancel = false;
 
   useEffect(() => {
-    Api.getData('files',null,[{column:'user_id',value:userID,cmp:'exact'}])
+    Api.request('get',`users/${userID}/favorites`,{},{},true)
       .then(res => {
         if(!cancel) setFilesInfo(res.data.response);
       })
@@ -102,7 +100,7 @@ export default function ChannelFilesPage(props) {
       </div>
       <Divider/>
       <Typography variant="h5" className={classes.sectionTitle}>
-        Uploaded Files
+        Favorites
       </Typography>
       <div className={classes.itemsGrid}>
         {files.length > 0 ? files.map((fileInfo) => {
@@ -116,11 +114,10 @@ export default function ChannelFilesPage(props) {
             id={file_id}
             variant="small"/>
         }) : 
-          <Typography variant="h6">No Files</Typography>
+          <Typography variant="h6">No Favorites</Typography>
         }
       </div>
       {sortMenu}
     </div>
   );
 }
-

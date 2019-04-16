@@ -17,7 +17,8 @@ import {
   OndemandVideo,
   MusicVideo,
   Photo,
-  VideoLibrary
+  VideoLibrary,
+  StarBorder
 } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
 
@@ -147,6 +148,8 @@ function ResultItemThumbnail(props) {
         return <PermIdentity fontSize="inherit"/>;
       case 'playlists':
         return <VideoLibrary fontSize="inherit"/>;
+      case 'favorites':
+        return <StarBorder fontSize="inherit"/>;
       case 'files':
         return getIconFromMimetype(mimetype);
       default:
@@ -201,6 +204,9 @@ export default function ResultItemCard(props) {
   };
 
   let getRoute = (resultType, id, playlistID) => {
+    if(resultType === 'favorites') {
+      return `/channel/${id}/playlists/favorites`;
+    }
     let extras = '';
     if(playlistID) extras = `?playlist=${playlistID}`;
     return `${getRouteFromResultType(resultType)}/${id}${extras}`;
