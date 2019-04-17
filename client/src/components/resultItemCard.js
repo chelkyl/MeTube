@@ -129,6 +129,11 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'center',
     fontSize: '4em',
     color: theme.accentAlt
+  },
+  contentText: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
   }
 }));
 
@@ -212,7 +217,7 @@ export default function ResultItemCard(props) {
     return `${getRouteFromResultType(resultType)}/${id}${extras}`;
   }
   
-  let card = null;
+  let card = null; //FIXME: name and owner needs to be cutoff when too wide
   if(variant === 'small' || isMobileWidth) {
     card = (
       <Card className={classNames(propClass,classes.cardWrap)}>
@@ -222,8 +227,8 @@ export default function ResultItemCard(props) {
               {...{name, result_type, mimetype, thumbnail}}/>
           </div>
           <CardContent className={classes.content}>
-            <Typography gutterBottom variant="subtitle1">{name}</Typography>
-            <Typography gutterBottom variant="subtitle2">{owner}</Typography>
+            <Typography gutterBottom variant="subtitle1" className={classes.contentText}>{name}</Typography>
+            <Typography gutterBottom variant="subtitle2" className={classes.contentText}>{owner}</Typography>
           </CardContent>
         </CardActionArea>
       </Card>
@@ -238,8 +243,8 @@ export default function ResultItemCard(props) {
               {...{name, result_type, mimetype, thumbnail}}/>
           </div>
           <CardContent className={classes.contentWide}>
-            <Typography gutterBottom variant="subtitle1">{name}</Typography>
-            <Typography variant="subtitle2">{owner}</Typography>
+            <Typography gutterBottom variant="subtitle1" className={classes.contentText}>{name}</Typography>
+            <Typography variant="subtitle2" className={classes.contentText}>{owner}</Typography>
           </CardContent>
         </CardActionArea>
       </Card>

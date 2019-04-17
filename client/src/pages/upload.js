@@ -192,7 +192,7 @@ export default function UploadPage(props) {
     return () => {
       cancel = true;
     }
-  }, []);
+  }, [isLoggedIn]);
 
   useEffect(() => {
     console.log('useeffect');
