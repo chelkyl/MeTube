@@ -93,14 +93,14 @@ def edit_user(user_id):
   if data:
     if g.user['user_id'] != data[0]['user_id']:
       return JSONResponse("Unauthorized",401,True).end()
-    
+
     oldData = data[0]
-  
+
     # shorten name for easier access
     req = request.json
     # get json data
     description = None if req is None else req.get('channel_description',oldData['channel_description'])
-    
+
     sql = text("UPDATE User SET channel_description=:DESC WHERE user_id={ID}".format(ID=user_id))
     db.engine.execute(sql,DESC=description)
     result = db.engine.execute('SELECT user_id,username,email,channel_description FROM User WHERE user_id={ID}'.format(ID=user_id))
@@ -197,18 +197,6 @@ def remove_contact():
   contact_removing=User.query.get(contact_removing_id)
   contact_removed=User.query.get(contact_removed_id)
   if contact_removing.is_contact(contact_removed):
-    # Unlinks neccessary relationships
-    # sent_messages = Message.query.filter_by(contacting_id=contact_removing_id, contacted_id=contact_removed_id).all()
-    # received_messages = Message.query.filter_by(contacting_id=contact_removed_id, contacted_id=contact_removing_id).all()
-    # for message in sent_messages:
-    #   db.engine.execute('DELETE FROM Message WHERE message_id={ID}'.format(ID=message.message_id))
-    # for message in received_messages:
-    #   db.engine.execute('DELETE FROM Message WHERE message_id={ID}'.format(ID=message.message_id))
-    # FIXME: should removing a contact delete your messages with them?
-    db.engine.execute('DELETE FROM Message WHERE contacted_id={contacted_id} and contacting_id={contacting_id}'.format(contacting_id=contact_removing_id,contacted_id=contact_removed_id))
-    db.engine.execute('DELETE FROM Message WHERE contacted_id={contacting_id} and contacting_id={contacted_id}'.format(contacting_id=contact_removing_id,contacted_id=contact_removed_id))
-
-    #contact_removing.contacted.remove(contact_removed)
     db.engine.execute("DELETE FROM contacts WHERE contacting_id={contacting_id} AND contacted_id={contacted_id}".format(contacting_id=contact_removing_id, contacted_id=contact_removed_id))
     #db.session.commit()
     return JSONResponse("Contact removed",200,False).end()

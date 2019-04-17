@@ -34,6 +34,7 @@ import {
 import {
   Link
 } from 'react-router-dom';
+import axios from 'axios';
 import Api from '../apiclient';
 import {useAuthCtx} from '../authentication';
 import {getAuthenticatedUserID, getAccessToken} from '../authutils';
@@ -92,7 +93,7 @@ export default function Messages(props) {
       latestMessageIndex--;
     }
     for(let j = latestMessageIndex; j <= newestMessageIndex; j+=2){
-      if(contactNameIDs.get(messageInfo[j].contact_username) !== undefined) {
+      //if(contactNameIDs.get(messageInfo[j].contact_username) !== undefined) {
         if(messageInfo[j].contacted_id === parseInt(getAuthenticatedUserID())){
           newMenuConversationsMap.delete(messageInfo[j].contact_username);
           newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacting_id.toString()]);
@@ -101,17 +102,17 @@ export default function Messages(props) {
           newMenuConversationsMap.delete(messageInfo[j].contact_username);
           newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacted_id.toString()]);
         }
-      }
+      //}
     }
     for(let i = newestMessageIndex; i >= latestMessageIndex; i-=2){
-      if(contactNameIDs.get(messageInfo[i].contact_username) !== undefined) {
+      //if(contactNameIDs.get(messageInfo[i].contact_username) !== undefined) {
         if(newDialogConversationsMap.has(messageInfo[i].contact_username)){
           newDialogConversationsMap.set(messageInfo[i].contact_username, newDialogConversationsMap.get(messageInfo[i].contact_username).concat([messageInfo[i]]));
         }
         else {
           newDialogConversationsMap.set(messageInfo[i].contact_username, [messageInfo[i]]);
         }
-      }
+      //}
     }
     setDialogConversations(newDialogConversationsMap);
     for (var [key, value] of newMenuConversationsMap) {
@@ -138,60 +139,33 @@ export default function Messages(props) {
 
   let cancel = false;
 
-  useEffect(() => {
-    if(openMessagesMenu && isLoggedIn){
-      Api.request('get',`/users/${getAuthenticatedUserID()}/contacts`)
-        .then(res => {
-          console.log('contacts: ',res.data.response);
-          if(!cancel) setContacts(getContacts(res.data.response));
-        })
-        .catch(err => {
-          let msg = '';
-          // got response from server
-          if(err.response) {
-            console.log(err.response);
-            const { status } = err.response;
-            if (status >= 500 && status < 600) {
-              msg = `Server error ${status}, please contact the admins`;
-            }
-            else if (status === 404) {
-              msg = "Contacts not found";
-            }
-            else if (status === 403) {
-              msg = "Contacts permission blocked";
-            }
-            else {
-              msg = `Sorry, unknown error ${status}`;
-            }
-          }
-          // request sent but no response
-          else if(err.request) {
-            console.log(err.request);
-            msg = 'Could not connect to the server';
-          }
-          // catch all
-          else {
-            console.log(err);
-            msg = 'Sorry, unknown error';
-          }
-          console.log(msg, err);
-          if(cancel) return; //TODO: set error status message in global app status or in the messages panel
-        });
-      }
-
-      return () => {
-        cancel = true;
-      }
-  }, [openMessagesMenu]);
 
   useEffect(() => {
     if(openMessagesMenu && isLoggedIn){
-      Api.request('get',`/messages/${getAuthenticatedUserID()}`)
-        .then(res => {
-          console.log('messages: ',res.data.response);
-          if(!cancel) setMenuConversations(getConversations(res.data.response));
+      let requests = [];
+      let reqRoute = [];
+      requests.push(Api.request('get',`/users/${getAuthenticatedUserID()}/contacts`));
+      reqRoute.push('contacts');
+      requests.push(Api.request('get',`/messages/${getAuthenticatedUserID()}`));
+      reqRoute.push('messages');
+      axios.all(requests)
+        .then(responses => {
+          if(cancel) return;
+          responses.forEach((res,i) => {
+            let route = reqRoute[i];
+            if(route === 'contacts') {
+              console.log('contacts: ',res.data.response);
+              setContacts(getContacts(res.data.response));
+            }
+            else if(route === 'messages') {
+              console.log('messages: ',res.data.response);
+              setMenuConversations(getConversations(res.data.response));
+            }
+          })
         })
         .catch(err => {
+          console.log(err);
+          if(cancel) return;
           let msg = '';
           // got response from server
           if(err.response) {
@@ -221,8 +195,9 @@ export default function Messages(props) {
             msg = 'Sorry, unknown error';
           }
           console.log(msg, err);
-          if(cancel) return; //TODO: set error status message in global app status or in the messages panel
+          //TODO: set error status message in global app status or in the messages panel
         });
+
       }
 
       return () => {
@@ -307,7 +282,7 @@ export default function Messages(props) {
         >
           <Forum/>
         </IconButton>
-        <Popper open={openMessagesMenu} anchorEl={anchorEl.current} transition disablePortal>
+        <Popper open={openMessagesMenu} anchorEl={anchorEl.current} placement='bottom-end' transition disablePortal>
           {({ TransitionProps, placement }) => (
             <Grow
               {...TransitionProps}
