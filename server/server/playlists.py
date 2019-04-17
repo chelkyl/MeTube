@@ -103,7 +103,7 @@ def remove_playlist(playlist_id):
       return JSONResponse("Unauthorized",401,True).end()
 
     # Unlinks neccessary relationships
-    db.engine.execute('DELETE FROM playlist_files WHERE playlist_id={ID}'.format(ID=playlist_id))
+    # db.engine.execute('DELETE FROM playlist_files WHERE playlist_id={ID}'.format(ID=playlist_id))
     db.engine.execute('DELETE FROM Playlist WHERE playlist_id={ID}'.format(ID=playlist_id))
     return JSONResponse(data[0]).end()
   return JSONResponse("playlist_id {ID} not found".format(ID=playlist_id),404,True).end()

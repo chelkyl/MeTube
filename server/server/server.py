@@ -102,7 +102,7 @@ def clear_db():
     print(t_id,'Dropping all tables')
     db.drop_all()
     clear_file_store()
-    # db.engine.execute('set FOREIGN_KEY_CHECKS=1')
+    db.engine.execute('set FOREIGN_KEY_CHECKS=1')
 
 def recreate_db():
   global ERR_IN_CREATE

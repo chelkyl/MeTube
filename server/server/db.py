@@ -50,43 +50,43 @@ def get_auth_token_data(secret, token):
     return None
 
 subscribers = db.Table('subscribers',
-  db.Column('subscribing_id', db.Integer, db.ForeignKey('User.user_id')),
-  db.Column('subscribed_id', db.Integer, db.ForeignKey('User.user_id'))
+  db.Column('subscribing_id', db.Integer, db.ForeignKey('User.user_id',ondelete="CASCADE")),
+  db.Column('subscribed_id', db.Integer, db.ForeignKey('User.user_id',ondelete="CASCADE"))
 )
 
 contacts = db.Table('contacts',
-  db.Column('contacting_id', db.Integer, db.ForeignKey('User.user_id')),
-  db.Column('contacted_id', db.Integer, db.ForeignKey('User.user_id'))
+  db.Column('contacting_id', db.Integer, db.ForeignKey('User.user_id',ondelete="CASCADE")),
+  db.Column('contacted_id', db.Integer, db.ForeignKey('User.user_id',ondelete="CASCADE"))
 )
 
 friends = db.Table('friends',
-  db.Column('friending_id', db.Integer, db.ForeignKey('User.user_id')),
-  db.Column('friended_id', db.Integer, db.ForeignKey('User.user_id'))
+  db.Column('friending_id', db.Integer, db.ForeignKey('User.user_id',ondelete="CASCADE")),
+  db.Column('friended_id', db.Integer, db.ForeignKey('User.user_id',ondelete="CASCADE"))
 )
 
 blocks = db.Table('blocks',
-  db.Column('blocking_id', db.Integer, db.ForeignKey('User.user_id')),
-  db.Column('blocked_id', db.Integer, db.ForeignKey('User.user_id'))
+  db.Column('blocking_id', db.Integer, db.ForeignKey('User.user_id',ondelete="CASCADE")),
+  db.Column('blocked_id', db.Integer, db.ForeignKey('User.user_id',ondelete="CASCADE"))
 )
 
 user_favorites = db.Table('user_favorites',
-  db.Column('file_id', db.Integer, db.ForeignKey('File.file_id'), primary_key=True),
-  db.Column('user_id', db.Integer, db.ForeignKey('User.user_id'), primary_key=True)
+  db.Column('file_id', db.Integer, db.ForeignKey('File.file_id',ondelete="CASCADE"), primary_key=True),
+  db.Column('user_id', db.Integer, db.ForeignKey('User.user_id',ondelete="CASCADE"), primary_key=True)
 )
 
 playlist_files = db.Table('playlist_files',
-  db.Column('file_id', db.Integer, db.ForeignKey('File.file_id'), primary_key=True),
-  db.Column('playlist_id', db.Integer, db.ForeignKey('Playlist.playlist_id'), primary_key=True)
+  db.Column('file_id', db.Integer, db.ForeignKey('File.file_id',ondelete="CASCADE"), primary_key=True),
+  db.Column('playlist_id', db.Integer, db.ForeignKey('Playlist.playlist_id',ondelete="CASCADE"), primary_key=True)
 )
 
 files_categories = db.Table('files_categories',
-  db.Column('file_id', db.Integer, db.ForeignKey('File.file_id'), primary_key=True),
-  db.Column('category_id', db.Integer, db.ForeignKey('Category.category_id'), primary_key=True)
+  db.Column('file_id', db.Integer, db.ForeignKey('File.file_id',ondelete="CASCADE"), primary_key=True),
+  db.Column('category_id', db.Integer, db.ForeignKey('Category.category_id',ondelete="CASCADE"), primary_key=True)
 )
 
 files_keywords = db.Table('files_keywords',
-  db.Column('file_id', db.Integer, db.ForeignKey('File.file_id'), primary_key=True),
-  db.Column('keyword_id', db.Integer, db.ForeignKey('Keyword.keyword_id'), primary_key=True)
+  db.Column('file_id', db.Integer, db.ForeignKey('File.file_id',ondelete="CASCADE"), primary_key=True),
+  db.Column('keyword_id', db.Integer, db.ForeignKey('Keyword.keyword_id',ondelete="CASCADE"), primary_key=True)
 )
 
 class Admin(db.Model):
@@ -132,9 +132,9 @@ class User(db.Model):
   password_hash = db.Column(db.String(128), unique=True, nullable=False)
   channel_description = db.Column(db.String(400), nullable=False)
 
-  playlists = db.relationship('Playlist', backref='user', lazy=True)
-  files = db.relationship('File', backref='user', lazy=True)
-  comments = db.relationship('Comment', backref='user', lazy=True)
+  playlists = db.relationship('Playlist', backref='user', lazy=True, cascade="all, delete-orphan")
+  files = db.relationship('File', backref='user', lazy=True, cascade="all, delete-orphan")
+  comments = db.relationship('Comment', backref='user', lazy=True, cascade="all, delete-orphan")
   subscribed = db.relationship('User', secondary=subscribers, primaryjoin=(subscribers.c.subscribing_id == user_id), secondaryjoin=(subscribers.c.subscribed_id == user_id), lazy='dynamic', backref=db.backref('subscribers', lazy='dynamic'))
   favorites = db.relationship('File', secondary=user_favorites, lazy='dynamic', backref=db.backref('users', lazy=True))
   contacted = db.relationship('User', secondary=contacts, primaryjoin=(contacts.c.contacting_id == user_id), secondaryjoin=(contacts.c.contacted_id == user_id), lazy='dynamic', backref=db.backref('contacts', lazy='dynamic'))
@@ -189,14 +189,14 @@ class Playlist(db.Model):
     self.description = description
 
   playlist_id = db.Column(db.Integer, primary_key=True)
-  user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
+  user_id = db.Column(db.Integer, db.ForeignKey('User.user_id',ondelete="CASCADE"), nullable=False)
   title = db.Column(db.String(100), nullable=False)
   description = db.Column(db.String(400), nullable=False)
   #TODO: add creation date
   #TODO: add views
   #TODO: add permissions
 
-  files = db.relationship('File', secondary=playlist_files, lazy='dynamic', backref=db.backref('playlists', lazy=True))
+  files = db.relationship('File', secondary=playlist_files, lazy='dynamic', backref=db.backref('playlists', lazy=True, cascade="all"), cascade="all")
 
   def to_json(self):
     return {
@@ -230,7 +230,7 @@ class File(db.Model):
     self.file_type = file_type
 
   file_id = db.Column(db.Integer, primary_key=True)
-  user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
+  user_id = db.Column(db.Integer, db.ForeignKey('User.user_id',ondelete="CASCADE"), nullable=False)
   title = db.Column(db.String(100), unique=False, nullable=False)
   description = db.Column(db.String(400), nullable=False)
   permissions = db.Column(db.String(40), nullable=False)
@@ -241,7 +241,7 @@ class File(db.Model):
   mimetype = db.Column(db.String(40), nullable=False)
   file_type = db.Column(db.String(40), nullable=False)
   
-  comments = db.relationship('Comment', backref='file', lazy=True)
+  comments = db.relationship('Comment', backref='file', lazy=True, cascade="all")
 
   def to_json(self):
     return {
@@ -269,7 +269,7 @@ class Category(db.Model):
 
   category_id = db.Column(db.Integer, primary_key=True)
   category = db.Column(db.String(40), nullable=False)
-  files = db.relationship('File', secondary=files_categories, lazy='dynamic', backref=db.backref('categories', lazy='dynamic'))
+  files = db.relationship('File', secondary=files_categories, lazy='dynamic', backref=db.backref('categories', lazy='dynamic'), cascade="all")
 
   def to_json(self):
     return {
@@ -288,7 +288,7 @@ class Keyword(db.Model):
 
   keyword_id = db.Column(db.Integer, primary_key=True)
   keyword = db.Column(db.String(40), nullable=False)
-  files = db.relationship('File', secondary=files_keywords, lazy='dynamic', backref=db.backref('keywords', lazy='dynamic'))
+  files = db.relationship('File', secondary=files_keywords, lazy='dynamic', backref=db.backref('keywords', lazy='dynamic'), cascade="all")
 
   def to_json(self):
     return {
@@ -309,8 +309,8 @@ class Comment(db.Model):
     self.comment_date = comment_date
 
   comment_id = db.Column(db.Integer, primary_key=True)
-  user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
-  file_id = db.Column(db.Integer, db.ForeignKey('File.file_id'), nullable=False)
+  user_id = db.Column(db.Integer, db.ForeignKey('User.user_id',ondelete="CASCADE"), nullable=False)
+  file_id = db.Column(db.Integer, db.ForeignKey('File.file_id',ondelete="CASCADE"), nullable=False)
   comment = db.Column(db.String(40), nullable=False)
   comment_date = db.Column(db.DateTime, nullable=False)
 
@@ -336,8 +336,8 @@ class Message(db.Model):
     self.message_date = message_date
 
   message_id = db.Column(db.Integer, primary_key=True)
-  contacting_id = db.Column(db.Integer, db.ForeignKey('contacts.contacting_id'), nullable=False)
-  contacted_id = db.Column(db.Integer, db.ForeignKey('contacts.contacted_id'), nullable=False)
+  contacting_id = db.Column(db.Integer, db.ForeignKey('contacts.contacting_id',ondelete="CASCADE"), nullable=False)
+  contacted_id = db.Column(db.Integer, db.ForeignKey('contacts.contacted_id',ondelete="CASCADE"), nullable=False)
   message = db.Column(db.String(100), nullable=False)
   message_date = db.Column(db.DateTime, nullable=False)
 
