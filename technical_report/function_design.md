@@ -1,6 +1,6 @@
 # MeTube Function Design
 
-##Client
+## Client
 
 ### User Account
 ![](diagrams/user_account_diagram.png)
