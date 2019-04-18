@@ -32,5 +32,4 @@ https://dev.mysql.com/doc/refman/8.0/en/
 ![](diagrams/architecture_diagram.jpg)
 
 ### System Security
-- Our user's plaintext passwords are hashed before storage in our database.
-- Admin exist to monitor that the system is operating properly.
+Our user's plaintext passwords are hashed before storage in our database. Admin exist to monitor that the system is operating properly.

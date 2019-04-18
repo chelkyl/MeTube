@@ -4,30 +4,34 @@
 
 ### User Account
 ![](diagrams/user_account_diagram.png)
-1. Registration -
-2. Sign In -
-3. Profile update -
+- Registration: Users can reach the registration page through a link on the sign-in page prompting them to create an account.
+- Sign In: Users can reach the sign-in page through the account menu, attempting to open the messages menu while not logged in, or attempting to comment on a file while not logged in.
+-  Profile update: Users can update their profile through the account menu by clicking on the "Options" option.
+- (Contacts, friend/foe, and user blocking are all implemented in our backend, but not currently available in our UI. Contacts can be added, but the remove contacts functionality is not 100% functional.)
 
 ### Data Sharing
 ![](diagrams/data_sharing_diagram.png)
-4. Upload -
-5. Meta data input -
-6. Download/View -
+- Upload: Users can upload a file if logged in by selecting the upload button on the top app bar. This will redirect them to the upload page.
+- Meta data input: - On the upload page, users have the option to input meta data that will be associated with the file they are uploading.
+- Download/View: Users can navigate to a file using tools such as the search bar, channels, playlists or the home page. Once on a files page, users can download and view the file.
 
 ### Media Organization
 ![](diagrams/media_organization_diagram.png)
-7. Browse by category -
-8. Channel -
-9. Playlist -
-10. Favorite lists -
+- Browse by Category: On the side menu bar, users can browse file organized by type (image, video, text). When searching for files, the search options feature also allows users to specify categories of files they want to search for.
+- Channel: Each user has a channel, where their uploaded files and public playlists are visible. The channel, is the equivalent of the user's public profile.
+- Playlists: Users can add files to existing playlists or new playlists using the add button that is available under files. Public playlists can then be seen on the user's channel.
+- Favorite Lists: Users can add files to their favorites using the add button that is available under files. A user's favorites can then be seen on the user's channel.
+- Most viewed: When searching for files, users can organize the files by those with the most views.
+- Most recently uploaded: When searching for files, users can organize the files by those with the most recent upload dates.
 
 ### User interaction
 ![](diagrams/user_interaction_diagram.png)
-11. Messaging -
-12. Commenting -
+- Messaging: Users can message their contacts using the message menu available through the top app bar. In the message menu, user's can see and select their most recent conversations to open the message dialog where they can see the entire conversation and exchange messages. Users can add contacts, but navigating to each others channels and using the contact button.
+- Commenting: Users can comment on files, by navigating to the file's page and using the comment component available under the file's view.
 
 ### Search
-13. Keywords-based search - (see Media Organization Diagram)
+- Keywords-based search: Using the search bar to search for files by keyword.
+- Feature-based media search: Users can search for files according to different file features using the search options component.
 
 ## Server
 Our server is split into 13 modules written in Python3
