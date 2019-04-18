@@ -35,6 +35,7 @@ export const register = async (creds) => {
 
     Cookies.set('access_token', tokens.token, {expires: expiration});
     Cookies.set('user_id', res.response.user_id, {expires: expiration});
+    Cookies.set('username', res.response.username, {expires: expiration});
     return res;
   }
   catch(err) {
