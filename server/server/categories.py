@@ -58,8 +58,6 @@ def remove_category(category_id):
   result = db.engine.execute('SELECT category_id,category FROM Category WHERE category_id={ID}'.format(ID=category_id))
   data = get_query_data(result)
   if data:
-    # Unlinks neccessary relationships
-    db.engine.execute('DELETE FROM files_categories WHERE category_id={ID}'.format(ID=category_id))
     db.engine.execute('DELETE FROM Category WHERE category_id={ID}'.format(ID=category_id))
     return JSONResponse(data[0]).end()
   return JSONResponse("category_id {ID} not found".format(ID=category_id),404,True).end()

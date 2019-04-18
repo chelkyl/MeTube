@@ -34,10 +34,13 @@ def get_user(user_id):
 def add_user():
   # shorten name for easier access
   req = request.json
+  if not req:
+    return JSONResponse("Request missing JSON body",400,True).end()
+
   # get json data
-  email    = None if req is None else req.get('email',None)
-  username = None if req is None else req.get('username',None)
-  password = None if req is None else req.get('password',None)
+  email    = req.get('email',None)
+  username = req.get('username',None)
+  password = req.get('password',None)
   channel_description = '' if req is None else req.get('channel_description','')
   # trivial validate not empty
   missing = []
@@ -98,11 +101,35 @@ def edit_user(user_id):
 
     # shorten name for easier access
     req = request.json
-    # get json data
-    description = None if req is None else req.get('channel_description',oldData['channel_description'])
+    if not req:
+      return JSONResponse("Request missing JSON body",400,True).end()
 
-    sql = text("UPDATE User SET channel_description=:DESC WHERE user_id={ID}".format(ID=user_id))
-    db.engine.execute(sql,DESC=description)
+    # get json data
+    email       = req.get('email',oldData['email'])
+    username    = req.get('username',oldData['username'])
+    # password    = req.get('password',oldData['password'])
+    description = req.get('channel_description',oldData['channel_description'])
+    
+    # make sure username and email are unique
+    result = db.engine.execute(text("SELECT user_id FROM User WHERE username=:uname AND user_id!=:id"), uname=username, id=user_id)
+    # result = db.engine.execute('SELECT user_id FROM User WHERE username="{UNAME}"'.format(UNAME=username))
+    unameUniq = len(get_query_data(result)) == 0
+    result = db.engine.execute(text("SELECT user_id FROM User WHERE email=:email AND user_id!=:id"), email=email, id=user_id)
+    # result = db.engine.execute('SELECT user_id FROM User WHERE email="{EMAIL}"'.format(EMAIL=email))
+    emailUniq = len(get_query_data(result)) == 0
+    # unameUniq = len(User.query.filter_by(username=username).all()) == 0
+    # emailUniq = len(User.query.filter_by(email=email).all()) == 0
+
+    notUniq = []
+    if not unameUniq:
+      notUniq.append('username')
+    if not emailUniq:
+      notUniq.append('email')
+    if notUniq:
+      return JSONResponse({'not unique':notUniq},400,isError=True).end()
+    
+    sql = text("UPDATE User SET username=:UNAME,email=:EMAIL,channel_description=:DESC WHERE user_id={ID}".format(ID=user_id))
+    db.engine.execute(sql,UNAME=username,EMAIL=email,DESC=description)
     result = db.engine.execute('SELECT user_id,username,email,channel_description FROM User WHERE user_id={ID}'.format(ID=user_id))
     data = get_query_data(result)
     return JSONResponse(data[0]).end()
@@ -118,11 +145,11 @@ def remove_user(user_id):
   data = get_query_data(result)
   if data:
     # Unlinks neccessary relationships
-    result = db.engine.execute('DELETE FROM subscribers WHERE subscribed_id={ID} or subscribing_id={ID}'.format(ID=user_id))
-    result = db.engine.execute('DELETE FROM contacts WHERE contacted_id={ID} or contacting_id={ID}'.format(ID=user_id))
-    result = db.engine.execute('DELETE FROM friends WHERE friended_id={ID} or friending_id={ID}'.format(ID=user_id))
-    result = db.engine.execute('DELETE FROM blocks WHERE blocked_id={ID} or blocking_id={ID}'.format(ID=user_id))
-    result = db.engine.execute('DELETE FROM user_favorites WHERE user_id={ID}'.format(ID=user_id))
+    # result = db.engine.execute('DELETE FROM subscribers WHERE subscribed_id={ID} or subscribing_id={ID}'.format(ID=user_id))
+    # result = db.engine.execute('DELETE FROM contacts WHERE contacted_id={ID} or contacting_id={ID}'.format(ID=user_id))
+    # result = db.engine.execute('DELETE FROM friends WHERE friended_id={ID} or friending_id={ID}'.format(ID=user_id))
+    # result = db.engine.execute('DELETE FROM blocks WHERE blocked_id={ID} or blocking_id={ID}'.format(ID=user_id))
+    # result = db.engine.execute('DELETE FROM user_favorites WHERE user_id={ID}'.format(ID=user_id))
     result = db.engine.execute('DELETE FROM User WHERE user_id={ID}'.format(ID=user_id))
     return JSONResponse(data[0]).end()
   return JSONResponse("user_id {ID} not found".format(ID=user_id),404,True).end()
@@ -146,9 +173,12 @@ def get_contacts(user_id):
 def add_contact():
   # shorten name for easier access
   req = request.json
+  if not req:
+    return JSONResponse("Request missing JSON body",400,True).end()
+
   # get json data
-  contacting_id = None if req is None else req.get('contacting_id',None)
-  contacted_id  = None if req is None else req.get('contacted_id',None)
+  contacting_id = req.get('contacting_id',None)
+  contacted_id  = req.get('contacted_id',None)
   # trivial validate not empty
   missing = []
   if contacting_id is None:
@@ -179,9 +209,12 @@ def add_contact():
 def remove_contact():
   # shorten name for easier access
   req = request.json
+  if not req:
+    return JSONResponse("Request missing JSON body",400,True).end()
+  
   # get json data
-  contact_removing_id = None if req is None else req.get('contact_removing_id',None)
-  contact_removed_id  = None if req is None else req.get('contact_removed_id',None)
+  contact_removing_id = req.get('contact_removing_id',None)
+  contact_removed_id  = req.get('contact_removed_id',None)
   # trivial validate not empty
   missing = []
   if contact_removing_id is None:
@@ -207,9 +240,12 @@ def remove_contact():
 def subscribe():
   # shorten name for easier access
   req = request.json
+  if not req:
+    return JSONResponse("Request missing JSON body",400,True).end()
+
   # get json data
-  subscribing_id = None if req is None else req.get('subscribing_id',None)
-  subscribed_id  = None if req is None else req.get('subscribed_id',None)
+  subscribing_id = req.get('subscribing_id',None)
+  subscribed_id  = req.get('subscribed_id',None)
   # trivial validate not empty
   missing = []
   if subscribing_id is None:
@@ -240,9 +276,12 @@ def subscribe():
 def unsubscribe():
   # shorten name for easier access
   req = request.json
+  if not req:
+    return JSONResponse("Request missing JSON body",400,True).end()
+
   # get json data
-  unsubscribing_id = None if req is None else req.get('unsubscribing_id',None)
-  unsubscribed_id  = None if req is None else req.get('unsubscribed_id',None)
+  unsubscribing_id = req.get('unsubscribing_id',None)
+  unsubscribed_id  = req.get('unsubscribed_id',None)
   # trivial validate not empty
   missing = []
   if unsubscribing_id is None:
@@ -284,9 +323,12 @@ def get_user_subscribers(user_id):
 def friend():
   # shorten name for easier access
   req = request.json
+  if not req:
+    return JSONResponse("Request missing JSON body",400,True).end()
+
   # get json data
-  friending_id = None if req is None else req.get('friending_id',None)
-  friended_id  = None if req is None else req.get('friended_id',None)
+  friending_id = req.get('friending_id',None)
+  friended_id  = req.get('friended_id',None)
   # trivial validate not empty
   missing = []
   if friending_id is None:
@@ -317,9 +359,12 @@ def friend():
 def unfriend():
   # shorten name for easier access
   req = request.json
+  if not req:
+    return JSONResponse("Request missing JSON body",400,True).end()
+  
   # get json data
-  unfriending_id = None if req is None else req.get('unfriending_id',None)
-  unfriended_id  = None if req is None else req.get('unfriended_id',None)
+  unfriending_id = req.get('unfriending_id',None)
+  unfriended_id  = req.get('unfriended_id',None)
   # trivial validate not empty
   missing = []
   if unfriending_id is None:
@@ -346,9 +391,12 @@ def unfriend():
 def block():
   # shorten name for easier access
   req = request.json
+  if not req:
+    return JSONResponse("Request missing JSON body",400,True).end()
+  
   # get json data
-  blocking_id = None if req is None else req.get('blocking_id',None)
-  blocked_id  = None if req is None else req.get('blocked_id',None)
+  blocking_id = req.get('blocking_id',None)
+  blocked_id  = req.get('blocked_id',None)
   # trivial validate not empty
   missing = []
   if blocking_id is None:
@@ -375,9 +423,12 @@ def block():
 def unblock():
   # shorten name for easier access
   req = request.json
+  if not req:
+    return JSONResponse("Request missing JSON body",400,True).end()
+  
   # get json data
-  unblocking_id = None if req is None else req.get('unblocking_id',None)
-  unblocked_id  = None if req is None else req.get('unblocked_id',None)
+  unblocking_id = req.get('unblocking_id',None)
+  unblocked_id  = req.get('unblocked_id',None)
   # trivial validate not empty
   missing = []
   if unblocking_id is None:
@@ -416,8 +467,11 @@ def favorite(user_id):
   if data:
     # shorten name for easier access
     req = request.json
+    if not req:
+      return JSONResponse("Request missing JSON body",400,True).end()
+    
     # get json data
-    file_id = None if req is None else req.get('file_id',None)
+    file_id = req.get('file_id',None)
     # trivial validate not empty
     missing = []
     if file_id is None:
@@ -451,8 +505,11 @@ def unfavorite(user_id):
   if data:
     # shorten name for easier access
     req = request.json
+    if not req:
+      return JSONResponse("Request missing JSON body",400,True).end()
+    
     # get json data
-    file_id = None if req is None else req.get('file_id',None)
+    file_id = req.get('file_id',None)
     # trivial validate not empty
     missing = []
     if file_id is None:

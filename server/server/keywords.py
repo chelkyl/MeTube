@@ -58,7 +58,7 @@ def remove_keyword(keyword_id):
   data = get_query_data(result)
   if data:
     # Unlinks neccessary relationships
-    db.engine.execute('DELETE FROM files_keywords WHERE keyword_id={ID}'.format(ID=keyword_id))
+    # db.engine.execute('DELETE FROM files_keywords WHERE keyword_id={ID}'.format(ID=keyword_id))
     db.engine.execute('DELETE FROM Keyword WHERE keyword_id={ID}'.format(ID=keyword_id))
     return JSONResponse(data[0]).end()
   return JSONResponse("keyword_id {ID} not found".format(ID=keyword_id),404,True).end()

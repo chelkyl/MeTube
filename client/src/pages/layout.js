@@ -11,6 +11,7 @@ import ViewPage from './view';
 import PlaylistPage from './playlist';
 import UserPage from './channel';
 import UploadPage from './upload';
+import OptionsPage from './options';
 import Error404Page from './pageNotFound';
 import {
   Route,
@@ -92,6 +93,7 @@ export default function Layout({children}) {
           <Route path='/view/:id' component={ViewPage}/>
           <Route path='/playlist/:id' component={PlaylistPage}/>
           <Route path='/channel/:id' component={UserPage}/>
+          <Route path='/options' component={OptionsPage}/>
           <Route component={Error404Page}/>
         </Switch>
       </main>

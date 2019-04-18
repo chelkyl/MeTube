@@ -281,11 +281,6 @@
 									"pm.test(\"Status code should be 400\", function () {",
 									"    pm.response.to.have.status(400);",
 									"});",
-									"",
-									"pm.test(\"should have returned error with parameters that were missing\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.error.missing.length).to.eql(3);",
-									"});",
 									""
 								],
 								"type": "text/javascript"

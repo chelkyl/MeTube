@@ -1,4 +1,4 @@
 FLASK_APP=server.py
-FLASK_ENV=production
-SERVER_CFG=production
+FLASK_ENV=development
+SERVER_CFG=default
 UPLOAD_DIR=file_store
