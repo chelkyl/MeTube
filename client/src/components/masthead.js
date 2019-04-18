@@ -133,6 +133,7 @@ function Masthead(props) {
         closeMenu();
         break;
       case 'options':
+        props.history.push('/options');
         closeMenu();
         break;
       case 'login':

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useReducer} from 'react';
 import classNames from 'classnames';
 import {
   blue,
@@ -12,8 +12,10 @@ import {
   Button,
   CircularProgress
 } from '@material-ui/core';
+import Api from '../apiclient';
 import { useAuthCtx } from '../authentication';
-import { Redirect, Link } from 'react-router-dom';
+import {getAuthenticatedUserID} from '../authutils';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -33,7 +35,12 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'center',
     alignItems: 'center'
   },
+  buttons: {
+    display: 'flex'
+  },
   buttonWrapper: {
+    display: 'flex',
+    alignItems: 'center',
     margin: theme.spacing.unit,
     position: 'relative'
   },
@@ -58,24 +65,33 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const initialReqState = {
-  loading: false,
+  auth: false,
+  edit: false,
   success: false
 };
 const reqStateReducer = (state, action) => {
   switch (action) {
-    case 'loading':
+    case 'submit':
       return {
-        loading: true,
+        auth: true,
+        edit: false,
         success: false
       };
-    case 'success':
+    case 'next':
       return {
-        loading: false,
+        auth: false,
+        edit: true,
+        success: false
+      }
+    case 'authSuccess':
+      return {
+        auth: false,
+        edit: false,
         success: true
       };
     case 'error':
     case 'initial':
-      return initialAuthState;
+      return initialReqState;
     default:
       return state;
   }
@@ -83,9 +99,12 @@ const reqStateReducer = (state, action) => {
 
 export default function OptionsPage(props) {
   const classes = useStyles();
-  const [isLoggedIn, authActionDispatch, errorState, authState] = useAuthCtx();
-  const [inputs, setInputs] = useState({oldPassword: '', password: '', username:'', email:''});
-  let timer = null;
+  const [isLoggedIn] = useAuthCtx();
+  const userID = getAuthenticatedUserID();
+  const [reqState, reqStateDispatch] = useReducer(reqStateReducer, initialReqState);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [inputs, setInputs] = useState({});
+  let cancel = false;
 
   let handleChange = (key) => (e) => {
     setInputs({ ...inputs, [key]: e.currentTarget.value });
@@ -95,74 +114,146 @@ export default function OptionsPage(props) {
     if(!isLoggedIn) {
       props.history.push('/login?redirect=options');
     }
-  }, []);
+    return () => {
+      cancel = true;
+    }
+  }, [isLoggedIn]);
 
   useEffect(() => {
-    if(authState.success) {
-      timer = setTimeout(() => {
-        setRedirect(true);
-      }, 800);
+    if(reqState.auth) {
+      let {username, oldPassword:password} = inputs;
+      Api.request('get','/login',{username,password})
+        .then(res => {
+          if(!cancel) reqStateDispatch('next');
+        })
+        .catch(err => {
+          if(cancel) return;
+          let msg = '';
+          // got response from server
+          if(err.response) {
+            const { status } = err.response;
+            if(status === 401) {
+              msg = 'Invalid login';
+            }
+            else if (status >= 500 && status < 600) {
+              msg = `Server error ${status}, please contact the admins`;
+            }
+            else {
+              msg = `Sorry, unknown error ${status}`;
+            }
+          }
+          // request sent but no response
+          else if(err.request) {
+            msg = err.message;
+          }
+          // catch all
+          else {
+            msg = 'Sorry, unknown error';
+          }
+          setErrorMessage(msg);
+          reqStateDispatch('error');
+        });
     }
-
-    return () => {
-      clearTimeout(timer);
+    else if(reqState.edit) {
+      let {username, password, email} = inputs;
+      Api.request('patch',`/users/${userID}`,{password,username,email},{},true)
+        .then(res => {
+          if(!cancel) reqStateDispatch('success');
+        })
+        .catch(err => {
+          if(cancel) return;
+          let msg = '';
+          // got response from server
+          if(err.response) {
+            const { status } = err.response;
+            if(status === 401) {
+              msg = 'Invalid login';
+            }
+            else if (status >= 500 && status < 600) {
+              msg = `Server error ${status}, please contact the admins`;
+            }
+            else {
+              msg = `Sorry, unknown error ${status}`;
+            }
+          }
+          // request sent but no response
+          else if(err.request) {
+            msg = err.message;
+          }
+          // catch all
+          else {
+            msg = 'Sorry, unknown error';
+          }
+          setErrorMessage(msg);
+          reqStateDispatch('error');
+        });
     }
-  }, [authState]);
+  }, [reqState]);
 
   let handleSubmit = (e) => {
     e.preventDefault();
-    if(!authState.loading) {
-      let {username, oldPassword:password} = inputs;
-      authActionDispatch({
-        type: 'login',
-        credentials: {username,password}
-      });
+    if(!reqState.loading) {
+      reqStateDispatch('submit');
     }
   }
 
-  const { loading, success } = authState;
+  const { auth, edit, success } = reqState;
+  const loading = auth || edit;
 
   return (
     <div className={classes.container}>
       <Paper className={classes.root} elevation={1}>
         <Typography variant="h5">
-          Login
+          Options
         </Typography>
         <Typography variant="body1" color="error">
-          {errorState.message}
+          {errorMessage}
         </Typography>
         <form className={classes.form} onSubmit={handleSubmit}>
-          <TextField id='username' label='Username' type='text' required={true}
-            className={classes.textField} margin='normal' variant='outlined'
-            onChange={handleChange('username')}
+          <TextField id='oldPassword' label='Current Password' type='password' required={true}
+            className={classes.textField} margin='normal' variant='outlined' autoComplete='on'
+            onChange={handleChange('oldPassword')}
             disabled={loading}
             autoFocus/>
-          <TextField id='password' label='Password' type='password' required={true}
+          <TextField id='password' label='New Password' type='password' required={true}
             className={classes.textField} margin='normal' variant='outlined' autoComplete='on'
             onChange={handleChange('password')}
             disabled={loading}/>
-          <div className={classes.buttonWrapper}>
-            <Button type='submit'
-              size='large'
-              color='primary'
-              className={classNames({
-                [classes.buttonSuccess]: success
-              })}
-              variant='contained'
-              disabled={loading}>
-              Log In
-            </Button>
-            {loading && <CircularProgress size={24} className={classes.buttonProgress}/>}
+          <TextField id='username' label='New Username' type='text' required={true}
+            className={classes.textField} margin='normal' variant='outlined'
+            onChange={handleChange('username')}
+            disabled={loading}/>
+          <TextField id='email' label='New Email' type='text' required={true}
+            className={classes.textField} margin='normal' variant='outlined' autoComplete='on'
+            onChange={handleChange('email')}
+            disabled={loading}/>
+          <div className={classes.buttons}>
+            <div className={classes.buttonWrapper}>
+              <Button type='button'
+                size='medium'
+                color='primary'
+                variant='text'
+                onClick={() => props.history.push(`/channel/${userID}`)}
+                disabled={loading}>
+                Cancel
+              </Button>
+            </div>
+            <div className={classes.buttonWrapper}>
+              <Button type='submit'
+                size='large'
+                color='primary'
+                className={classNames({
+                  [classes.buttonSuccess]: success
+                })}
+                variant='contained'
+                disabled={loading}>
+                Save
+              </Button>
+              {loading && <CircularProgress size={24} className={classes.buttonProgress}/>}
+            </div>
           </div>
         </form>
-        {redirect && <Redirect to={`/${redirectPath}`}/>}
       </Paper>
-      <Typography className={classes.registerLink}
-        variant="body1"
-        component={Link}
-        to={`/register${redirectPath !== '' ? `?redirect=${redirectPath}` : ''}`}>
-          Don't have an account? Register here!
-      </Typography>
     </div>
   );
 }
