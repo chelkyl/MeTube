@@ -2,50 +2,50 @@
 
 ##Client
 
-####user account
+### User Account
 ![](diagrams/user_account_diagram.png)
 1. Registration -
 2. Sign In -
 3. Profile update -
 
-####Data Sharing
+### Data Sharing
 ![](diagrams/data_sharing_diagram.png)
 4. Upload -
 5. Meta data input -
 6. Download/View -
 
-####Media Organization
+### Media Organization
 ![](diagrams/media_organization_diagram.png)
 7. Browse by category -
 8. Channel -
 9. Playlist -
 10. Favorite lists -
 
-####User interaction
+### User interaction
 ![](diagrams/user_interaction_diagram.png)
 11. Messaging -
 12. Commenting -
 
-####Search
+### Search
 13. Keywords-based search - (see Media Organization Diagram)
 
-##Server
+## Server
 Our server is split into 13 modules written in Python3
 each module handles request and responses to specific file and database
 queries
 
-####db.py
+### db.py
 1. uses SQLAlchemy to generate a database for the Website
 2. provides helper functions for authentication that will be used later
 
-####auth.py
+### auth.py
 1. provides a route for clients for User authentication by verifying hashed
 passwords in the database
 2. provides a route for clients to retrieve the administrators in the database
 3. provides a route for clients that validates users login request as well as
 validates current users authentication status while browsing the site
 
-####categories.py
+### categories.py
 1. provides a route for clients to get file data from all categories in the
 database
 2. provides a route for clients to get file data from files in a single category
@@ -54,12 +54,12 @@ database
 5. provides a route for clients to edit the category of an existing file
 6. provides a route for clients to remove the category of an existing file
 
-####comments.py
+### comments.py
 1. provides a route for clients to get the comments associated with a file
 2. provides a route for clients to add comments to a specified file
 3. provides a route for clients to delete a comment from associated file
 
-####keywords.py
+### keywords.py
 1. provides a route for clients to get all keywords in the database
 2. provides a route for clients to get a keyword by its keyword id
 3. provides a route for clients to add keywords to the database when a file is
@@ -69,12 +69,12 @@ uploaded
 database
 6. provides a route for clients to delete a keyword by its file and keyword ids
 
-####messages.py
+### messages.py
 1. provides a route for clients to get user messages between users
 2. provides a route for clients to update or add messages between
 users
 
-####playlist.py
+### playlist.py
 1. provides a route for clients to get all playlists for an associated users
 2. provides a route for clients to get a specific playlist by playlist id
 3. provides a route for clients to get the files associated with a playlist
@@ -85,7 +85,7 @@ by playlist id
 7. provides a route for clients to link an existing file to an existing playlist
 8. provides a route for clients to unlink a file from an existing playlist
 
-####files.py
+### files.py
 1. provides a route for clients to get file information of all files in the
 database
 2. provides a route for clients to get a specific file by file id
@@ -94,15 +94,15 @@ database
 5. provides a route for clients to edit a files meta-data
 6. provides a route for clients to delete a file from the database
 
-####response.py
+### response.py
 1. provides helper functions for sending and receiving http request
 
-####server.py
+### server.py
 1. provides helper functions for creating and deleting the database
 2. registers the other files to be used by the clients
 3. provides a route for administrators to delete the database
 
-####user.py
+### user.py
 1. provides a route for clients to get all the users in the database
 2. provides a route for clients to get a specific users information
 3. provides a route for clients to add a user to the database
@@ -119,8 +119,8 @@ database
 14. provides a route for clients to link a favorites list of a user
 15. provides a route for clients to unlnk a favorites list of a user
 
-####utils.py
+### utils.py
 1. sets the parameters for filtering search results
 
-####config.py
+### config.py
 1. sets the database variables to access a database

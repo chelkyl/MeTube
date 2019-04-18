@@ -1,24 +1,24 @@
 # MeTube User Manual
 
-####user account
+## User account
 1. Registration -
 2. Sign In -
 3. Profile update -
 
-####Data Sharing
+## Data Sharing
 4. Upload -
 5. Meta data input -
 6. Download/View -
 
-####Media Organization
+## Media Organization
 7. Browse by category -
 8. Channel -
 9. Playlist -
 10. Favorite lists -
 
-####User interaction
+## User interaction
 11. Messaging -
 12. Commenting -
 
-####Search
+## Search
 13. Keywords-based search -
