@@ -11,3 +11,7 @@ export const isAuthenticated = () => {
 export const getAuthenticatedUserID = () => {
   return Cookies.get('user_id');
 };
+
+export const getAuthenticatedUsername = () => {
+  return Cookies.get('username');
+};

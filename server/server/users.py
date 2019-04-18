@@ -5,6 +5,7 @@ from sqlalchemy.sql import text
 from utils import *
 from auth import *
 from response import ResponseObject as JSONResponse
+import time
 
 bp = Blueprint('users', __name__, url_prefix='/users')
 
@@ -109,7 +110,7 @@ def edit_user(user_id):
     username    = req.get('username',oldData['username'])
     # password    = req.get('password',oldData['password'])
     description = req.get('channel_description',oldData['channel_description'])
-    
+
     # make sure username and email are unique
     result = db.engine.execute(text("SELECT user_id FROM User WHERE username=:uname AND user_id!=:id"), uname=username, id=user_id)
     # result = db.engine.execute('SELECT user_id FROM User WHERE username="{UNAME}"'.format(UNAME=username))
@@ -127,7 +128,7 @@ def edit_user(user_id):
       notUniq.append('email')
     if notUniq:
       return JSONResponse({'not unique':notUniq},400,isError=True).end()
-    
+
     sql = text("UPDATE User SET username=:UNAME,email=:EMAIL,channel_description=:DESC WHERE user_id={ID}".format(ID=user_id))
     db.engine.execute(sql,UNAME=username,EMAIL=email,DESC=description)
     result = db.engine.execute('SELECT user_id,username,email,channel_description FROM User WHERE user_id={ID}'.format(ID=user_id))
@@ -211,7 +212,7 @@ def remove_contact():
   req = request.json
   if not req:
     return JSONResponse("Request missing JSON body",400,True).end()
-  
+
   # get json data
   contact_removing_id = req.get('contact_removing_id',None)
   contact_removed_id  = req.get('contact_removed_id',None)
@@ -230,7 +231,20 @@ def remove_contact():
   contact_removing=User.query.get(contact_removing_id)
   contact_removed=User.query.get(contact_removed_id)
   if contact_removing.is_contact(contact_removed):
+    # Unlinks neccessary relationships
+    # sent_messages = Message.query.filter_by(contacting_id=contact_removing_id, contacted_id=contact_removed_id).all()
+    # received_messages = Message.query.filter_by(contacting_id=contact_removed_id, contacted_id=contact_removing_id).all()
+    # for message in sent_messages:
+    #   db.engine.execute('DELETE FROM Message WHERE message_id={ID}'.format(ID=message.message_id))
+    # for message in received_messages:
+    #   db.engine.execute('DELETE FROM Message WHERE message_id={ID}'.format(ID=message.message_id))
+    # FIXME: should removing a contact delete your messages with them?
+    db.engine.execute('DELETE FROM Message WHERE contacted_id={contacted_id} and contacting_id={contacting_id}'.format(contacting_id=contact_removing_id,contacted_id=contact_removed_id))
+    db.engine.execute('DELETE FROM Message WHERE contacted_id={contacting_id} and contacting_id={contacted_id}'.format(contacting_id=contact_removing_id,contacted_id=contact_removed_id))
+
+    #contact_removing.contacted.remove(contact_removed)
     db.engine.execute("DELETE FROM contacts WHERE contacting_id={contacting_id} AND contacted_id={contacted_id}".format(contacting_id=contact_removing_id, contacted_id=contact_removed_id))
+
     #db.session.commit()
     return JSONResponse("Contact removed",200,False).end()
   return JSONResponse("No contact exists",404,True).end()
@@ -361,7 +375,7 @@ def unfriend():
   req = request.json
   if not req:
     return JSONResponse("Request missing JSON body",400,True).end()
-  
+
   # get json data
   unfriending_id = req.get('unfriending_id',None)
   unfriended_id  = req.get('unfriended_id',None)
@@ -393,7 +407,7 @@ def block():
   req = request.json
   if not req:
     return JSONResponse("Request missing JSON body",400,True).end()
-  
+
   # get json data
   blocking_id = req.get('blocking_id',None)
   blocked_id  = req.get('blocked_id',None)
@@ -425,7 +439,7 @@ def unblock():
   req = request.json
   if not req:
     return JSONResponse("Request missing JSON body",400,True).end()
-  
+
   # get json data
   unblocking_id = req.get('unblocking_id',None)
   unblocked_id  = req.get('unblocked_id',None)
@@ -469,7 +483,7 @@ def favorite(user_id):
     req = request.json
     if not req:
       return JSONResponse("Request missing JSON body",400,True).end()
-    
+
     # get json data
     file_id = req.get('file_id',None)
     # trivial validate not empty
@@ -507,7 +521,7 @@ def unfavorite(user_id):
     req = request.json
     if not req:
       return JSONResponse("Request missing JSON body",400,True).end()
-    
+
     # get json data
     file_id = req.get('file_id',None)
     # trivial validate not empty

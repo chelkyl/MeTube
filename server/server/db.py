@@ -240,7 +240,7 @@ class File(db.Model):
   downvotes = db.Column(db.Integer, nullable=False)
   mimetype = db.Column(db.String(40), nullable=False)
   file_type = db.Column(db.String(40), nullable=False)
-  
+
   comments = db.relationship('Comment', backref='file', lazy=True, cascade="all")
 
   def to_json(self):
@@ -336,8 +336,8 @@ class Message(db.Model):
     self.message_date = message_date
 
   message_id = db.Column(db.Integer, primary_key=True)
-  contacting_id = db.Column(db.Integer, db.ForeignKey('contacts.contacting_id',ondelete="CASCADE"), nullable=False)
-  contacted_id = db.Column(db.Integer, db.ForeignKey('contacts.contacted_id',ondelete="CASCADE"), nullable=False)
+  contacting_id = db.Column(db.Integer, db.ForeignKey('contacts.contacting_id'), nullable=False)
+  contacted_id = db.Column(db.Integer, db.ForeignKey('contacts.contacted_id'), nullable=False)
   message = db.Column(db.String(100), nullable=False)
   message_date = db.Column(db.DateTime, nullable=False)
 

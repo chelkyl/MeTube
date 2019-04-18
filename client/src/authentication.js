@@ -14,9 +14,10 @@ export const authenticate = async (creds) => {
     const tokens = res.response;
     const expires_in = tokens.expires_in_secs * 1000 - ONE_HOUR_IN_MS;
     const expiration = new Date(new Date().getTime() + expires_in);
-    
+
     Cookies.set('access_token', tokens.token, {expires: expiration});
     Cookies.set('user_id', res.response.user_id, {expires: expiration});
+    Cookies.set('username', res.response.username, {expires: expiration});
     return res;
   }
   catch(err) {
@@ -31,7 +32,7 @@ export const register = async (creds) => {
     const tokens = res.response;
     const expires_in = tokens.expires_in_secs * 1000 - ONE_HOUR_IN_MS;
     const expiration = new Date(new Date().getTime() + expires_in);
-    
+
     Cookies.set('access_token', tokens.token, {expires: expiration});
     Cookies.set('user_id', res.response.user_id, {expires: expiration});
     return res;
@@ -230,7 +231,7 @@ export default function Authenticator({children}) {
   useEffect(() => {
     doAction();
   }, [authAction]);
-  
+
   return (
     <AuthCtx.Provider value={[isLoggedIn, authActionDispatch, errorState, authState, regState]}>
       {children}

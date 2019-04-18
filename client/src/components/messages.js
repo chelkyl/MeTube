@@ -37,7 +37,7 @@ import {
 import axios from 'axios';
 import Api from '../apiclient';
 import {useAuthCtx} from '../authentication';
-import {getAuthenticatedUserID, getAccessToken} from '../authutils';
+import {getAuthenticatedUsername, getAuthenticatedUserID, getAccessToken} from '../authutils';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -88,7 +88,11 @@ export default function Messages(props) {
     var newDialogConversationsMap = new Map();
     let newestMessageIndex = messageInfo.length - 1;
     let latestMessageIndex = 1;
-    if(messageInfo[0].contacting_id !== parseInt(getAuthenticatedUserID())){
+    if(messageInfo.length===0){
+      setDialogConversations(new Map());
+      return [];
+    }
+    if(messageInfo[0].contact_username !== getAuthenticatedUsername()){
       newestMessageIndex--;
       latestMessageIndex--;
     }
@@ -96,11 +100,27 @@ export default function Messages(props) {
       //if(contactNameIDs.get(messageInfo[j].contact_username) !== undefined) {
         if(messageInfo[j].contacted_id === parseInt(getAuthenticatedUserID())){
           newMenuConversationsMap.delete(messageInfo[j].contact_username);
-          newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacting_id.toString()]);
+          if(messageInfo[j].contact_username !== getAuthenticatedUsername()){
+            newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacting_id.toString()]);
+          }
+          else if(messageInfo[j].contact_username === getAuthenticatedUsername() && j%2===0){
+            newMenuConversationsMap.set(messageInfo[j+1].contact_username, [messageInfo[j].message, messageInfo[j].contacting_id.toString()]);
+          }
+          else {
+            newMenuConversationsMap.set(messageInfo[j-1].contact_username, [messageInfo[j].message, messageInfo[j].contacting_id.toString()]);
+          }
         }
         else {
           newMenuConversationsMap.delete(messageInfo[j].contact_username);
-          newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacted_id.toString()]);
+          if(messageInfo[j].contact_username !== getAuthenticatedUsername()){
+            newMenuConversationsMap.set(messageInfo[j].contact_username, [messageInfo[j].message, messageInfo[j].contacted_id.toString()]);
+          }
+          else if(messageInfo[j].contact_username === getAuthenticatedUsername() && j%2===0){
+            newMenuConversationsMap.set(messageInfo[j+1].contact_username, [messageInfo[j].message, messageInfo[j].contacted_id.toString()]);
+          }
+          else {
+            newMenuConversationsMap.set(messageInfo[j-1].contact_username, [messageInfo[j].message, messageInfo[j].contacted_id.toString()]);
+          }
         }
       //}
     }
