@@ -25,11 +25,11 @@ https://dev.mysql.com/doc/refman/8.0/en/
 ## System Architecture
 
 ### Database Design
-![](database_schema.png)
-![](er_diagram.png)
+![](diagrams/database_schema.png)
+![](diagrams/er_diagram.png)
 
 ### Hardware and Software Design
-![](architecture_diagram.jpg)
+![](diagrams/architecture_diagram.jpg)
 
 ### System Security
 - Our user's plaintext passwords are hashed before storage in our database.
