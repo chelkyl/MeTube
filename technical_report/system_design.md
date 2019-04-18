@@ -13,13 +13,17 @@ Our application was implemented using Linux OS, Apache servers, MYSQL for the da
 The project must be deployed on a Linux system with Apache web server provided by the Clemson School of Computing and tested with both IE and Firefox as the web browser respectively.
 
 ### Roles and Responsibilities
-Charles Ison, Chelky Lin and Jacary Richardson are the primary developers for the application.
+Charles Ison, Chelky Lin, and Jacary Richardson are the primary developers for the application.
 
 ### Project References
 http://flask.pocoo.org/docs/1.0/
+
 https://reactjs.org/docs/design-principles.html
+
 https://nodejs.org/en/docs/guides/
+
 https://httpd.apache.org/
+
 https://dev.mysql.com/doc/refman/8.0/en/
 
 ## System Architecture
