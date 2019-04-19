@@ -220,6 +220,7 @@ export default function Authenticator({children}) {
         }
         break;
       case 'logout':
+        console.log('auth logging out');
         unauthenticate();
         authStateDispatch('initial');
         setIsLoggedIn(false);

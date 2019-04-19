@@ -108,7 +108,8 @@ def edit_user(user_id):
     # get json data
     email       = req.get('email',oldData['email'])
     username    = req.get('username',oldData['username'])
-    # password    = req.get('password',oldData['password'])
+    newPassword = req.get('password',None)
+    password_hash = hash_password(newPassword) if newPassword else oldData['password_hash']
     description = req.get('channel_description',oldData['channel_description'])
 
     # make sure username and email are unique
@@ -129,8 +130,8 @@ def edit_user(user_id):
     if notUniq:
       return JSONResponse({'not unique':notUniq},400,isError=True).end()
 
-    sql = text("UPDATE User SET username=:UNAME,email=:EMAIL,channel_description=:DESC WHERE user_id={ID}".format(ID=user_id))
-    db.engine.execute(sql,UNAME=username,EMAIL=email,DESC=description)
+    sql = text("UPDATE User SET username=:UNAME,email=:EMAIL,channel_description=:DESC,password_hash=:PW_HASH WHERE user_id={ID}".format(ID=user_id))
+    db.engine.execute(sql,UNAME=username,EMAIL=email,DESC=description,PW_HASH=password_hash)
     result = db.engine.execute('SELECT user_id,username,email,channel_description FROM User WHERE user_id={ID}'.format(ID=user_id))
     data = get_query_data(result)
     return JSONResponse(data[0]).end()

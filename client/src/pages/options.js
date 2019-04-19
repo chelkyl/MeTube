@@ -25,7 +25,7 @@ import {
   ExpandMore
 } from '@material-ui/icons';
 import Api from '../apiclient';
-import { useAuthCtx } from '../authentication';
+import { useAuthCtx, authenticate } from '../authentication';
 import {getAuthenticatedUserID} from '../authutils';
 
 const useStyles = makeStyles(theme => ({
@@ -86,25 +86,25 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const initialReqState = {
-  auth: false,
   edit: false,
-  success: false,
+  editsuccess: false,
+  authsuccess: false,
   warn: false,
-  delete: false,
+  deleteloading: false,
   deletesuccess: false
 };
 const reqStateReducer = (state, action) => {
   switch (action) {
     case 'submit':
-      return {...initialReqState, auth: true};
-    case 'next':
       return {...initialReqState, edit: true};
-    case 'authSuccess':
-      return {...initialReqState, success: true};
+    case 'editsuccess':
+      return {...initialReqState, editsuccess: true};
+    case 'authsuccess':
+      return {...initialReqState, authsuccess: true};
     case 'deletebutton':
       return {...initialReqState, warn: true};
     case 'deleteconfirm':
-      return {...initialReqState, delete: true};
+      return {...initialReqState, deleteloading: true};
     case 'deletesuccess':
       return {...initialReqState, deletesuccess: true};
     case 'deletecancel':
@@ -118,12 +118,13 @@ const reqStateReducer = (state, action) => {
 
 export default function OptionsPage(props) {
   const classes = useStyles();
-  const [isLoggedIn] = useAuthCtx();
+  const [isLoggedIn,authActionDispatch] = useAuthCtx();
   const userID = getAuthenticatedUserID();
   const [reqState, reqStateDispatch] = useReducer(reqStateReducer, initialReqState);
   const [errorMessage, setErrorMessage] = useState('');
   const [inputs, setInputs] = useState({});
   const [deleteDialogOpen,setDeleteDialogOpen] = useState(false);
+  const [deleteSuccessDialogOpen,setDeleteSuccessDialogOpen] = useState(false);
   let cancel = false;
 
   let handleChange = (key) => (e) => {
@@ -131,7 +132,7 @@ export default function OptionsPage(props) {
   }
 
   useEffect(() => {
-    if(!isLoggedIn) {
+    if(!isLoggedIn && !reqState.deletesuccess) {
       props.history.push('/login?redirect=options');
     }
     return () => {
@@ -139,12 +140,57 @@ export default function OptionsPage(props) {
     }
   }, [isLoggedIn]);
 
+  let try_auth = async () => {
+    try {
+      let {username, password} = inputs;
+      let response = await authenticate({username,password});
+      if(response.error) {
+        reqStateDispatch('error');
+        setErrorMessage(response.error);
+      }
+      else {
+        reqStateDispatch('authsuccess');
+        setErrorMessage('');
+      }
+    }
+    catch(err) {
+      if(!cancel) return;
+      let msg = '';
+      // got response from server
+      if(err.response) {
+        const { status } = err.response;
+        if(status === 401) {
+          msg = 'Invalid login';
+        }
+        else if (status >= 500 && status < 600) {
+          msg = `Server error ${status}, please contact the admins`;
+        }
+        else {
+          msg = `Sorry, unknown error ${status}`;
+        }
+      }
+      // request sent but no response
+      else if(err.request) {
+        msg = err.message;
+      }
+      // catch all
+      else {
+        msg = 'Sorry, unknown error';
+      }
+      reqStateDispatch('error');
+      setErrorMessage(msg);
+    }
+  }
+
   useEffect(() => {
-    if(reqState.auth) {
-      let {username, oldPassword:password} = inputs;
-      Api.request('get','/login',{username,password})
+    let {edit, editsuccess, authsuccess, warn, deleteloading, deletesuccess} = reqState;
+    if(edit) {
+      let {oldUsername, oldPassword, username, password, email} = inputs;
+      Api.request('patch',`/users/${userID}`,{password,username,email},{auth:{'username':oldUsername,'password':oldPassword}})
         .then(res => {
-          if(!cancel) reqStateDispatch('next');
+          console.log('patch',res,cancel);
+          if(cancel) return;
+          reqStateDispatch('editsuccess');
         })
         .catch(err => {
           if(cancel) return;
@@ -174,44 +220,16 @@ export default function OptionsPage(props) {
           reqStateDispatch('error');
         });
     }
-    else if(reqState.warn) {
+    else if(editsuccess) {
+      try_auth();
+    }
+    else if(authsuccess) {
+
+    }
+    else if(warn) {
       setDeleteDialogOpen(true);
     }
-    else if(reqState.edit) {
-      let {username, password, email} = inputs;
-      Api.request('patch',`/users/${userID}`,{password,username,email},{},true)
-        .then(res => {
-          if(!cancel) reqStateDispatch('success');
-        })
-        .catch(err => {
-          if(cancel) return;
-          let msg = '';
-          // got response from server
-          if(err.response) {
-            const { status } = err.response;
-            if(status === 401) {
-              msg = 'Invalid login';
-            }
-            else if (status >= 500 && status < 600) {
-              msg = `Server error ${status}, please contact the admins`;
-            }
-            else {
-              msg = `Sorry, unknown error ${status}`;
-            }
-          }
-          // request sent but no response
-          else if(err.request) {
-            msg = err.message;
-          }
-          // catch all
-          else {
-            msg = 'Sorry, unknown error';
-          }
-          setErrorMessage(msg);
-          reqStateDispatch('error');
-        });
-    }
-    else if(reqState.delete) {
+    else if(deleteloading) {
       Api.request('delete',`/users/${userID}`,{},{},true)
         .then(res => {
           if(!cancel) reqStateDispatch('deletesuccess');
@@ -244,20 +262,33 @@ export default function OptionsPage(props) {
           reqStateDispatch('error');
         });
     }
+    else if(deletesuccess) {
+      console.log('deletesuccess');
+      setDeleteDialogOpen(false);
+      authActionDispatch({type:'logout'});
+      setDeleteSuccessDialogOpen(true);
+    }
   }, [reqState]);
 
   let handleSubmit = (e) => {
     e.preventDefault();
-    if(!reqState.loading) {
+    let {username, password, email} = inputs;
+    if(username === '' && password === '' && email === '') {
+      setErrorMessage('Nothing to change');
+    }
+    else if(!reqState.loading) {
       reqStateDispatch('submit');
     }
   }
   let handleDeleteButton = (e) => {
     reqStateDispatch('deletebutton');
   }
+  let handleDeleteConfirmButton = (e) => {
+    reqStateDispatch('deleteconfirm');
+  }
 
-  const { auth, edit, success } = reqState;
-  const loading = auth || edit;
+  const { edit, authsuccess, deleteloading } = reqState;
+  const loading = deleteloading || edit;
 
   return (
     <div className={classes.container}>
@@ -269,20 +300,24 @@ export default function OptionsPage(props) {
           {errorMessage}
         </Typography>
         <form className={classes.form} onSubmit={handleSubmit}>
+          <TextField id='oldUsername' label='Current Username' type='text' required={true}
+            className={classes.textField} margin='normal' variant='outlined'
+            onChange={handleChange('oldUsername')}
+            disabled={loading}
+            autoFocus/>
           <TextField id='oldPassword' label='Current Password' type='password' required={true}
             className={classes.textField} margin='normal' variant='outlined' autoComplete='on'
             onChange={handleChange('oldPassword')}
-            disabled={loading}
-            autoFocus/>
-          <TextField id='password' label='New Password' type='password' required={true}
+            disabled={loading}/>
+          <TextField id='password' label='New Password' type='password'
             className={classes.textField} margin='normal' variant='outlined' autoComplete='on'
             onChange={handleChange('password')}
             disabled={loading}/>
-          <TextField id='username' label='New Username' type='text' required={true}
+          <TextField id='username' label='New Username' type='text'
             className={classes.textField} margin='normal' variant='outlined'
             onChange={handleChange('username')}
             disabled={loading}/>
-          <TextField id='email' label='New Email' type='text' required={true}
+          <TextField id='email' label='New Email' type='text'
             className={classes.textField} margin='normal' variant='outlined' autoComplete='on'
             onChange={handleChange('email')}
             disabled={loading}/>
@@ -302,7 +337,7 @@ export default function OptionsPage(props) {
                 size='large'
                 color='primary'
                 className={classNames({
-                  [classes.buttonSuccess]: success
+                  [classes.buttonSuccess]: authsuccess
                 })}
                 variant='contained'
                 disabled={loading}>
@@ -339,11 +374,11 @@ export default function OptionsPage(props) {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)} color="inherit" autoFocus>Cancel</Button>
-          <Button onClick={handleDeleteButton} className={classes.deleteButton}>Delete</Button>
+          <Button onClick={() => setDeleteDialogOpen(false)} color="primary" autoFocus>Cancel</Button>
+          <Button onClick={handleDeleteConfirmButton} className={classes.deleteButton}>Delete</Button>
         </DialogActions>
       </Dialog>
-      <Dialog open={reqState.deletesuccess} onClose={() => props.history.push('/')}
+      <Dialog open={deleteSuccessDialogOpen} onClose={() => props.history.push('/')}
         aria-labelledby="delete-dialog-title" aria-describedby='delete-dialog-desc'>
         <DialogTitle id="delete-dialog-title">Account Deleted</DialogTitle>
         <DialogContent>
