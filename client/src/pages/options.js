@@ -15,10 +15,15 @@ import {
   ExpansionPanel,
   ExpansionPanelSummary,
   ExpansionPanelDetails,
+  Dialog,
   DialogTitle,
+  DialogContent,
   DialogContentText,
   DialogActions
 } from '@material-ui/core';
+import {
+  ExpandMore
+} from '@material-ui/icons';
 import Api from '../apiclient';
 import { useAuthCtx } from '../authentication';
 import {getAuthenticatedUserID} from '../authutils';
@@ -308,7 +313,7 @@ export default function OptionsPage(props) {
           </div>
         </form>
         <ExpansionPanel>
-          <ExpansionPanelSummary expandIcon={}>
+          <ExpansionPanelSummary expandIcon={<ExpandMore />}>
             <Typography className={classes.etcOptsHeading}>More Options</Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
