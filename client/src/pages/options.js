@@ -2,7 +2,8 @@ import React, {useState, useEffect, useReducer} from 'react';
 import classNames from 'classnames';
 import {
   blue,
-  green
+  green,
+  red
 } from '@material-ui/core/colors';
 import { makeStyles } from '@material-ui/styles';
 import {
@@ -10,12 +11,17 @@ import {
   Typography,
   TextField,
   Button,
-  CircularProgress
+  CircularProgress,
+  ExpansionPanel,
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
+  DialogTitle,
+  DialogContentText,
+  DialogActions
 } from '@material-ui/core';
 import Api from '../apiclient';
 import { useAuthCtx } from '../authentication';
 import {getAuthenticatedUserID} from '../authutils';
-import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -24,7 +30,8 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center'
   },
   root: {
-    display: 'block',
+    display: 'flex',
+    flexDirection: 'column',
     ...theme.mixins.gutters(),
     paddingTop: theme.spacing.unit * 2,
     paddingBottom: theme.spacing.unit * 2
@@ -61,34 +68,41 @@ const useStyles = makeStyles(theme => ({
   cancelLink: {
     textDecoration: 'none',
     marginTop: theme.spacing.unit * 2
+  },
+  etcOptsHeading: {
+
+  },
+  deleteButton: {
+    backgroundColor: red[700],
+    '&:hover': {
+      backgroundColor: red[900]
+    }
   }
 }));
 
 const initialReqState = {
   auth: false,
   edit: false,
-  success: false
+  success: false,
+  warn: false,
+  delete: false,
+  deletesuccess: false
 };
 const reqStateReducer = (state, action) => {
   switch (action) {
     case 'submit':
-      return {
-        auth: true,
-        edit: false,
-        success: false
-      };
+      return {...initialReqState, auth: true};
     case 'next':
-      return {
-        auth: false,
-        edit: true,
-        success: false
-      }
+      return {...initialReqState, edit: true};
     case 'authSuccess':
-      return {
-        auth: false,
-        edit: false,
-        success: true
-      };
+      return {...initialReqState, success: true};
+    case 'deletebutton':
+      return {...initialReqState, warn: true};
+    case 'deleteconfirm':
+      return {...initialReqState, delete: true};
+    case 'deletesuccess':
+      return {...initialReqState, deletesuccess: true};
+    case 'deletecancel':
     case 'error':
     case 'initial':
       return initialReqState;
@@ -104,6 +118,7 @@ export default function OptionsPage(props) {
   const [reqState, reqStateDispatch] = useReducer(reqStateReducer, initialReqState);
   const [errorMessage, setErrorMessage] = useState('');
   const [inputs, setInputs] = useState({});
+  const [deleteDialogOpen,setDeleteDialogOpen] = useState(false);
   let cancel = false;
 
   let handleChange = (key) => (e) => {
@@ -154,11 +169,47 @@ export default function OptionsPage(props) {
           reqStateDispatch('error');
         });
     }
+    else if(reqState.warn) {
+      setDeleteDialogOpen(true);
+    }
     else if(reqState.edit) {
       let {username, password, email} = inputs;
       Api.request('patch',`/users/${userID}`,{password,username,email},{},true)
         .then(res => {
           if(!cancel) reqStateDispatch('success');
+        })
+        .catch(err => {
+          if(cancel) return;
+          let msg = '';
+          // got response from server
+          if(err.response) {
+            const { status } = err.response;
+            if(status === 401) {
+              msg = 'Invalid login';
+            }
+            else if (status >= 500 && status < 600) {
+              msg = `Server error ${status}, please contact the admins`;
+            }
+            else {
+              msg = `Sorry, unknown error ${status}`;
+            }
+          }
+          // request sent but no response
+          else if(err.request) {
+            msg = err.message;
+          }
+          // catch all
+          else {
+            msg = 'Sorry, unknown error';
+          }
+          setErrorMessage(msg);
+          reqStateDispatch('error');
+        });
+    }
+    else if(reqState.delete) {
+      Api.request('delete',`/users/${userID}`,{},{},true)
+        .then(res => {
+          if(!cancel) reqStateDispatch('deletesuccess');
         })
         .catch(err => {
           if(cancel) return;
@@ -195,6 +246,9 @@ export default function OptionsPage(props) {
     if(!reqState.loading) {
       reqStateDispatch('submit');
     }
+  }
+  let handleDeleteButton = (e) => {
+    reqStateDispatch('deletebutton');
   }
 
   const { auth, edit, success } = reqState;
@@ -253,7 +307,49 @@ export default function OptionsPage(props) {
             </div>
           </div>
         </form>
+        <ExpansionPanel>
+          <ExpansionPanelSummary expandIcon={}>
+            <Typography className={classes.etcOptsHeading}>More Options</Typography>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>
+            <div className={classes.buttonWrapper}>
+              <Button type='button'
+                size='large'
+                className={classes.deleteButton}
+                variant='contained'
+                onClick={handleDeleteButton}
+                disabled={loading}>
+                Delete Account
+              </Button>
+            </div>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
       </Paper>
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}
+        aria-labelledby="deleteconfirm-dialog-title" aria-describedby='deleteconfirm-dialog-desc'>
+        <DialogTitle id="deleteconfirm-dialog-title">Confirm Delete Account</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="deleteconfirm-dialog-description">
+            Are you sure you want to delete your account?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} color="inherit" autoFocus>Cancel</Button>
+          <Button onClick={handleDeleteButton} className={classes.deleteButton}>Delete</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={reqState.deletesuccess} onClose={() => props.history.push('/')}
+        aria-labelledby="delete-dialog-title" aria-describedby='delete-dialog-desc'>
+        <DialogTitle id="delete-dialog-title">Account Deleted</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Your account has been deleted.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => props.history.push('/')} color="primary" autoFocus>Back to home</Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
