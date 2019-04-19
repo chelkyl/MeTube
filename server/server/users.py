@@ -239,11 +239,11 @@ def remove_contact():
     # for message in received_messages:
     #   db.engine.execute('DELETE FROM Message WHERE message_id={ID}'.format(ID=message.message_id))
     # FIXME: should removing a contact delete your messages with them?
-    db.engine.execute('DELETE FROM Message WHERE contacted_id={contacted_id} and contacting_id={contacting_id}'.format(contacting_id=contact_removing_id,contacted_id=contact_removed_id))
-    db.engine.execute('DELETE FROM Message WHERE contacted_id={contacting_id} and contacting_id={contacted_id}'.format(contacting_id=contact_removing_id,contacted_id=contact_removed_id))
+    #db.engine.execute('DELETE FROM Message WHERE contacted_id={contacted_id} and contacting_id={contacting_id}'.format(contacting_id=contact_removing_id,contacted_id=contact_removed_id))
+    #db.engine.execute('DELETE FROM Message WHERE contacted_id={contacting_id} and contacting_id={contacted_id}'.format(contacting_id=contact_removing_id,contacted_id=contact_removed_id))
 
     #contact_removing.contacted.remove(contact_removed)
-    db.engine.execute("DELETE FROM contacts WHERE contacting_id={contacting_id} AND contacted_id={contacted_id}".format(contacting_id=contact_removing_id, contacted_id=contact_removed_id))
+    db.engine.execute("DELETE FROM contacts WHERE (contacting_id={contacting_id} AND contacted_id={contacted_id})".format(contacting_id=contact_removing_id, contacted_id=contact_removed_id))
 
     #db.session.commit()
     return JSONResponse("Contact removed",200,False).end()

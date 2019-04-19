@@ -56,7 +56,7 @@ subscribers = db.Table('subscribers',
 
 contacts = db.Table('contacts',
   db.Column('contacting_id', db.Integer, db.ForeignKey('User.user_id',ondelete="CASCADE")),
-  db.Column('contacted_id', db.Integer, db.ForeignKey('User.user_id',ondelete="CASCADE"))
+  db.Column('contacted_id', db.Integer, db.ForeignKey('User.user_id', ondelete="CASCADE"))
 )
 
 friends = db.Table('friends',
@@ -336,8 +336,8 @@ class Message(db.Model):
     self.message_date = message_date
 
   message_id = db.Column(db.Integer, primary_key=True)
-  contacting_id = db.Column(db.Integer, db.ForeignKey('contacts.contacting_id'), nullable=False)
-  contacted_id = db.Column(db.Integer, db.ForeignKey('contacts.contacted_id'), nullable=False)
+  contacting_id = db.Column(db.Integer, db.ForeignKey('contacts.contacting_id', ondelete="CASCADE"), nullable=False)
+  contacted_id = db.Column(db.Integer, db.ForeignKey('contacts.contacted_id', ondelete="CASCADE"), nullable=False)
   message = db.Column(db.String(100), nullable=False)
   message_date = db.Column(db.DateTime, nullable=False)
 
