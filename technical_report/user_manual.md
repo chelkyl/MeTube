@@ -1,24 +1,24 @@
 # MeTube User Manual
 
 ## User account
-1. Registration -
-2. Sign In -
-3. Profile update -
+1. Registration - The user will first click the drop-down menu on the top-right corner of the homepage. Once the menu is open, the user selects the 'Login' option and is taken to a page that asks for a username and password. From there, the user will click on the text under the text fields offering to register to the site. Once pressed, the user is sent to a registration page that has text fields with accompanying descriptions of what the user needs to provide. The user must enter a valid email, a username, and a password to register successfully.
+2. Sign In - The user will first click the drop-down menu on the top-right corner of the homepage. Once the menu is open, the user selects the 'Login' option and is taken to a page that asks for a username and password. From there, the user will enter a username and password and click the 'Login' button. If authenticated, the user will then see the button turn green and will be redirected to the home page or a previous page.
+3. Profile Update - Once logged in, the user can open the drop-down menu on the top-right corner and select the 'Account' option. This will redirect to the user's own channel page. The first tab on the channel page is the user's profile description, which has a small pencil symbol that the user can click to change the profile description.
 
 ## Data Sharing
-4. Upload -
-5. Meta data input -
-6. Download/View -
+4. Upload - Once logged in, the user will now see a new 'Upload' button with an icon of a arrow pointing up inside a cloud. Once pressed, the user is sent to the upload page. There, the user can upload a file as long as they fill out the required title and metadata for the file. The other options (description, keywords, and category) are optional. Once a file and its title are provided, the user can then press the 'Upload' button in the lower-right corner of the page and have the file uploaded to the server and cataloged in the database.
+5. Metadata Input - File metadata is provided on the upload form.
+6. Download/View - To both download and view a file uploaded by a user, the file must either be searched for or found on a user's channel. Once a file is displayed in the search results or on a user's channel, it can be clicked which will send the user to a viewer page. This page has a media player/viewer centered on the page that will display the file selected. There is a button in the lower-right corner just below the player that allows users to download the file being viewed.
 
 ## Media Organization
-7. Browse by category -
-8. Channel -
-9. Playlist -
-10. Favorite lists -
+7. Browse by Category - Users can browse through three major categories on the sidebar, shown by clicking on the toggle button in the upper-left of the page. Once pressed, the options 'Images', 'Videos', and 'Music' are presented on the sidebar. These options redirect to the search page which shows files filtered by the selected category.
+8. Channel - The second tab on the channel page provides a path to the user's uploaded files.
+9. Playlist - Playlists can be created in the Add to Playlist button, which is an icon consisting of 3 stacked dashes with a plus sign in the lower-right of the file viewer page only visible when the user has been authenticated. Once clicked, the user is provided the option to either add the file to an existing playlist or create a new one. The existing playlist can be selected via a checkbox input associated with an existing playlist. Under that, a 'Create Playlist' button will expand when clicked to ask for the metadata for the new playlist the user wishes to create.
+10. Favorite Lists - The favorites list is implemented as the first playlist a user has. It can be found within the Playlists tab on the user's channel page. Files are added to the favorites list via the playlist button described above.
 
 ## User interaction
-11. Messaging -
-12. Commenting -
+11. Messaging - To get to an authenticated user's messages, the button in the top-right corner, with an icon that looks like two stacked speech bubbles, will expand when clicked to show sent and received messages organized by recipient. A new message can be created by clicking on the 'New Message' button that is the first option in the drop-down. Once pressed, the user is prompted to select a contact to send the message to as well as the message to send. There is also a 'Reply' button to the right of each users' separate conversations.  
+12. Commenting - Once an authenticated user navigates to a file's viewer page, a comment can be written by typing in the text field that is under the file description. Once submitted, the comment will be set for the file being viewed.
 
 ## Search
-13. Keywords-based search -
+13. Keywords-based Search - Keywords are specified on upload and can be searched via the search bar in the top navigation bar. Searches can be refined further once the results are displayed by expanding the 'Search Options' drop-down at the top of the results.
