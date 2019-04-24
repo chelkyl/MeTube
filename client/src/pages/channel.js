@@ -65,7 +65,9 @@ export default function UserPage(props) {
   const [contactMenuAnchor, setContactMenuAnchor] = useState(null);
   const [isLoggedIn] = useAuthCtx();
   const [contactPrompt, setContactPrompt] = useState('');
+  const [subscribePrompt, setSubscriberPrompt] = useState('');
   const [isContact, setIsContact] = useState();
+  const [isSubscriber, setIsSubscriber] = useState();
   const isContactMenuOpen = Boolean(contactMenuAnchor);
   let cancel = false;
   let curPath = props.match.url;
@@ -104,7 +106,7 @@ export default function UserPage(props) {
     return () => {
       cancel = true;
     }
-  }, [userID]);
+  }, [userID, isSubscriber]);
 
   useEffect(() => {
     if(isLoggedIn){
@@ -160,6 +162,60 @@ export default function UserPage(props) {
       }
   }, [isContactMenuOpen]);
 
+  useEffect(() => {
+    if(isLoggedIn){
+      Api.request('get',`/users/${getAuthenticatedUserID()}/subscribers_info`)
+        .then(res => {
+          if(!cancel) {
+            if(getSubscribers(res.data.response).indexOf(username)===-1){
+              setIsSubscriber(false);
+              setSubscriberPrompt("Subscribe.")
+            }
+            else {
+              setIsSubscriber(true);
+              setSubscriberPrompt("Unsubscribe.")
+            }
+          }
+        })
+        .catch(err => {
+          let msg = '';
+          // got response from server
+          if(err.response) {
+            console.log(err.response);
+            const { status } = err.response;
+            if (status >= 500 && status < 600) {
+              msg = `Server error ${status}, please contact the admins`;
+            }
+            else if (status === 404) {
+              msg = "Subscribers not found";
+            }
+            else if (status === 403) {
+              msg = "Subscribers permission blocked";
+            }
+            else {
+              msg = `Sorry, unknown error ${status}`;
+            }
+          }
+          // request sent but no response
+          else if(err.request) {
+            console.log(err.request);
+            msg = 'Could not connect to the server';
+          }
+          // catch all
+          else {
+            console.log(err);
+            msg = 'Sorry, unknown error';
+          }
+          console.log(msg, err);
+          if(cancel) return; //TODO: set error status message in global app status or in the messages panel
+        });
+      }
+
+      return () => {
+        cancel = true;
+      }
+  }, [isContactMenuOpen]);
+
   let handleTabChange = (e, newValue) => {
     setTabIndex(newValue);
     props.history.push(`${curPath}/${newValue}`);
@@ -188,12 +244,31 @@ export default function UserPage(props) {
     closeContactMenu();
   }
 
+  function toggleIsSubscriber(){
+    if(isSubscriber){
+      unsubscribe();
+    }
+    else {
+      subscribe();
+    }
+    setIsSubscriber(!isSubscriber);
+    closeContactMenu();
+  }
+
   function getContacts(contactsInfo){
     let newContacts = [];
     for(let i=0; i<contactsInfo.length; i++){
       newContacts.push(contactsInfo[i].username);
     }
     return newContacts;
+  }
+
+  function getSubscribers(subscribersInfo){
+    let newSubscribers = [];
+    for(let i=0; i<subscribersInfo.length; i++){
+      newSubscribers.push(subscribersInfo[i].username);
+    }
+    return newSubscribers;
   }
 
   async function addContact() {
@@ -210,6 +285,24 @@ export default function UserPage(props) {
     }
     catch(err) {
       console.log('contact add',err);
+      throw err;
+    }
+  }
+
+  async function subscribe() {
+    const newSubscriber = {
+      subscribing_id: getAuthenticatedUserID(),
+      subscribed_id: userID
+    }
+    console.log('adding subscriber',newSubscriber,getAccessToken());
+    try {
+      const response = await Api.request('link','/users/subscribe',newSubscriber,{},true);
+      console.log('subscriber',response);
+      const res = response.data;
+      return res;
+    }
+    catch(err) {
+      console.log('subscriber',err);
       throw err;
     }
   }
@@ -232,11 +325,30 @@ export default function UserPage(props) {
     }
   }
 
+  async function unsubscribe() {
+    const oldSubscriber = {
+      unsubscribing_id: getAuthenticatedUserID(),
+      unsubscribed_id: userID
+    }
+    console.log('removing subscriber',oldSubscriber,getAccessToken());
+    try {
+      const response = await Api.request('unlink','/users/unsubscribe',oldSubscriber,{},true);
+      console.log('remove subscriber',response);
+      const res = response.data;
+      return res;
+    }
+    catch(err) {
+      console.log('remove subscriber',err);
+      throw err;
+    }
+  }
+
   const contactMenu = (
     <Menu anchorEl={contactMenuAnchor} open={isContactMenuOpen} onClose={closeContactMenu} >
       {
         isLoggedIn ? [
-          <MenuItem key={'toggleContact'} onClick={() => toggleIsContact()}>{contactPrompt}</MenuItem>
+          <MenuItem key={'toggleContact'} onClick={() => toggleIsContact()}>{contactPrompt}</MenuItem>,
+          <MenuItem key={'toggleSubscribe'} onClick={() => toggleIsSubscriber()}>{subscribePrompt}</MenuItem>
         ] : (
           <MenuItem component={Link} to='/login'>
             <ListItemText inset primary="Please login to contact." />

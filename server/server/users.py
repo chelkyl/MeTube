@@ -332,6 +332,13 @@ def get_user_subscribers(user_id):
     return JSONResponse(data[0]).end()
   return JSONResponse("Not found",404,True).end()
 
+@bp.route('/<user_id>/subscribers_info',methods=['GET'])
+def get_user_subscribers_info(user_id):
+  result = db.engine.execute('SELECT subscribing_id, subscribed_id, User.username FROM subscribers INNER JOIN User ON User.user_id=subscribed_id WHERE subscribing_id={ID}'.format(ID=user_id))
+  data = get_query_data(result)
+  opts = get_request_opts(request)
+  return JSONResponse(filter_sort_paginate(data,opts)).end()
+
 @bp.route('/friend',methods=['LINK'])
 @auth.login_required
 def friend():
