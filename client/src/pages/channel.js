@@ -29,7 +29,6 @@ import {
 } from 'react-router-dom';
 import axios from 'axios';
 import Api from '../apiclient';
-import { basicRequestCatch } from '../utils';
 import {useAuthCtx} from '../authentication';
 import {getAuthenticatedUserID, getAccessToken} from '../authutils';
 
@@ -92,6 +91,7 @@ export default function UserPage(props) {
     axios.all(requests.list)
       .then(responses => {
         if(cancel) return;
+        console.log('channel get',responses);
         let data = {};
         for(let i=0;i<responses.length;++i) {
           let res = responses[i];
@@ -101,7 +101,32 @@ export default function UserPage(props) {
         };
         setUserInfo(data);
       })
-      .catch(basicRequestCatch('channel'));
+      .catch(err => {
+        if(cancel) return;
+        let msg = '';
+        // got response from server
+        if(err.response) {
+          const { status } = err.response;
+          if(status === 404) {
+            props.history.push('/userNotFound');
+          }
+          else if (status >= 500 && status < 600) {
+            msg = `Server error ${status}, please contact the admins`;
+          }
+          else {
+            msg = `Sorry, unknown error ${status}`;
+          }
+        }
+        // request sent but no response
+        else if(err.request) {
+          msg = err.message;
+        }
+        // catch all
+        else {
+          msg = 'Sorry, unknown error';
+        }
+        console.log('channel',msg);
+      });
 
     return () => {
       cancel = true;

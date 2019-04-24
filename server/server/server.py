@@ -49,8 +49,8 @@ def configure_app():
 def create_db():
   global ERR_IN_CREATE
   with app.app_context():
-    db.create_all()
     try:
+      db.create_all()
       admin = Admin.query.filter_by(username='admin').first()
       if not admin:
         admin = Admin(username='admin',password='test')
@@ -62,6 +62,7 @@ def create_db():
         print("Will not try to fix")
       elif ERR_IN_CREATE:
         print("Could not be fixed")
+        print(err)
       if isFatal:
         print("Fatal, exiting")
         exit()
@@ -69,6 +70,13 @@ def create_db():
       print("Error:",err._message(),"\nTrying to fix, recreating database")
       ERR_IN_CREATE = True
       recreate_db()
+    finally:
+      admin = Admin.query.filter_by(username='admin').first()
+      if not admin:
+        admin = Admin(username='admin',password='test')
+        db.session.add(admin)
+        db.session.commit()
+
 
 def clear_file_store():
   folder = app.config['UPLOAD_DIR']
