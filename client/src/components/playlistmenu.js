@@ -202,7 +202,6 @@ export default function PlaylistMenu(props) {
     }
   };
 
-  //TODO: add favorites
   let plistItems = [
     <ListItem key={`plist-favorites`} button onClick={onClickPlaylist('favorites')} className={classes.listItem}>
       <Checkbox checked={inputs[`checkbox-favorites`] || false} tabIndex={-1} disableRipple className={classes.listItemBox}/>
@@ -210,7 +209,7 @@ export default function PlaylistMenu(props) {
     </ListItem>
   ];
   if(playlists.length > 0) {
-    plistItems.concat(playlists.map(result => {
+    plistItems.push(...playlists.map(result => {
       let {playlist_id, title} = result;
       return (
         <ListItem key={`plist-result-${playlist_id}`} button onClick={onClickPlaylist(playlist_id)} className={classes.listItem}>

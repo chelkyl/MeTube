@@ -223,6 +223,7 @@ export default function Authenticator({children}) {
         console.log('auth logging out');
         unauthenticate();
         authStateDispatch('initial');
+        regStateDispatch('initial');
         setIsLoggedIn(false);
         break;
       default:
