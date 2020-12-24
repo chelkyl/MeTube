@@ -1,9 +1,7 @@
 import React from 'react';
 import classNames from 'classnames';
 import { makeStyles, useTheme } from '@material-ui/styles';
-import {
-  unstable_useMediaQuery as useMediaQuery
-} from '@material-ui/core/useMediaQuery';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 import {
   Card,
   CardActionArea,

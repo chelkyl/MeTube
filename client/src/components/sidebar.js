@@ -12,9 +12,7 @@ import {
   ListItemIcon,
   ListItemText
 } from '@material-ui/core';
-import {
-  unstable_useMediaQuery as useMediaQuery
-} from '@material-ui/core/useMediaQuery';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 import {
   Home,
   // History,
